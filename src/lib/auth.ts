@@ -1,9 +1,9 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { Rol } from "@/lib/roles";
 
-export type Rol = "profesor" | "psicologo" | "jefe_psicologia" | "administrador";
-
+export type { Rol };
 export type UsuarioActual = {
   id: string;
   nombre: string;
@@ -36,19 +36,4 @@ export async function requireUsuario(rolesPermitidos?: Rol[]): Promise<UsuarioAc
   if (!usuario) redirect("/sin-acceso");
   if (rolesPermitidos && !rolesPermitidos.includes(usuario.rol)) redirect("/sin-acceso");
   return usuario;
-}
-
-export function rolLabel(rol: Rol): string {
-  return {
-    profesor: "Profesor",
-    psicologo: "Psicólogo",
-    jefe_psicologia: "Jefe de psicólogos",
-    administrador: "Administrador",
-  }[rol];
-}
-
-export function rutaInicioPara(rol: Rol): string {
-  if (rol === "profesor") return "/incidencias";
-  if (rol === "administrador") return "/admin";
-  return "/dashboard";
 }

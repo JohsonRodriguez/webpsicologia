@@ -1,0 +1,91 @@
+type BarDatum = { label: string; value: number; color: string };
+
+export function BarChart({ data, height = 170 }: { data: BarDatum[]; height?: number }) {
+  const width = 480;
+  const pad = 28;
+  const gap = 14;
+  const max = Math.max(...data.map((d) => d.value), 1);
+  const barWidth = (width - pad * 2 - gap * (data.length - 1)) / Math.max(data.length, 1);
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} className="overflow-visible">
+      {data.map((d, i) => {
+        const barHeight = max ? (d.value / max) * (height - 40) : 0;
+        const x = pad + i * (barWidth + gap);
+        const y = height - 26 - barHeight;
+        return (
+          <g key={d.label}>
+            <rect x={x} y={y} width={barWidth} height={Math.max(barHeight, 2)} rx={4} fill={d.color} />
+            <text x={x + barWidth / 2} y={y - 6} textAnchor="middle" fontWeight={700} fontSize={10} fill={d.color}>
+              {d.value}
+            </text>
+            <text
+              x={x + barWidth / 2}
+              y={height - 8}
+              textAnchor="middle"
+              fontSize={10}
+              fill="var(--muted-foreground)"
+            >
+              {d.label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+type DonutDatum = { label: string; value: number; color: string };
+
+export function DonutChart({ data, size = 150 }: { data: DonutDatum[]; size?: number }) {
+  const r = size / 2 - 14;
+  const cx = size / 2;
+  const cy = size / 2;
+  const circ = 2 * Math.PI * r;
+  const total = data.reduce((s, d) => s + d.value, 0) || 1;
+  let offset = 0;
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
+      {data.map((d) => {
+        const frac = d.value / total;
+        const dash = frac * circ;
+        const el = (
+          <circle
+            key={d.label}
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill="none"
+            stroke={d.color}
+            strokeWidth={16}
+            strokeDasharray={`${dash} ${circ - dash}`}
+            strokeDashoffset={-offset}
+            transform={`rotate(-90 ${cx} ${cy})`}
+          />
+        );
+        offset += dash;
+        return el;
+      })}
+      <text x={cx} y={cy - 3} textAnchor="middle" fontSize={20} fontWeight={700} fill="var(--foreground)">
+        {total}
+      </text>
+      <text x={cx} y={cy + 14} textAnchor="middle" fontSize={10} fill="var(--muted-foreground)">
+        casos
+      </text>
+    </svg>
+  );
+}
+
+export function Legend({ items }: { items: { label: string; value: number; color: string }[] }) {
+  return (
+    <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+      {items.map((it) => (
+        <span key={it.label} className="flex items-center gap-2">
+          <span className="size-2 rounded-full" style={{ background: it.color }} />
+          {it.label} — <strong className="tabular-nums text-foreground">{it.value}</strong>
+        </span>
+      ))}
+    </div>
+  );
+}

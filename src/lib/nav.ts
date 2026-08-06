@@ -1,4 +1,4 @@
-import type { Rol } from "@/lib/auth";
+import type { Rol } from "@/lib/roles";
 import type { LucideIcon } from "lucide-react";
 import {
   LayoutGrid,

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GraduationCap, Bell, Menu, X } from "lucide-react";
 import { navFor } from "@/lib/nav";
-import type { Rol, UsuarioActual } from "@/lib/auth";
-import { rolLabel } from "@/lib/auth";
+import type { UsuarioActual } from "@/lib/auth";
+import { type Rol, rolLabel } from "@/lib/roles";
 import { CerrarSesionButton } from "@/components/cerrar-sesion-button";
 import { cn } from "@/lib/utils";
 
