@@ -8,23 +8,25 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
 
-  if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+  try {
+    if (code) {
+      const supabase = await createClient();
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      if (!error && data.user) {
+        const email = data.user.email?.toLowerCase() ?? "";
+        if (!email.endsWith(`@${ALLOWED_DOMAIN}`)) {
+          await supabase.auth.signOut();
+          return NextResponse.redirect(`${origin}/sin-acceso?motivo=dominio`);
+        }
 
-      const email = user?.email?.toLowerCase() ?? "";
-      if (!email.endsWith(`@${ALLOWED_DOMAIN}`)) {
-        await supabase.auth.signOut();
-        return NextResponse.redirect(`${origin}/sin-acceso?motivo=dominio`);
+        return NextResponse.redirect(`${origin}${next}`);
       }
 
-      return NextResponse.redirect(`${origin}${next}`);
+      console.error("exchangeCodeForSession error", error);
     }
+  } catch (err) {
+    console.error("auth callback crashed", err);
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth`);
