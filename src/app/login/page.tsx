@@ -19,6 +19,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/";
   const error = searchParams.get("error");
+  const detail = searchParams.get("detail");
 
   async function iniciarSesion() {
     setLoading(true);
@@ -65,9 +66,10 @@ function LoginForm() {
             Acceso restringido a cuentas institucionales <span className="font-mono">@byron.edu.pe</span>.
           </p>
           {error === "auth" && (
-            <p className="rounded-md bg-critical-soft px-3 py-2 text-center text-sm text-critical">
-              No se pudo iniciar sesión. Intenta nuevamente.
-            </p>
+            <div className="rounded-md bg-critical-soft px-3 py-2 text-center text-sm text-critical">
+              <p>No se pudo iniciar sesión. Intenta nuevamente.</p>
+              {detail && <p className="mt-1 font-mono text-xs break-words">{detail}</p>}
+            </div>
           )}
         </div>
       </div>

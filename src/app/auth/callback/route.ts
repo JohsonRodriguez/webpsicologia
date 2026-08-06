@@ -24,9 +24,13 @@ export async function GET(request: Request) {
       }
 
       console.error("exchangeCodeForSession error", error);
+      const detail = encodeURIComponent(error?.message ?? "sin sesión tras exchangeCodeForSession");
+      return NextResponse.redirect(`${origin}/login?error=auth&detail=${detail}`);
     }
   } catch (err) {
     console.error("auth callback crashed", err);
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.redirect(`${origin}/login?error=auth&detail=${encodeURIComponent(message)}`);
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth`);
