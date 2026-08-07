@@ -44,7 +44,7 @@ export function AppShell({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[232px] -translate-x-full flex-col gap-1 overflow-y-auto border-r border-border bg-sidebar p-3.5 transition-transform md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[232px] -translate-x-full flex-col gap-1 overflow-y-auto border-r border-sidebar-border bg-sidebar p-3.5 transition-transform md:static md:translate-x-0",
           open && "translate-x-0",
         )}
       >
@@ -53,14 +53,14 @@ export function AppShell({
             <GraduationCap className="size-4.5" />
           </div>
           <div className="leading-tight">
-            <p className="font-heading text-sm font-semibold">Psicología Escolar</p>
-            <p className="text-[11px] text-muted-foreground">Colegio Lord Byron</p>
+            <p className="font-heading text-sm font-semibold text-sidebar-foreground">Psicología Escolar</p>
+            <p className="text-[11px] text-sidebar-foreground/60">Colegio Lord Byron</p>
           </div>
         </div>
 
         {groups.map((group) => (
           <div key={group.label} className="mt-3.5">
-            <p className="px-2.5 pb-1.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+            <p className="px-2.5 pb-1.5 text-[11px] font-semibold tracking-wide text-sidebar-foreground/50 uppercase">
               {group.label}
             </p>
             {group.items.map((item) => {
@@ -71,8 +71,8 @@ export function AppShell({
                   href={item.href}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground",
-                    active && "bg-accent text-accent-foreground",
+                    "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                    active && "bg-sidebar-accent text-sidebar-foreground",
                   )}
                 >
                   <item.icon className="size-4.25 flex-none" />
@@ -83,17 +83,20 @@ export function AppShell({
           </div>
         ))}
 
-        <div className="mt-auto border-t border-border pt-3">
+        <div className="mt-auto border-t border-sidebar-border pt-3">
           <div className="flex items-center gap-2.5 px-1 pb-2.5">
-            <div className="flex size-7.5 flex-none items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
+            <div className="flex size-7.5 flex-none items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-foreground">
               {initials(usuario.nombre)}
             </div>
             <div className="leading-tight">
-              <p className="text-[13px] font-semibold">{usuario.nombre}</p>
-              <p className="text-[11px] text-muted-foreground">{rolLabel(usuario.rol as Rol)}</p>
+              <p className="text-[13px] font-semibold text-sidebar-foreground">{usuario.nombre}</p>
+              <p className="text-[11px] text-sidebar-foreground/60">{rolLabel(usuario.rol as Rol)}</p>
             </div>
           </div>
-          <CerrarSesionButton variant="ghost" className="w-full justify-start px-2.5" />
+          <CerrarSesionButton
+            variant="ghost"
+            className="w-full justify-start px-2.5 text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          />
         </div>
       </aside>
 

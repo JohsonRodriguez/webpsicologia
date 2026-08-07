@@ -63,11 +63,11 @@ export function UsuarioRow({ usuario }: { usuario: Usuario }) {
       </TableCell>
       <TableCell>
         {!usuario.rol ? (
-          <span className="inline-flex items-center rounded-full bg-warn-soft px-2.5 py-1 text-xs font-bold text-warn">
+          <span className="inline-flex items-center rounded-full bg-warn px-2.5 py-1 text-xs font-bold text-white">
             Pendiente
           </span>
         ) : usuario.activo ? (
-          <span className="inline-flex items-center rounded-full bg-good-soft px-2.5 py-1 text-xs font-bold text-good">
+          <span className="inline-flex items-center rounded-full bg-good px-2.5 py-1 text-xs font-bold text-white">
             Activo
           </span>
         ) : (

@@ -43,7 +43,7 @@ export default async function AdminAniosPage() {
                 <TableCell className="text-muted-foreground">{conteo.get(a.id) ?? 0} matrículas</TableCell>
                 <TableCell>
                   {a.activo ? (
-                    <span className="inline-flex items-center rounded-full bg-good-soft px-2.5 py-1 text-xs font-bold text-good">
+                    <span className="inline-flex items-center rounded-full bg-good px-2.5 py-1 text-xs font-bold text-white">
                       Activo
                     </span>
                   ) : (

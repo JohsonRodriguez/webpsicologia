@@ -88,7 +88,7 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
             <div className="flex flex-wrap gap-2">
               <PillEstadoCaso estado={caso.estado} />
               {derivado && (
-                <span className="inline-flex items-center rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-accent-foreground">
+                <span className="inline-flex items-center rounded-full bg-purple px-2.5 py-1 text-xs font-bold text-white">
                   Derivado
                 </span>
               )}

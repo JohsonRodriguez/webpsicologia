@@ -74,7 +74,7 @@ export default async function AlumnosPage() {
                   </TableCell>
                   <TableCell>
                     {conCasoAbierto.has(f.id) ? (
-                      <span className="inline-flex items-center rounded-full bg-warn-soft px-2.5 py-1 text-xs font-bold text-warn">
+                      <span className="inline-flex items-center rounded-full bg-warn px-2.5 py-1 text-xs font-bold text-white">
                         Caso activo
                       </span>
                     ) : (

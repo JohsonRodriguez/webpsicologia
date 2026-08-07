@@ -1,13 +1,13 @@
 import { cn } from "@/lib/utils";
 
-type Tone = "info" | "warn" | "good" | "critical" | "primary" | "muted";
+type Tone = "info" | "warn" | "good" | "critical" | "purple" | "muted";
 
 const TONE_CLASSES: Record<Tone, string> = {
-  info: "bg-info-soft text-info",
-  warn: "bg-warn-soft text-warn",
-  good: "bg-good-soft text-good",
-  critical: "bg-critical-soft text-critical",
-  primary: "bg-accent text-accent-foreground",
+  info: "bg-info text-white",
+  warn: "bg-warn text-white",
+  good: "bg-good text-white",
+  critical: "bg-critical text-white",
+  purple: "bg-purple text-white",
   muted: "bg-secondary text-muted-foreground",
 };
 
@@ -39,8 +39,8 @@ export function PillPrioridad({ prioridad }: { prioridad: string }) {
 const ESTADO_INCIDENCIA: Record<string, { tone: Tone; label: string }> = {
   nueva: { tone: "info", label: "Nueva" },
   en_revision: { tone: "warn", label: "En revisión" },
-  derivada: { tone: "primary", label: "Derivada a caso" },
-  cerrada: { tone: "muted", label: "Cerrada" },
+  derivada: { tone: "purple", label: "Derivada a caso" },
+  cerrada: { tone: "good", label: "Cerrada" },
 };
 
 export function PillEstadoIncidencia({ estado }: { estado: string }) {
@@ -51,7 +51,7 @@ export function PillEstadoIncidencia({ estado }: { estado: string }) {
 const ESTADO_CASO: Record<string, { tone: Tone; label: string }> = {
   abierto: { tone: "info", label: "Abierto" },
   en_atencion: { tone: "warn", label: "En atención" },
-  derivado: { tone: "primary", label: "Derivado" },
+  derivado: { tone: "purple", label: "Derivado" },
   cerrado: { tone: "good", label: "Cerrado" },
 };
 

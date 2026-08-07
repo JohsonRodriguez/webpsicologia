@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-poppins);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-heading);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -55,95 +55,59 @@
   --color-critical-soft: var(--critical-soft);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
+  --color-purple: var(--purple);
+  --color-purple-soft: var(--purple-soft);
 }
 
 :root {
-  --font-heading: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-heading: var(--font-poppins);
 
-  --background: #f5f2ea;
-  --foreground: #202f2e;
+  --background: #f5f6fa;
+  --foreground: #1a2b23;
   --card: #ffffff;
-  --card-foreground: #202f2e;
+  --card-foreground: #1a2b23;
   --popover: #ffffff;
-  --popover-foreground: #202f2e;
-  --primary: #2b6266;
+  --popover-foreground: #1a2b23;
+  --primary: #166c52;
   --primary-foreground: #ffffff;
-  --secondary: #efece1;
-  --secondary-foreground: #202f2e;
-  --muted: #efece1;
-  --muted-foreground: #5d6d69;
-  --accent: #dcebea;
-  --accent-foreground: #1c4548;
-  --destructive: #ae3b2d;
-  --border: #ddd6c6;
-  --input: #ddd6c6;
-  --ring: #2b6266;
-  --chart-1: #2b6266;
-  --chart-2: #35618f;
-  --chart-3: #3e7a4c;
-  --chart-4: #a06a16;
-  --chart-5: #ae3b2d;
-  --radius: 0.625rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #202f2e;
-  --sidebar-primary: #2b6266;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #dcebea;
-  --sidebar-accent-foreground: #1c4548;
-  --sidebar-border: #ddd6c6;
-  --sidebar-ring: #2b6266;
+  --secondary: #eef0f3;
+  --secondary-foreground: #1a2b23;
+  --muted: #eef0f3;
+  --muted-foreground: #5e6c72;
+  --accent: #e3f0ea;
+  --accent-foreground: #0f4d3a;
+  --destructive: #e2445c;
+  --border: #e1e3ea;
+  --input: #e1e3ea;
+  --ring: #166c52;
+  --chart-1: #166c52;
+  --chart-2: #0086c0;
+  --chart-3: #00c875;
+  --chart-4: #d9822b;
+  --chart-5: #e2445c;
+  --radius: 0.75rem;
 
-  --good: #3e7a4c;
-  --good-soft: #e2efe2;
-  --warn: #a06a16;
-  --warn-soft: #f4e8cf;
-  --critical: #ae3b2d;
-  --critical-soft: #f6dcd6;
-  --info: #35618f;
-  --info-soft: #dde8f2;
-}
+  /* Menú lateral: verde oscuro institucional fijo (no varía con el tema). */
+  --sidebar: #124b39;
+  --sidebar-foreground: #f1f7f4;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #124b39;
+  --sidebar-accent: rgba(255, 255, 255, 0.14);
+  --sidebar-accent-foreground: #f1f7f4;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #ffffff;
 
-.dark {
-  --background: #10181a;
-  --foreground: #e9e5d9;
-  --card: #172221;
-  --card-foreground: #e9e5d9;
-  --popover: #172221;
-  --popover-foreground: #e9e5d9;
-  --primary: #6bb4b0;
-  --primary-foreground: #0d1716;
-  --secondary: #1c2827;
-  --secondary-foreground: #e9e5d9;
-  --muted: #1c2827;
-  --muted-foreground: #9db0ab;
-  --accent: #22403e;
-  --accent-foreground: #a9dbd6;
-  --destructive: #e08171;
-  --border: #2b3937;
-  --input: #2b3937;
-  --ring: #6bb4b0;
-  --chart-1: #6bb4b0;
-  --chart-2: #7fa8d6;
-  --chart-3: #6fbf7f;
-  --chart-4: #d9a752;
-  --chart-5: #e08171;
-  --sidebar: #172221;
-  --sidebar-foreground: #e9e5d9;
-  --sidebar-primary: #6bb4b0;
-  --sidebar-primary-foreground: #0d1716;
-  --sidebar-accent: #22403e;
-  --sidebar-accent-foreground: #a9dbd6;
-  --sidebar-border: #2b3937;
-  --sidebar-ring: #6bb4b0;
-
-  --good: #6fbf7f;
-  --good-soft: #1f3826;
-  --warn: #d9a752;
-  --warn-soft: #3a2f18;
-  --critical: #e08171;
-  --critical-soft: #3d2420;
-  --info: #7fa8d6;
-  --info-soft: #1e2f42;
+  /* Colores de estado al estilo monday.com: pills en relleno sólido. */
+  --good: #00c875;
+  --good-soft: #dff8ec;
+  --warn: #d9822b;
+  --warn-soft: #fbeadb;
+  --critical: #e2445c;
+  --critical-soft: #fce1e5;
+  --info: #0086c0;
+  --info-soft: #dcedf5;
+  --purple: #a25ddc;
+  --purple-soft: #f2e6fa;
 }
 
 @layer base {

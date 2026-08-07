@@ -15,8 +15,8 @@ export function ActaResumen({ cita }: { cita: Cita }) {
         <span
           className={
             firmada
-              ? "inline-flex items-center rounded-full bg-good-soft px-2.5 py-1 text-xs font-bold text-good"
-              : "inline-flex items-center rounded-full bg-warn-soft px-2.5 py-1 text-xs font-bold text-warn"
+              ? "inline-flex items-center rounded-full bg-good px-2.5 py-1 text-xs font-bold text-white"
+              : "inline-flex items-center rounded-full bg-warn px-2.5 py-1 text-xs font-bold text-white"
           }
         >
           {firmada ? "Firmada" : "Pendiente de firma"}

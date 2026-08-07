@@ -67,15 +67,15 @@ export function CatalogoMotivos({ motivos }: { motivos: Motivo[] }) {
           <h3 className="font-heading text-base font-semibold">Niveles de prioridad</h3>
         </div>
         <div className="flex flex-wrap gap-2 p-4">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-good-soft px-2.5 py-1 text-xs font-bold text-good">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-good px-2.5 py-1 text-xs font-bold text-white">
             <span className="size-1.5 rounded-full bg-current" />
             Baja
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-warn-soft px-2.5 py-1 text-xs font-bold text-warn">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-warn px-2.5 py-1 text-xs font-bold text-white">
             <span className="size-1.5 rounded-full bg-current" />
             Media
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-critical-soft px-2.5 py-1 text-xs font-bold text-critical">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-critical px-2.5 py-1 text-xs font-bold text-white">
             <span className="size-1.5 rounded-full bg-current" />
             Alta
           </span>

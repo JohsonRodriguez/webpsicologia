@@ -29,13 +29,13 @@ async function sendEmail(params: { to: string; subject: string; html: string }) 
 
 function wrapper(title: string, bodyHtml: string) {
   return `
-    <div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; color: #202f2e;">
-      <p style="font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2b6266; margin: 0 0 8px;">
+    <div style="font-family: Poppins, -apple-system, Segoe UI, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; color: #1a2b23;">
+      <p style="font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #166c52; margin: 0 0 8px;">
         Psicología Escolar · Colegio Lord Byron
       </p>
       <h1 style="font-size: 19px; margin: 0 0 16px;">${title}</h1>
       ${bodyHtml}
-      <a href="${APP_URL}" style="display:inline-block; margin-top: 20px; background:#2b6266; color:#fff; text-decoration:none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;">
+      <a href="${APP_URL}" style="display:inline-block; margin-top: 20px; background:#166c52; color:#fff; text-decoration:none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;">
         Ir a la plataforma
       </a>
     </div>

@@ -65,7 +65,7 @@ export function TablaCasos({
                   <TableCell className="text-muted-foreground">
                     {c.usuarios?.nombre ?? "—"}
                     {derivado && (
-                      <span className="ml-1.5 inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-accent-foreground">
+                      <span className="ml-1.5 inline-flex items-center rounded-full bg-purple px-2 py-0.5 text-[11px] font-bold text-white">
                         derivado
                       </span>
                     )}
