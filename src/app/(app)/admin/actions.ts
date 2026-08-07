@@ -347,3 +347,78 @@ export async function importarAlumnosExcel(
 
   return { ok: true, creados, actualizados, matriculados, advertencias };
 }
+
+export async function crearGrado(nivelId: string, nombre: string) {
+  await requireUsuario(["administrador"]);
+  if (!nombre.trim()) return { error: "Escribe un nombre para el grado." };
+  const admin = createAdminClient();
+
+  const { data: existentes } = await admin.from("grados").select("orden").eq("nivel_id", nivelId);
+  const maxOrden = Math.max(0, ...(existentes ?? []).map((g) => g.orden));
+  const orden = ordenDesdeNombreGrado(nombre) || maxOrden + 1;
+
+  const { error } = await admin.from("grados").insert({ nivel_id: nivelId, nombre: nombre.trim(), orden });
+  if (error) return { error: "No se pudo crear el grado (¿ya existe uno con ese nombre en este nivel?)." };
+  revalidatePath("/admin/grados");
+  return { ok: true };
+}
+
+export async function renombrarGrado(id: string, nombre: string) {
+  await requireUsuario(["administrador"]);
+  if (!nombre.trim()) return { error: "El nombre no puede estar vacío." };
+  const admin = createAdminClient();
+  const { error } = await admin.from("grados").update({ nombre: nombre.trim() }).eq("id", id);
+  if (error) return { error: "No se pudo renombrar el grado." };
+  revalidatePath("/admin/grados");
+  return { ok: true };
+}
+
+export async function eliminarGrado(id: string) {
+  await requireUsuario(["administrador"]);
+  const admin = createAdminClient();
+
+  const { count } = await admin.from("matriculas").select("id", { count: "exact", head: true }).eq("grado_id", id);
+  if (count && count > 0) {
+    return { error: `No se puede eliminar: hay ${count} alumno(s) matriculados en este grado.` };
+  }
+
+  const { error } = await admin.from("grados").delete().eq("id", id);
+  if (error) return { error: "No se pudo eliminar el grado." };
+  revalidatePath("/admin/grados");
+  return { ok: true };
+}
+
+export async function crearSeccion(gradoId: string, nombre: string) {
+  await requireUsuario(["administrador"]);
+  if (!nombre.trim()) return { error: "Escribe un nombre para la sección." };
+  const admin = createAdminClient();
+  const { error } = await admin.from("secciones").insert({ grado_id: gradoId, nombre: nombre.trim() });
+  if (error) return { error: "No se pudo crear la sección (¿ya existe una con ese nombre en este grado?)." };
+  revalidatePath("/admin/grados");
+  return { ok: true };
+}
+
+export async function renombrarSeccion(id: string, nombre: string) {
+  await requireUsuario(["administrador"]);
+  if (!nombre.trim()) return { error: "El nombre no puede estar vacío." };
+  const admin = createAdminClient();
+  const { error } = await admin.from("secciones").update({ nombre: nombre.trim() }).eq("id", id);
+  if (error) return { error: "No se pudo renombrar la sección." };
+  revalidatePath("/admin/grados");
+  return { ok: true };
+}
+
+export async function eliminarSeccion(id: string) {
+  await requireUsuario(["administrador"]);
+  const admin = createAdminClient();
+
+  const { count } = await admin.from("matriculas").select("id", { count: "exact", head: true }).eq("seccion_id", id);
+  if (count && count > 0) {
+    return { error: `No se puede eliminar: hay ${count} alumno(s) matriculados en esta sección.` };
+  }
+
+  const { error } = await admin.from("secciones").delete().eq("id", id);
+  if (error) return { error: "No se pudo eliminar la sección." };
+  revalidatePath("/admin/grados");
+  return { ok: true };
+}
