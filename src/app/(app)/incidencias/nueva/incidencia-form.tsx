@@ -179,12 +179,12 @@ export function IncidenciaForm({
         </fieldset>
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
             <Label>Motivo</Label>
             <select
               required
               name="motivo"
-              className="h-9 rounded-md border border-input bg-card px-3 text-sm"
+              className="h-9 w-full rounded-md border border-input bg-card px-3 text-sm"
             >
               <option value="">Selecciona…</option>
               {motivos.map((m) => (
