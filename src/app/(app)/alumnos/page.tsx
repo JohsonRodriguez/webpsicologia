@@ -1,9 +1,8 @@
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getAnioActivo, nombreAlumno } from "@/lib/queries";
+import { getAnioActivo } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ClickableRow } from "@/components/clickable-row";
+import { AlumnosFiltro, type FilaAlumno } from "./alumnos-filtro";
 
 export default async function AlumnosPage() {
   const usuario = await requireUsuario(["psicologo", "jefe_psicologia"]);
@@ -12,7 +11,9 @@ export default async function AlumnosPage() {
 
   let query = supabase
     .from("matriculas")
-    .select("alumno_id, grado_id, seccion_id, alumnos(id, nombres, apellidos, codigo), grados(nombre), secciones(nombre)")
+    .select(
+      "alumno_id, grado_id, seccion_id, alumnos(id, nombres, apellidos, codigo), grados(nombre, nivel_id, niveles(nombre)), secciones(nombre)",
+    )
     .eq("anio_academico_id", anioActivo?.id ?? "");
 
   if (usuario.rol === "psicologo") {
@@ -32,63 +33,43 @@ export default async function AlumnosPage() {
 
   const conCasoAbierto = new Set((casosAbiertos ?? []).map((c) => c.alumno_id));
 
-  const filas = (matriculas ?? [])
-    .map((m) => ({
-      id: m.alumno_id,
-      alumno: m.alumnos as unknown as { nombres: string; apellidos: string; codigo: string },
-      grado: (m.grados as unknown as { nombre: string } | null)?.nombre ?? "",
-      seccion: (m.secciones as unknown as { nombre: string } | null)?.nombre ?? "",
-    }))
-    .sort((a, b) => a.alumno.apellidos.localeCompare(b.alumno.apellidos));
+  const filas: FilaAlumno[] = (matriculas ?? [])
+    .map((m) => {
+      const alumno = m.alumnos as unknown as { nombres: string; apellidos: string; codigo: string };
+      const grado = m.grados as unknown as { nombre: string; nivel_id: string; niveles: { nombre: string } | null } | null;
+      const seccion = m.secciones as unknown as { nombre: string } | null;
+      return {
+        id: m.alumno_id,
+        nombres: alumno.nombres,
+        apellidos: alumno.apellidos,
+        codigo: alumno.codigo,
+        nivelId: grado?.nivel_id ?? "",
+        nivelNombre: grado?.niveles?.nombre ?? "—",
+        gradoId: m.grado_id,
+        gradoNombre: grado?.nombre ?? "",
+        seccionId: m.seccion_id,
+        seccionNombre: seccion?.nombre ?? "",
+        tieneCasoAbierto: conCasoAbierto.has(m.alumno_id),
+      };
+    })
+    .sort((a, b) => a.apellidos.localeCompare(b.apellidos));
 
   return (
     <>
       <PageHeader
         eyebrow="Alumnos"
         title={usuario.rol === "jefe_psicologia" ? "Alumnos del colegio" : "Alumnos de mi nivel"}
-        description="Consulta la ficha de cualquier alumno, tenga o no un caso abierto contigo."
+        description="Consulta la ficha de cualquier alumno, tenga o no un caso abierto contigo. Filtra por nivel, grado y sección."
       />
-      <div className="rounded-xl border border-border bg-card shadow-sm">
-        {filas.length === 0 ? (
+      {filas.length === 0 ? (
+        <div className="rounded-xl border border-border bg-card shadow-sm">
           <p className="px-4 py-14 text-center text-sm text-muted-foreground">
             No hay alumnos asignados a tu nivel.
           </p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Alumno</TableHead>
-                <TableHead>Grado y sección</TableHead>
-                <TableHead>Seguimiento</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filas.map((f) => (
-                <ClickableRow key={f.id} href={`/alumnos/${f.id}`}>
-                  <TableCell>
-                    <div className="font-semibold">{nombreAlumno(f.alumno)}</div>
-                    <div className="font-mono text-xs text-muted-foreground">{f.alumno.codigo}</div>
-                  </TableCell>
-                  <TableCell>
-                    {f.grado} &quot;{f.seccion}&quot;
-                  </TableCell>
-                  <TableCell>
-                    {conCasoAbierto.has(f.id) ? (
-                      <span className="inline-flex items-center rounded-full bg-warn px-2.5 py-1 text-xs font-bold text-white">
-                        Caso activo
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 text-xs font-bold text-muted-foreground">
-                        Sin caso abierto
-                      </span>
-                    )}
-                  </TableCell>
-                </ClickableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+        </div>
+      ) : (
+        <AlumnosFiltro filas={filas} />
+      )}
     </>
   );
 }
