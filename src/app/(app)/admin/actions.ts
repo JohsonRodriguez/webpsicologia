@@ -5,8 +5,17 @@ import { requireUsuario } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rolLabel, type Rol } from "@/lib/roles";
 import { enviarCorreoRolAsignado } from "@/lib/email";
+import { parseAlumnosSheet, ordenDesdeNombreGrado, type FilaAlumnoImport } from "@/lib/import-alumnos";
 
 export type EstadoAccion = { error?: string; ok?: boolean };
+
+function normalizar(s: string) {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim()
+    .toLowerCase();
+}
 
 export async function actualizarUsuario(id: string, cambios: { rol?: Rol | null; activo?: boolean }) {
   await requireUsuario(["administrador"]);
@@ -177,4 +186,164 @@ export async function ejecutarMigracion(anioDestinoId: string) {
   revalidatePath("/admin/migracion");
   revalidatePath("/admin/anios");
   return { ok: true, creadas, egresadas };
+}
+
+export type ResultadoImportacion = {
+  error?: string;
+  ok?: boolean;
+  creados?: number;
+  actualizados?: number;
+  matriculados?: number;
+  advertencias?: string[];
+};
+
+export async function importarAlumnosExcel(
+  _prev: ResultadoImportacion,
+  formData: FormData,
+): Promise<ResultadoImportacion> {
+  await requireUsuario(["administrador"]);
+  const admin = createAdminClient();
+
+  const archivo = formData.get("archivo");
+  if (!(archivo instanceof File) || archivo.size === 0) {
+    return { error: "Selecciona un archivo Excel (.xlsx)." };
+  }
+
+  const buffer = await archivo.arrayBuffer();
+  const { filas, errores: erroresParseo } = parseAlumnosSheet(buffer);
+  if (!filas.length) {
+    return { error: erroresParseo[0] ?? "No se encontraron filas válidas en el archivo." };
+  }
+
+  const { data: anioActivo } = await admin.from("anios_academicos").select("id").eq("activo", true).maybeSingle();
+  if (!anioActivo) return { error: "No hay un año académico activo. Actívalo primero en Años académicos." };
+
+  // Si el mismo código aparece más de una vez en el archivo, nos quedamos con la última fila.
+  const porCodigo = new Map<string, FilaAlumnoImport>();
+  const advertencias: string[] = [...erroresParseo];
+  for (const f of filas) {
+    if (porCodigo.has(f.codigo)) advertencias.push(`Código ${f.codigo} repetido en el archivo; se usó la última fila.`);
+    porCodigo.set(f.codigo, f);
+  }
+  const filasValidas = [...porCodigo.values()];
+
+  // --- Fase A: resolver (o crear) niveles, grados y secciones. Son pocos valores
+  // únicos aunque el archivo tenga cientos de alumnos, así que ir uno por uno es rápido. ---
+  const { data: nivelesExistentes } = await admin.from("niveles").select("id, nombre, orden");
+  const { data: gradosExistentes } = await admin.from("grados").select("id, nivel_id, nombre, orden");
+  const { data: seccionesExistentes } = await admin.from("secciones").select("id, grado_id, nombre");
+
+  const nivelPorNombre = new Map((nivelesExistentes ?? []).map((n) => [normalizar(n.nombre), n]));
+  const gradoPorClave = new Map((gradosExistentes ?? []).map((g) => [`${g.nivel_id}::${normalizar(g.nombre)}`, g]));
+  const seccionPorClave = new Map(
+    (seccionesExistentes ?? []).map((s) => [`${s.grado_id}::${normalizar(s.nombre)}`, s]),
+  );
+  let maxOrdenNivel = Math.max(0, ...(nivelesExistentes ?? []).map((n) => n.orden));
+
+  const gradoYSeccionPorFila = new Map<string, { gradoId: string; seccionId: string }>();
+
+  for (const f of filasValidas) {
+    const nivelKey = normalizar(f.nivel);
+    let nivel = nivelPorNombre.get(nivelKey);
+    if (!nivel) {
+      const { data, error } = await admin
+        .from("niveles")
+        .insert({ nombre: f.nivel, orden: ++maxOrdenNivel })
+        .select("id, nombre, orden")
+        .single();
+      if (error || !data) {
+        advertencias.push(`Fila ${f.fila}: no se pudo crear el nivel "${f.nivel}".`);
+        continue;
+      }
+      nivel = data;
+      nivelPorNombre.set(nivelKey, nivel);
+    }
+
+    const gradoKey = `${nivel.id}::${normalizar(f.grado)}`;
+    let grado = gradoPorClave.get(gradoKey);
+    if (!grado) {
+      const { data, error } = await admin
+        .from("grados")
+        .insert({ nivel_id: nivel.id, nombre: f.grado, orden: ordenDesdeNombreGrado(f.grado) })
+        .select("id, nivel_id, nombre, orden")
+        .single();
+      if (error || !data) {
+        advertencias.push(`Fila ${f.fila}: no se pudo crear el grado "${f.grado}".`);
+        continue;
+      }
+      grado = data;
+      gradoPorClave.set(gradoKey, grado);
+    }
+
+    const seccionKey = `${grado.id}::${normalizar(f.seccion)}`;
+    let seccion = seccionPorClave.get(seccionKey);
+    if (!seccion) {
+      const { data, error } = await admin
+        .from("secciones")
+        .insert({ grado_id: grado.id, nombre: f.seccion })
+        .select("id, grado_id, nombre")
+        .single();
+      if (error || !data) {
+        advertencias.push(`Fila ${f.fila}: no se pudo crear la sección "${f.seccion}".`);
+        continue;
+      }
+      seccion = data;
+      seccionPorClave.set(seccionKey, seccion);
+    }
+
+    gradoYSeccionPorFila.set(f.codigo, { gradoId: grado.id, seccionId: seccion.id });
+  }
+
+  // --- Fase B: alumnos, en un solo upsert por código (evita cientos de idas y vueltas). ---
+  const { data: alumnosAntes } = await admin.from("alumnos").select("codigo");
+  const codigosExistentesAntes = new Set((alumnosAntes ?? []).map((a) => a.codigo));
+
+  const filasConGradoValido = filasValidas.filter((f) => gradoYSeccionPorFila.has(f.codigo));
+  const alumnosParaGuardar = filasConGradoValido.map((f) => ({
+    codigo: f.codigo,
+    nombres: f.nombres,
+    apellidos: f.apellidos,
+  }));
+
+  const { data: alumnosGuardados, error: alumnosError } = await admin
+    .from("alumnos")
+    .upsert(alumnosParaGuardar, { onConflict: "codigo" })
+    .select("id, codigo");
+
+  if (alumnosError) {
+    return { error: `No se pudieron guardar los alumnos: ${alumnosError.message}` };
+  }
+
+  const idPorCodigo = new Map((alumnosGuardados ?? []).map((a) => [a.codigo, a.id]));
+  const creados = alumnosParaGuardar.filter((a) => !codigosExistentesAntes.has(a.codigo)).length;
+  const actualizados = alumnosParaGuardar.length - creados;
+
+  // --- Fase C: matrículas del año activo, también en un solo upsert. ---
+  const matriculasParaGuardar = filasConGradoValido
+    .map((f) => {
+      const alumnoId = idPorCodigo.get(f.codigo);
+      const gs = gradoYSeccionPorFila.get(f.codigo);
+      if (!alumnoId || !gs) return null;
+      return { alumno_id: alumnoId, anio_academico_id: anioActivo.id, grado_id: gs.gradoId, seccion_id: gs.seccionId };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+
+  let matriculados = 0;
+  if (matriculasParaGuardar.length) {
+    const { error: matError, count } = await admin
+      .from("matriculas")
+      .upsert(matriculasParaGuardar, { onConflict: "alumno_id,anio_academico_id", count: "exact" });
+    if (matError) {
+      advertencias.push(`No se pudieron guardar algunas matrículas: ${matError.message}`);
+    } else {
+      matriculados = count ?? matriculasParaGuardar.length;
+    }
+  }
+
+  revalidatePath("/admin/alumnos");
+  revalidatePath("/admin/grados");
+  revalidatePath("/admin/config");
+  revalidatePath("/admin/migracion");
+
+  return { ok: true, creados, actualizados, matriculados, advertencias };
 }

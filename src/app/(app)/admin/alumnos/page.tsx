@@ -4,9 +4,8 @@ import { getAnioActivo, getEstructuraAcademica, getMatriculasPorAlumno, nombreAl
 import { PageHeader } from "@/components/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ClickableRow } from "@/components/clickable-row";
-import { Button } from "@/components/ui/button";
-import { FileUp } from "lucide-react";
 import { NuevoAlumnoDialog } from "./nuevo-alumno-dialog";
+import { ImportarAlumnosDialog } from "./importar-alumnos-dialog";
 
 export default async function AdminAlumnosPage() {
   await requireUsuario(["administrador"]);
@@ -25,10 +24,7 @@ export default async function AdminAlumnosPage() {
         description={`${alumnos?.length ?? 0} alumnos registrados · matrícula del año activo mostrada.`}
         actions={
           <>
-            <Button variant="outline" disabled title="Requiere backend de importación">
-              <FileUp className="size-4" />
-              Importar Excel/CSV
-            </Button>
+            <ImportarAlumnosDialog />
             <NuevoAlumnoDialog estructura={estructura} anioActivoId={anioActivo?.id ?? ""} />
           </>
         }
