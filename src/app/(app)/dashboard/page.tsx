@@ -1,20 +1,80 @@
 import Link from "next/link";
+import { FolderOpen, Clock, CheckCircle2, TriangleAlert, ChartPie, BarChart3, Plus, ArrowRight } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getMatriculasPorAlumno, nombreAlumno } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { BarChart, DonutChart, Legend } from "@/components/charts";
 import { PillEstadoIncidencia, BarraPrioridad } from "@/components/status-pills";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ClickableRow } from "@/components/clickable-row";
 
-function StatTile({ label, value }: { label: string; value: number }) {
+const TONO: Record<string, string> = {
+  primary: "bg-primary/10 text-primary",
+  warn: "bg-warn-soft text-warn",
+  good: "bg-good-soft text-good",
+  critical: "bg-critical-soft text-critical",
+};
+
+function StatTile({
+  label,
+  value,
+  icon: Icon,
+  tono,
+}: {
+  label: string;
+  value: number;
+  icon: React.ComponentType<{ className?: string }>;
+  tono: keyof typeof TONO;
+}) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{label}</p>
-      <p className="font-heading text-3xl">{value}</p>
+    <div className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 shadow-sm">
+      <div className={`flex size-11 flex-none items-center justify-center rounded-lg ${TONO[tono]}`}>
+        <Icon className="size-5" />
+      </div>
+      <div>
+        <p className="font-heading text-2xl leading-none font-bold">{value}</p>
+        <p className="mt-1 text-xs font-medium text-muted-foreground">{label}</p>
+      </div>
     </div>
   );
+}
+
+function CardChart({
+  icon: Icon,
+  titulo,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  titulo: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card shadow-sm">
+      <div className="flex items-center gap-2 border-b border-border p-4 text-primary">
+        <Icon className="size-4" />
+        <h3 className="font-heading text-base font-semibold text-foreground">{titulo}</h3>
+      </div>
+      <div className="p-4">{children}</div>
+    </div>
+  );
+}
+
+function iniciales(nombre: string) {
+  const partes = nombre.trim().split(/\s+/);
+  return `${partes[0]?.[0] ?? ""}${partes[1]?.[0] ?? ""}`.toUpperCase();
+}
+
+function saludo() {
+  const hora = Number(
+    new Intl.DateTimeFormat("es-PE", { hour: "numeric", hour12: false, timeZone: "America/Lima" }).format(
+      new Date(),
+    ),
+  );
+  if (hora < 12) return "Buenos días";
+  if (hora < 19) return "Buenas tardes";
+  return "Buenas noches";
 }
 
 export default async function DashboardPage() {
@@ -49,32 +109,41 @@ export default async function DashboardPage() {
   const pendientesInc = todasIncidencias.filter((i) => i.estado === "nueva" || i.estado === "en_revision").length;
 
   const matriculas = await getMatriculasPorAlumno(supabase);
+  const primerNombre = usuario.nombre.split(" ")[0];
 
   return (
     <>
       <PageHeader
-        eyebrow={esJefe ? "Jefatura de psicología" : "Panorama"}
-        title={esJefe ? "Dashboard general del colegio" : "Dashboard"}
+        eyebrow={esJefe ? "Jefatura de psicología" : saludo()}
+        title={esJefe ? "Dashboard general del colegio" : `${saludo()}, ${primerNombre}`}
         description={
           esJefe
             ? "Métricas agregadas de los 4 psicólogos del equipo."
-            : "Resumen de tus casos e incidencias asignadas."
+            : "Este es el resumen de tus casos e incidencias asignadas."
+        }
+        actions={
+          <Button
+            variant="outline"
+            render={
+              <Link href={esJefe ? "/todas" : "/casos/nuevo"}>
+                {esJefe ? <ArrowRight className="size-4" /> : <Plus className="size-4" />}
+                {esJefe ? "Ver todas las incidencias" : "Abrir caso directo"}
+              </Link>
+            }
+          />
         }
       />
 
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-        <StatTile label="Casos totales" value={casosList.length} />
-        <StatTile label="En atención" value={porEstado.en_atencion} />
-        <StatTile label="Cerrados" value={porEstado.cerrado} />
-        <StatTile label="Incidencias pendientes" value={pendientesInc} />
+        <StatTile label="Casos totales" value={casosList.length} icon={FolderOpen} tono="primary" />
+        <StatTile label="En atención" value={porEstado.en_atencion} icon={Clock} tono="warn" />
+        <StatTile label="Cerrados" value={porEstado.cerrado} icon={CheckCircle2} tono="good" />
+        <StatTile label="Incidencias pendientes" value={pendientesInc} icon={TriangleAlert} tono="critical" />
       </div>
 
       <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
-        <div className="rounded-xl border border-border bg-card shadow-sm">
-          <div className="border-b border-border p-4">
-            <h3 className="font-heading text-base font-semibold">Casos por estado</h3>
-          </div>
-          <div className="flex flex-wrap items-center gap-6 p-4">
+        <CardChart icon={ChartPie} titulo="Casos por estado">
+          <div className="flex flex-wrap items-center gap-6">
             <DonutChart
               data={[
                 { label: "Abierto", value: porEstado.abierto, color: "var(--info)" },
@@ -92,28 +161,27 @@ export default async function DashboardPage() {
               ]}
             />
           </div>
-        </div>
-        <div className="rounded-xl border border-border bg-card shadow-sm">
-          <div className="border-b border-border p-4">
-            <h3 className="font-heading text-base font-semibold">Incidencias por prioridad</h3>
-          </div>
-          <div className="p-4">
-            <BarChart
-              data={[
-                { label: "Baja", value: todasIncidencias.filter((i) => i.prioridad === "baja").length, color: "var(--good)" },
-                { label: "Media", value: todasIncidencias.filter((i) => i.prioridad === "media").length, color: "var(--warn)" },
-                { label: "Alta", value: todasIncidencias.filter((i) => i.prioridad === "alta").length, color: "var(--critical)" },
-              ]}
-            />
-          </div>
-        </div>
+        </CardChart>
+        <CardChart icon={BarChart3} titulo="Incidencias por prioridad">
+          <BarChart
+            data={[
+              { label: "Baja", value: todasIncidencias.filter((i) => i.prioridad === "baja").length, color: "var(--good)" },
+              { label: "Media", value: todasIncidencias.filter((i) => i.prioridad === "media").length, color: "var(--warn)" },
+              { label: "Alta", value: todasIncidencias.filter((i) => i.prioridad === "alta").length, color: "var(--critical)" },
+            ]}
+          />
+        </CardChart>
       </div>
 
       <div className="rounded-xl border border-border bg-card shadow-sm">
         <div className="flex items-center justify-between border-b border-border p-4">
           <h3 className="font-heading text-base font-semibold">Últimos reportes</h3>
-          <Link href={esJefe ? "/todas" : "/casos"} className="text-sm font-medium text-primary hover:underline">
+          <Link
+            href={esJefe ? "/todas" : "/casos"}
+            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
             Ver todas
+            <ArrowRight className="size-3.5" />
           </Link>
         </div>
         {incidenciasList.length === 0 ? (
@@ -139,8 +207,15 @@ export default async function DashboardPage() {
                       <BarraPrioridad prioridad={i.prioridad} />
                     </TableCell>
                     <TableCell>
-                      <div className="font-semibold">{alumno ? nombreAlumno(alumno) : "—"}</div>
-                      <div className="text-xs text-muted-foreground">{mat ? mat.gradoNombre : ""}</div>
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex size-8 flex-none items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                          {alumno ? iniciales(nombreAlumno(alumno)) : "—"}
+                        </div>
+                        <div>
+                          <div className="font-semibold">{alumno ? nombreAlumno(alumno) : "—"}</div>
+                          <div className="text-xs text-muted-foreground">{mat ? mat.gradoNombre : ""}</div>
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell>
                       {i.motivo_otro || (i.catalogo_motivos as unknown as { nombre: string } | null)?.nombre}
