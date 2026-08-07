@@ -3,8 +3,9 @@ import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ActaAlumnoPdfDocument, type ActaAlumnoPdfData } from "@/lib/pdf/acta-alumno-pdf";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const inline = new URL(request.url).searchParams.get("inline") === "1";
   await requireUsuario(["psicologo", "jefe_psicologia"]);
   const supabase = await createClient();
 
@@ -54,7 +55,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   return new Response(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${nombreArchivo}"`,
+      "Content-Disposition": `${inline ? "inline" : "attachment"}; filename="${nombreArchivo}"`,
     },
   });
 }
