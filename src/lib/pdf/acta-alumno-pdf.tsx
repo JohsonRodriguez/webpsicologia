@@ -53,6 +53,7 @@ export type ActaAlumnoPdfData = {
   psicologoNombre: string;
   detalle: string;
   observaciones: string;
+  declaracionAlumno: string;
   acuerdos: string;
   firmaAlumnoNombre: string;
   firmaAlumnoData: string;
@@ -103,7 +104,12 @@ export function ActaAlumnoPdfDocument({ data }: { data: ActaAlumnoPdfData }) {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Acuerdos y compromisos del alumno</Text>
+          <Text style={styles.sectionTitle}>Declaración del alumno</Text>
+          <Text style={styles.paragraph}>{data.declaracionAlumno}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Compromiso del alumno</Text>
           <Text style={styles.paragraph}>{data.acuerdos}</Text>
         </View>
 

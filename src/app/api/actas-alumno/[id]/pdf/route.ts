@@ -11,7 +11,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { data: acta } = await supabase
     .from("actas_alumno")
     .select(
-      "id, fecha, hora, detalle, observaciones, acuerdos, firma_alumno_nombre, firma_alumno_data, firma_fecha_hora, usuarios!actas_alumno_psicologo_id_fkey(nombre), casos(alumnos(nombres, apellidos, codigo))",
+      "id, fecha, hora, detalle, observaciones, declaracion_alumno, acuerdos, firma_alumno_nombre, firma_alumno_data, firma_fecha_hora, usuarios!actas_alumno_psicologo_id_fkey(nombre), casos(alumnos(nombres, apellidos, codigo))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -28,6 +28,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     return new Response("Acta no encontrada", { status: 404 });
   }
 
+  if (!acta.firma_alumno_data || !acta.firma_alumno_nombre || !acta.firma_fecha_hora) {
+    return new Response("El acta aún no está firmada por el alumno.", { status: 400 });
+  }
+
   const data: ActaAlumnoPdfData = {
     alumnoNombre: `${alumno.nombres} ${alumno.apellidos}`,
     alumnoCodigo: alumno.codigo,
@@ -36,7 +40,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     psicologoNombre: psicologo?.nombre ?? "—",
     detalle: acta.detalle,
     observaciones: acta.observaciones,
-    acuerdos: acta.acuerdos,
+    declaracionAlumno: acta.declaracion_alumno ?? "—",
+    acuerdos: acta.acuerdos ?? "—",
     firmaAlumnoNombre: acta.firma_alumno_nombre,
     firmaAlumnoData: acta.firma_alumno_data,
     firmaFechaHora: acta.firma_fecha_hora,

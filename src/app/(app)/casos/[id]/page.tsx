@@ -44,7 +44,7 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
     supabase.from("citas_padres").select("id, fecha, hora, detalle, firmas(id, firmante_tipo, firmante_nombre, fecha_hora)").eq("caso_id", caso.id),
     supabase
       .from("actas_alumno")
-      .select("id, fecha, hora, detalle, firma_alumno_nombre, firma_fecha_hora")
+      .select("id, fecha, hora, detalle, declaracion_alumno, acuerdos, firma_alumno_nombre, firma_fecha_hora")
       .eq("caso_id", caso.id)
       .order("fecha", { ascending: false }),
     usuario.rol === "jefe_psicologia"
@@ -178,7 +178,9 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
             </div>
             <div className="flex flex-col gap-3 p-4">
               {actasAlumno && actasAlumno.length > 0 ? (
-                actasAlumno.map((a) => <ActaAlumnoResumen key={a.id} acta={a} />)
+                actasAlumno.map((a) => (
+                  <ActaAlumnoResumen key={a.id} acta={a} alumnoNombre={nombreAlumno(alumno)} />
+                ))
               ) : (
                 <p className="text-sm text-muted-foreground">
                   Sin actas de sesión individual registradas. A diferencia del acta con padres, aquí solo firma el

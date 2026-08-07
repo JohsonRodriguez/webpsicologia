@@ -11,42 +11,45 @@ export type Database = {
     Tables: {
       actas_alumno: {
         Row: {
-          acuerdos: string
+          acuerdos: string | null
           caso_id: string
           created_at: string
+          declaracion_alumno: string | null
           detalle: string
           fecha: string
-          firma_alumno_data: string
-          firma_alumno_nombre: string
-          firma_fecha_hora: string
+          firma_alumno_data: string | null
+          firma_alumno_nombre: string | null
+          firma_fecha_hora: string | null
           hora: string
           id: string
           observaciones: string
           psicologo_id: string
         }
         Insert: {
-          acuerdos: string
+          acuerdos?: string | null
           caso_id: string
           created_at?: string
+          declaracion_alumno?: string | null
           detalle: string
           fecha: string
-          firma_alumno_data: string
-          firma_alumno_nombre: string
-          firma_fecha_hora?: string
+          firma_alumno_data?: string | null
+          firma_alumno_nombre?: string | null
+          firma_fecha_hora?: string | null
           hora: string
           id?: string
           observaciones: string
           psicologo_id: string
         }
         Update: {
-          acuerdos?: string
+          acuerdos?: string | null
           caso_id?: string
           created_at?: string
+          declaracion_alumno?: string | null
           detalle?: string
           fecha?: string
-          firma_alumno_data?: string
-          firma_alumno_nombre?: string
-          firma_fecha_hora?: string
+          firma_alumno_data?: string | null
+          firma_alumno_nombre?: string | null
+          firma_fecha_hora?: string | null
           hora?: string
           id?: string
           observaciones?: string

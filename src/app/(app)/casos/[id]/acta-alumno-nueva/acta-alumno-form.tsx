@@ -1,14 +1,12 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { SignaturePad, type SignaturePadHandle } from "@/components/signature-pad";
 import { crearActaAlumno, type EstadoAccion } from "../../actions";
 
 const initialState: EstadoAccion = {};
@@ -26,24 +24,9 @@ export function ActaAlumnoForm({
   const router = useRouter();
   const [state, formAction, pending] = useActionState(crearActaAlumno, initialState);
 
-  const padAlumno = useRef<SignaturePadHandle>(null);
-  const inputFirmaAlumno = useRef<HTMLInputElement>(null);
-
   return (
-    <form
-      action={formAction}
-      onSubmit={(e) => {
-        if (padAlumno.current?.isEmpty()) {
-          e.preventDefault();
-          toast.error("Falta la firma del alumno.");
-          return;
-        }
-        if (inputFirmaAlumno.current) inputFirmaAlumno.current.value = padAlumno.current!.toDataURL();
-      }}
-      className="rounded-xl border border-border bg-card shadow-sm"
-    >
+    <form action={formAction} className="rounded-xl border border-border bg-card shadow-sm">
       <input type="hidden" name="caso_id" value={casoId} />
-      <input type="hidden" name="firma_alumno" ref={inputFirmaAlumno} />
 
       <div className="flex flex-col gap-5 p-5">
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
@@ -73,22 +56,11 @@ export function ActaAlumnoForm({
           <Label>Observaciones del psicólogo</Label>
           <Textarea name="observaciones" required />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Label>Acuerdos y compromisos del alumno</Label>
-          <Textarea name="acuerdos" required />
-        </div>
 
-        <fieldset className="rounded-lg border border-border p-4">
-          <legend className="px-1.5 text-sm font-bold text-primary">Firma del alumno</legend>
-          <div className="mx-auto flex max-w-sm flex-col gap-2">
-            <SignaturePad ref={padAlumno} label="Firma del alumno" />
-            <Input name="firma_alumno_nombre" required placeholder="Nombre de quien firma" />
-          </div>
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            Trazo simple en pantalla, sin certificado digital · se guarda con nombre y fecha/hora. A diferencia del
-            acta de reunión con padres, aquí solo firma el alumno.
-          </p>
-        </fieldset>
+        <p className="rounded-md bg-info-soft px-3 py-2.5 text-sm text-info">
+          Después de guardar, podrás pedirle al alumno que complete su declaración, su compromiso y su firma desde
+          una ventana aparte, sin ver este contenido.
+        </p>
 
         {state.error && (
           <p className="rounded-md bg-critical-soft px-3 py-2 text-sm text-critical">{state.error}</p>
@@ -100,7 +72,7 @@ export function ActaAlumnoForm({
         </Button>
         <Button type="submit" disabled={pending}>
           {pending ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-          Guardar acta firmada
+          Guardar acta
         </Button>
       </div>
     </form>

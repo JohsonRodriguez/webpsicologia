@@ -6,7 +6,7 @@ import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getAnioActivo } from "@/lib/queries";
 
-export type EstadoAccion = { error?: string };
+export type EstadoAccion = { error?: string; ok?: boolean };
 
 export async function crearCasoDirecto(_prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
   const usuario = await requireUsuario(["psicologo", "jefe_psicologia"]);
@@ -175,15 +175,9 @@ export async function crearActaAlumno(_prev: EstadoAccion, formData: FormData): 
   const hora = String(formData.get("hora") ?? "");
   const detalle = String(formData.get("detalle") ?? "").trim();
   const observaciones = String(formData.get("observaciones") ?? "").trim();
-  const acuerdos = String(formData.get("acuerdos") ?? "").trim();
-  const firmaAlumno = String(formData.get("firma_alumno") ?? "");
-  const firmaAlumnoNombre = String(formData.get("firma_alumno_nombre") ?? "").trim();
 
-  if (!fecha || !hora || !detalle || !observaciones || !acuerdos) {
+  if (!fecha || !hora || !detalle || !observaciones) {
     return { error: "Completa todos los campos del acta." };
-  }
-  if (!firmaAlumno || !firmaAlumnoNombre) {
-    return { error: "Falta la firma del alumno." };
   }
 
   const { error } = await supabase.from("actas_alumno").insert({
@@ -193,14 +187,68 @@ export async function crearActaAlumno(_prev: EstadoAccion, formData: FormData): 
     hora,
     detalle,
     observaciones,
-    acuerdos,
-    firma_alumno_nombre: firmaAlumnoNombre,
-    firma_alumno_data: firmaAlumno,
   });
 
   if (error) return { error: "No se pudo guardar el acta." };
 
   redirect(`/casos/${casoId}`);
+}
+
+export async function guardarActaAlumnoAlumno(
+  actaId: string,
+  _prev: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
+  await requireUsuario(["psicologo", "jefe_psicologia"]);
+  const supabase = await createClient();
+
+  const declaracion = String(formData.get("declaracion_alumno") ?? "").trim();
+  const compromiso = String(formData.get("acuerdos") ?? "").trim();
+  const firmaAlumno = String(formData.get("firma_alumno") ?? "");
+  const firmaAlumnoNombre = String(formData.get("firma_alumno_nombre") ?? "").trim();
+
+  if (!declaracion && !compromiso) {
+    return { error: "Escribe la declaración o el compromiso antes de guardar." };
+  }
+
+  const firmando = firmaAlumno || firmaAlumnoNombre;
+  if (firmando) {
+    if (!declaracion || !compromiso) {
+      return { error: "La declaración y el compromiso deben estar completos antes de firmar." };
+    }
+    if (!firmaAlumno || !firmaAlumnoNombre) {
+      return { error: "Falta la firma del alumno." };
+    }
+  }
+
+  const { data: actaAnterior } = await supabase
+    .from("actas_alumno")
+    .select("caso_id, firma_alumno_data")
+    .eq("id", actaId)
+    .maybeSingle();
+
+  if (!actaAnterior) return { error: "Acta no encontrada." };
+  if (actaAnterior.firma_alumno_data) return { error: "Esta acta ya fue firmada y no se puede modificar." };
+
+  const { error } = await supabase
+    .from("actas_alumno")
+    .update({
+      declaracion_alumno: declaracion || null,
+      acuerdos: compromiso || null,
+      ...(firmando
+        ? {
+            firma_alumno_nombre: firmaAlumnoNombre,
+            firma_alumno_data: firmaAlumno,
+            firma_fecha_hora: new Date().toISOString(),
+          }
+        : {}),
+    })
+    .eq("id", actaId);
+
+  if (error) return { error: "No se pudo guardar. Intenta nuevamente." };
+
+  revalidatePath(`/casos/${actaAnterior.caso_id}`);
+  return { ok: true };
 }
 
 export async function derivarCaso(casoId: string, nuevoPsicologoId: string, motivo: string) {
