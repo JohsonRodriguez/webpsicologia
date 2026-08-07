@@ -1,23 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  CalendarClock,
-  CalendarCheck2,
-  FileText,
-  MessagesSquare,
-  Plus,
-  Sparkles,
-  UserRound,
-} from "lucide-react";
+import { ArrowLeft, ArrowUpRight, CalendarClock, CalendarCheck2, FileText, Plus, UserRound } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { nombreAlumno } from "@/lib/queries";
 import { PillEstadoCaso } from "@/components/status-pills";
 import { Button } from "@/components/ui/button";
 import { InfoItem, SeccionCard, iniciales } from "@/components/detail-ui";
-import { NotaForm } from "./nota-form";
 import { CerrarCasoButton } from "./cerrar-caso-button";
 import { DerivarDialog } from "./derivar-dialog";
 import { ActaResumen } from "./acta-resumen";
@@ -52,12 +41,7 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
   const puedeGestionar = usuario.rol === "jefe_psicologia" || caso.psicologo_id === usuario.id;
   const abierto = caso.estado !== "cerrado";
 
-  const [{ data: notas }, { data: citas }, { data: actasAlumno }, { data: psicologos }] = await Promise.all([
-    supabase
-      .from("notas_seguimiento")
-      .select("id, fecha, contenido, usuarios(nombre)")
-      .eq("caso_id", caso.id)
-      .order("fecha", { ascending: true }),
+  const [{ data: citas }, { data: actasAlumno }, { data: psicologos }] = await Promise.all([
     supabase.from("citas_padres").select("id, fecha, hora, detalle, firmas(id, firmante_tipo, firmante_nombre, fecha_hora)").eq("caso_id", caso.id),
     supabase
       .from("actas_alumno")
@@ -119,130 +103,103 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.1fr]">
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-3.5 rounded-xl border border-border bg-card p-4.5 shadow-sm">
-            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-              <InfoItem icon={UserRound} label="Código de alumno">
-                <span className="font-mono">{alumno.codigo}</span>
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3.5 rounded-xl border border-border bg-card p-4.5 shadow-sm">
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+            <InfoItem icon={UserRound} label="Código de alumno">
+              <span className="font-mono">{alumno.codigo}</span>
+            </InfoItem>
+            <InfoItem icon={UserRound} label="Psicólogo actual">
+              {psicologo?.nombre ?? "—"}
+            </InfoItem>
+            {derivado && (
+              <InfoItem icon={UserRound} label="Psicólogo original">
+                {original?.nombre ?? "—"}
               </InfoItem>
-              <InfoItem icon={UserRound} label="Psicólogo actual">
-                {psicologo?.nombre ?? "—"}
+            )}
+            <InfoItem icon={CalendarClock} label="Apertura">
+              {new Date(caso.fecha_apertura).toLocaleDateString("es-PE", { dateStyle: "long" })}
+            </InfoItem>
+            {caso.fecha_cierre && (
+              <InfoItem icon={CalendarCheck2} label="Cierre">
+                {new Date(caso.fecha_cierre).toLocaleDateString("es-PE", { dateStyle: "long" })}
               </InfoItem>
-              {derivado && (
-                <InfoItem icon={UserRound} label="Psicólogo original">
-                  {original?.nombre ?? "—"}
-                </InfoItem>
-              )}
-              <InfoItem icon={CalendarClock} label="Apertura">
-                {new Date(caso.fecha_apertura).toLocaleDateString("es-PE", { dateStyle: "long" })}
-              </InfoItem>
-              {caso.fecha_cierre && (
-                <InfoItem icon={CalendarCheck2} label="Cierre">
-                  {new Date(caso.fecha_cierre).toLocaleDateString("es-PE", { dateStyle: "long" })}
-                </InfoItem>
-              )}
-            </div>
-            {caso.incidencia_id && (
+            )}
+          </div>
+          {caso.incidencia_id && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="self-start"
+              render={
+                <Link href={`/incidencias/${caso.incidencia_id}`}>
+                  <ArrowUpRight className="size-4" />
+                  Ver incidencia de origen
+                </Link>
+              }
+            />
+          )}
+        </div>
+
+        <SeccionCard
+          icon={FileText}
+          titulo="Actas de reunión con padres"
+          accion={
+            abierto &&
+            puedeGestionar && (
               <Button
-                variant="outline"
                 size="sm"
-                className="self-start"
                 render={
-                  <Link href={`/incidencias/${caso.incidencia_id}`}>
-                    <ArrowUpRight className="size-4" />
-                    Ver incidencia de origen
+                  <Link href={`/casos/${caso.id}/acta-nueva`}>
+                    <Plus className="size-4" />
+                    Registrar acta
                   </Link>
                 }
               />
-            )}
-          </div>
-
-          <SeccionCard
-            icon={FileText}
-            titulo="Actas de reunión con padres"
-            accion={
-              abierto &&
-              puedeGestionar && (
-                <Button
-                  size="sm"
-                  render={
-                    <Link href={`/casos/${caso.id}/acta-nueva`}>
-                      <Plus className="size-4" />
-                      Registrar acta
-                    </Link>
-                  }
-                />
-              )
-            }
-          >
-            <div className="flex flex-col gap-3">
-              {citas && citas.length > 0 ? (
-                citas.map((c) => <ActaResumen key={c.id} cita={c} />)
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Sin actas registradas. Las citas se agendan en SIANET; aquí se documenta el acta de la reunión.
-                </p>
-              )}
-            </div>
-          </SeccionCard>
-
-          <SeccionCard
-            icon={FileText}
-            titulo="Actas de sesión con el alumno"
-            accion={
-              abierto &&
-              puedeGestionar && (
-                <Button
-                  size="sm"
-                  render={
-                    <Link href={`/casos/${caso.id}/acta-alumno-nueva`}>
-                      <Plus className="size-4" />
-                      Registrar acta
-                    </Link>
-                  }
-                />
-              )
-            }
-          >
-            <div className="flex flex-col gap-3">
-              {actasAlumno && actasAlumno.length > 0 ? (
-                actasAlumno.map((a) => (
-                  <ActaAlumnoResumen key={a.id} acta={a} alumnoNombre={nombreAlumno(alumno)} />
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Sin actas de sesión individual registradas. A diferencia del acta con padres, aquí solo firma el
-                  alumno.
-                </p>
-              )}
-            </div>
-          </SeccionCard>
-        </div>
-
-        <SeccionCard icon={MessagesSquare} titulo="Notas de seguimiento">
-          <div className="flex flex-col">
-            {(notas ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sin notas todavía.</p>
+            )
+          }
+        >
+          <div className="flex flex-col gap-3">
+            {citas && citas.length > 0 ? (
+              citas.map((c) => <ActaResumen key={c.id} cita={c} />)
             ) : (
-              (notas ?? []).map((n, i, arr) => (
-                <div key={n.id} className="grid grid-cols-[24px_1fr] gap-x-3">
-                  <div className="flex flex-col items-center">
-                    <Sparkles className="mt-1 size-3 text-primary" />
-                    {i < arr.length - 1 && <div className="my-1 w-px flex-1 bg-border" />}
-                  </div>
-                  <div className="pb-4">
-                    <p className="text-xs text-muted-foreground">
-                      {(n.usuarios as unknown as { nombre: string } | null)?.nombre} ·{" "}
-                      {new Date(n.fecha).toLocaleString("es-PE", { dateStyle: "long", timeStyle: "short" })}
-                    </p>
-                    <div className="mt-1 rounded-lg bg-secondary px-3 py-2 text-sm">{n.contenido}</div>
-                  </div>
-                </div>
-              ))
+              <p className="text-sm text-muted-foreground">
+                Sin actas registradas. Las citas se agendan en SIANET; aquí se documenta el acta de la reunión.
+              </p>
             )}
           </div>
-          {abierto && puedeGestionar && <NotaForm casoId={caso.id} />}
+        </SeccionCard>
+
+        <SeccionCard
+          icon={FileText}
+          titulo="Actas de sesión con el alumno"
+          accion={
+            abierto &&
+            puedeGestionar && (
+              <Button
+                size="sm"
+                render={
+                  <Link href={`/casos/${caso.id}/acta-alumno-nueva`}>
+                    <Plus className="size-4" />
+                    Registrar acta
+                  </Link>
+                }
+              />
+            )
+          }
+        >
+          <div className="flex flex-col gap-3">
+            {actasAlumno && actasAlumno.length > 0 ? (
+              actasAlumno.map((a) => (
+                <ActaAlumnoResumen key={a.id} acta={a} alumnoNombre={nombreAlumno(alumno)} />
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Sin actas de sesión individual registradas. A diferencia del acta con padres, aquí solo firma el
+                alumno.
+              </p>
+            )}
+          </div>
         </SeccionCard>
       </div>
     </>

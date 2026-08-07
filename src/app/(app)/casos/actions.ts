@@ -86,20 +86,6 @@ export async function abrirCasoDesdeIncidencia(incidenciaId: string) {
   redirect(`/casos/${caso.id}`);
 }
 
-export async function agregarNota(casoId: string, contenido: string) {
-  const usuario = await requireUsuario(["psicologo", "jefe_psicologia"]);
-  if (!contenido.trim()) return { error: "Escribe una nota." };
-  const supabase = await createClient();
-
-  const { error } = await supabase
-    .from("notas_seguimiento")
-    .insert({ caso_id: casoId, autor_id: usuario.id, contenido: contenido.trim() });
-
-  if (error) return { error: "No se pudo agregar la nota." };
-  revalidatePath(`/casos/${casoId}`);
-  return {};
-}
-
 export async function cerrarCaso(casoId: string) {
   await requireUsuario(["psicologo", "jefe_psicologia"]);
   const supabase = await createClient();
