@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { GraduationCap, Bell, Menu, X } from "lucide-react";
+import { Bell, Menu, X } from "lucide-react";
 import { navFor } from "@/lib/nav";
 import type { UsuarioActual } from "@/lib/auth";
 import { type Rol, rolLabel } from "@/lib/roles";
@@ -49,9 +50,8 @@ export function AppShell({
         )}
       >
         <div className="flex items-center gap-2.5 px-2 pb-4 pt-1">
-          <div className="flex size-8.5 flex-none items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <GraduationCap className="size-4.5" />
-          </div>
+          <Image src="/insignia.png" alt="" width={68} height={70} className="size-8.5 flex-none object-contain" />
+
           <div className="leading-tight">
             <p className="font-heading text-sm font-semibold text-sidebar-foreground">Departamento Psicopedagógico</p>
             <p className="text-[11px] text-sidebar-foreground/60">Colegio Lord Byron</p>
