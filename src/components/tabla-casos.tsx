@@ -13,17 +13,20 @@ export type CasoFila = {
   psicologo_original_id: string | null;
   alumnos: { nombres: string; apellidos: string } | null;
   usuarios: { nombre: string } | null;
+  docenteNombre?: string | null;
 };
 
 export function TablaCasos({
   casos,
   matriculas,
   mostrarPsicologo = false,
+  mostrarDocente = false,
   baseHref = "/casos",
 }: {
   casos: CasoFila[];
   matriculas: Map<string, MatriculaInfo>;
   mostrarPsicologo?: boolean;
+  mostrarDocente?: boolean;
   baseHref?: string;
 }) {
   if (casos.length === 0) {
@@ -41,6 +44,7 @@ export function TablaCasos({
           <TableRow>
             <TableHead>Alumno</TableHead>
             <TableHead>Origen</TableHead>
+            {mostrarDocente && <TableHead>Docente</TableHead>}
             {mostrarPsicologo && <TableHead>Psicólogo</TableHead>}
             <TableHead>Apertura</TableHead>
             <TableHead>Estado</TableHead>
@@ -61,6 +65,9 @@ export function TablaCasos({
                     {c.tipo === "caso_1" ? "Desde incidencia" : "Caso directo"}
                   </span>
                 </TableCell>
+                {mostrarDocente && (
+                  <TableCell className="text-muted-foreground">{c.docenteNombre ?? "—"}</TableCell>
+                )}
                 {mostrarPsicologo && (
                   <TableCell className="text-muted-foreground">
                     {c.usuarios?.nombre ?? "—"}

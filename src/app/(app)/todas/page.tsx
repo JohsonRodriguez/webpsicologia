@@ -23,26 +23,44 @@ const ESTADOS_INC = [
 export default async function TodasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; q?: string; estado?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string; estado?: string; docente?: string }>;
 }) {
   await requireUsuario(["jefe_psicologia"]);
-  const { tab = "incidencias", q, estado } = await searchParams;
+  const { tab = "incidencias", q, estado, docente } = await searchParams;
   const supabase = await createClient();
   const matriculas = await getMatriculasPorAlumno(supabase);
+
+  const { data: profesores } = await supabase
+    .from("usuarios")
+    .select("id, nombre")
+    .eq("rol", "profesor")
+    .eq("activo", true)
+    .order("nombre");
 
   let incidencias: IncidenciaFila[] = [];
   let casos: CasoFila[] = [];
 
   if (tab === "casos") {
-    let query = supabase
-      .from("casos")
-      .select(
-        "id, alumno_id, tipo, estado, fecha_apertura, psicologo_id, psicologo_original_id, alumnos(nombres, apellidos), usuarios!casos_psicologo_id_fkey(nombre)",
-      )
-      .order("fecha_apertura", { ascending: false });
+    const camposBase =
+      "id, alumno_id, tipo, estado, fecha_apertura, psicologo_id, psicologo_original_id, alumnos(nombres, apellidos), usuarios!casos_psicologo_id_fkey(nombre)";
+
+    let query = docente
+      ? supabase
+          .from("casos")
+          .select(`${camposBase}, incidencias!inner(profesor_id, usuarios!incidencias_profesor_id_fkey(nombre))`)
+          .eq("incidencias.profesor_id", docente)
+      : supabase
+          .from("casos")
+          .select(`${camposBase}, incidencias(profesor_id, usuarios!incidencias_profesor_id_fkey(nombre))`);
+
+    query = query.order("fecha_apertura", { ascending: false });
     if (estado) query = query.eq("estado", estado);
     const { data } = await query;
-    casos = (data ?? []) as unknown as CasoFila[];
+
+    casos = (data ?? []).map((c) => {
+      const inc = c.incidencias as unknown as { usuarios: { nombre: string } | null } | null;
+      return { ...c, docenteNombre: inc?.usuarios?.nombre ?? null } as CasoFila;
+    });
     if (q) {
       const needle = q.toLowerCase();
       casos = casos.filter((c) => `${c.alumnos?.nombres ?? ""} ${c.alumnos?.apellidos ?? ""}`.toLowerCase().includes(needle));
@@ -55,6 +73,7 @@ export default async function TodasPage({
       )
       .order("fecha_hora", { ascending: false });
     if (estado) query = query.eq("estado", estado);
+    if (docente) query = query.eq("profesor_id", docente);
     const { data } = await query;
     incidencias = (data ?? []) as unknown as IncidenciaFila[];
     if (q) {
@@ -93,10 +112,16 @@ export default async function TodasPage({
               placeholder: "Todos los estados",
               options: tab === "casos" ? ESTADOS_CASO : ESTADOS_INC,
             },
+            {
+              name: "docente",
+              value: docente,
+              placeholder: "Todos los docentes",
+              options: (profesores ?? []).map((p) => ({ value: p.id, label: p.nombre })),
+            },
           ]}
         />
         {tab === "casos" ? (
-          <TablaCasos casos={casos} matriculas={matriculas} mostrarPsicologo baseHref="/casos" />
+          <TablaCasos casos={casos} matriculas={matriculas} mostrarPsicologo mostrarDocente baseHref="/casos" />
         ) : (
           <TablaIncidencias incidencias={incidencias} matriculas={matriculas} mostrarProfesor baseHref="/incidencias" />
         )}
