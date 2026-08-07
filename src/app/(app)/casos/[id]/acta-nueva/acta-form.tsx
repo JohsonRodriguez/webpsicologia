@@ -18,10 +18,12 @@ export function ActaForm({
   casoId,
   alumnoNombre,
   psicologoNombre,
+  motivoSugerido,
 }: {
   casoId: string;
   alumnoNombre: string;
   psicologoNombre: string;
+  motivoSugerido?: string;
 }) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(crearActaFirmada, initialState);
@@ -75,7 +77,18 @@ export function ActaForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <Label>Detalle de la reunión</Label>
-          <Textarea name="detalle" required placeholder="Contexto y motivo de la reunión" />
+          <Textarea
+            name="detalle"
+            required
+            placeholder="Contexto y motivo de la reunión"
+            defaultValue={motivoSugerido}
+            className={motivoSugerido ? "min-h-32" : undefined}
+          />
+          {motivoSugerido && (
+            <p className="text-xs text-muted-foreground">
+              Se completó automáticamente con los datos de la incidencia de origen. Puedes editarlo.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">

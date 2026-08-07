@@ -16,10 +16,12 @@ export function ActaAlumnoForm({
   casoId,
   alumnoNombre,
   psicologoNombre,
+  motivoSugerido,
 }: {
   casoId: string;
   alumnoNombre: string;
   psicologoNombre: string;
+  motivoSugerido?: string;
 }) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(crearActaAlumno, initialState);
@@ -50,7 +52,18 @@ export function ActaAlumnoForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <Label>Motivo de la sesión</Label>
-          <Textarea name="detalle" required placeholder="¿Sobre qué trató la sesión?" />
+          <Textarea
+            name="detalle"
+            required
+            placeholder="¿Sobre qué trató la sesión?"
+            defaultValue={motivoSugerido}
+            className={motivoSugerido ? "min-h-32" : undefined}
+          />
+          {motivoSugerido && (
+            <p className="text-xs text-muted-foreground">
+              Se completó automáticamente con los datos de la incidencia de origen. Puedes editarlo.
+            </p>
+          )}
         </div>
         <div className="flex flex-col gap-1.5">
           <Label>Observaciones del psicólogo</Label>

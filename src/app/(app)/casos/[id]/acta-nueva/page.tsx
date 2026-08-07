@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { nombreAlumno } from "@/lib/queries";
+import { construirMotivoDesdeIncidencia } from "@/lib/resumen-incidencia";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -15,12 +16,35 @@ export default async function ActaNuevaPage({ params }: { params: Promise<{ id: 
 
   const { data: caso } = await supabase
     .from("casos")
-    .select("id, alumnos(nombres, apellidos)")
+    .select("id, incidencia_id, alumnos(nombres, apellidos)")
     .eq("id", id)
     .maybeSingle();
 
   if (!caso) notFound();
   const alumno = caso.alumnos as unknown as { nombres: string; apellidos: string };
+
+  let motivoSugerido: string | undefined;
+  if (caso.incidencia_id) {
+    const { data: inc } = await supabase
+      .from("incidencias")
+      .select(
+        "fecha_hora, descripcion, acciones_tomadas, involucrados, prioridad, motivo_otro, catalogo_motivos(nombre), usuarios!incidencias_profesor_id_fkey(nombre)",
+      )
+      .eq("id", caso.incidencia_id)
+      .maybeSingle();
+
+    if (inc) {
+      motivoSugerido = construirMotivoDesdeIncidencia({
+        fechaHora: inc.fecha_hora,
+        profesorNombre: (inc.usuarios as unknown as { nombre: string } | null)?.nombre ?? "—",
+        motivo: inc.motivo_otro || (inc.catalogo_motivos as unknown as { nombre: string } | null)?.nombre || "—",
+        prioridad: inc.prioridad,
+        descripcion: inc.descripcion,
+        accionesTomadas: inc.acciones_tomadas,
+        involucrados: inc.involucrados,
+      });
+    }
+  }
 
   return (
     <>
@@ -40,7 +64,12 @@ export default async function ActaNuevaPage({ params }: { params: Promise<{ id: 
         title="Registrar acta de reunión"
         description="La cita se agenda en SIANET; aquí se documenta el acta con firmas en pantalla."
       />
-      <ActaForm casoId={id} alumnoNombre={nombreAlumno(alumno)} psicologoNombre={usuario.nombre} />
+      <ActaForm
+        casoId={id}
+        alumnoNombre={nombreAlumno(alumno)}
+        psicologoNombre={usuario.nombre}
+        motivoSugerido={motivoSugerido}
+      />
     </>
   );
 }
