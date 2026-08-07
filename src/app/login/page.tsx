@@ -34,7 +34,7 @@ function HeroPanel() {
         alt="Colegio Lord Byron"
         width={220}
         height={128}
-        className="h-28 w-auto flex-none"
+        className="h-[123px] w-[173px] flex-none"
         priority
       />
 
