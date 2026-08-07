@@ -1,4 +1,5 @@
-import { Download, PenLine } from "lucide-react";
+import { PenLine } from "lucide-react";
+import { PdfDownloadLink } from "@/components/pdf-download-link";
 
 type Firma = { id: string; firmante_tipo: string; firmante_nombre: string; fecha_hora: string };
 type Cita = { id: string; fecha: string; hora: string; detalle: string; firmas: Firma[] };
@@ -22,15 +23,7 @@ export function ActaResumen({ cita }: { cita: Cita }) {
           >
             {firmada ? "Firmada" : "Pendiente de firma"}
           </span>
-          {firmada && (
-            <a
-              href={`/api/citas/${cita.id}/pdf`}
-              className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
-            >
-              <Download className="size-3.5" />
-              PDF
-            </a>
-          )}
+          {firmada && <PdfDownloadLink href={`/api/citas/${cita.id}/pdf`} />}
         </div>
       </div>
       <p className="text-sm text-muted-foreground">{cita.detalle}</p>

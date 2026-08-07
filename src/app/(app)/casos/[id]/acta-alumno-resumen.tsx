@@ -1,4 +1,5 @@
-import { Download, PenLine } from "lucide-react";
+import { PenLine } from "lucide-react";
+import { PdfDownloadLink } from "@/components/pdf-download-link";
 
 type ActaAlumno = {
   id: string;
@@ -20,13 +21,7 @@ export function ActaAlumnoResumen({ acta }: { acta: ActaAlumno }) {
           <span className="inline-flex items-center rounded-full bg-good px-2.5 py-1 text-xs font-bold text-white">
             Firmada
           </span>
-          <a
-            href={`/api/actas-alumno/${acta.id}/pdf`}
-            className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
-          >
-            <Download className="size-3.5" />
-            PDF
-          </a>
+          <PdfDownloadLink href={`/api/actas-alumno/${acta.id}/pdf`} />
         </div>
       </div>
       <p className="text-sm text-muted-foreground">{acta.detalle}</p>

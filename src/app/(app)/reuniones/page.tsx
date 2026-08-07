@@ -1,10 +1,10 @@
-import { Download } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { nombreAlumno } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ClickableRow } from "@/components/clickable-row";
+import { PdfDownloadLink } from "@/components/pdf-download-link";
 
 export default async function ReunionesPage() {
   const usuario = await requireUsuario(["psicologo", "jefe_psicologia"]);
@@ -87,18 +87,7 @@ export default async function ReunionesPage() {
                         {firmada ? "Firmada" : "Pendiente de firma"}
                       </span>
                     </TableCell>
-                    <TableCell>
-                      {firmada && (
-                        <a
-                          href={`/api/citas/${r.id}/pdf`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex w-fit items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        >
-                          <Download className="size-3.5" />
-                          PDF
-                        </a>
-                      )}
-                    </TableCell>
+                    <TableCell>{firmada && <PdfDownloadLink href={`/api/citas/${r.id}/pdf`} />}</TableCell>
                   </ClickableRow>
                 );
               })}
