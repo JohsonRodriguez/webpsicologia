@@ -175,7 +175,7 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
               </InfoItem>
             )}
           </div>
-          {caso.incidencia_id && (
+          {abierto && caso.incidencia_id && (
             <Button
               variant="outline"
               size="sm"
