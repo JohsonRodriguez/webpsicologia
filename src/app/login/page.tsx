@@ -52,7 +52,7 @@ function HeroPanel() {
           <Feature icon={Users}>Acceso según tu función</Feature>
           <Feature icon={HeartHandshake}>Acompañamiento conectado</Feature>
         </ul>
-        <blockquote className="mt-[30px] w-[65%] min-w-[280px] border-t border-[#d8c99e] pt-7 text-[22px] font-medium italic">
+        <blockquote className="mt-[30px] w-full border-t border-[#d8c99e] pt-7 text-[22px] font-medium whitespace-nowrap italic">
           &ldquo;El bienestar también forma parte del aprendizaje.&rdquo;
         </blockquote>
       </div>
@@ -138,7 +138,7 @@ function FormPanel() {
 
         <div className="flex justify-between border-t border-[#dedfd8] pt-6">
           <BottomFeature icon={ShieldCheck} title="Seguridad" subtitle="Tus datos protegidos" />
-          <BottomFeature icon={HeartHandshake} title="Acompañamiento" subtitle="Para tu bienestar" />
+          <BottomFeature icon={HeartHandshake} title="Acompañamiento" subtitle="al estudiante" />
           <BottomFeature icon={Users} title="Trazabilidad" subtitle="Acceso por rol" />
         </div>
       </div>
