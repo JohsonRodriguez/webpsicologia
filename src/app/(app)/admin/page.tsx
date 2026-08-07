@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { GraduationCap, Users, FolderOpen, TriangleAlert, UserCog, ChartPie, Layers } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getAnioActivo, getMatriculasPorAlumno } from "@/lib/queries";
@@ -5,12 +7,55 @@ import { rolLabel } from "@/lib/roles";
 import type { Rol } from "@/lib/roles";
 import { PageHeader } from "@/components/page-header";
 import { BarChart } from "@/components/charts";
+import { Button } from "@/components/ui/button";
 
-function StatTile({ label, value }: { label: string; value: number }) {
+const TONO: Record<string, string> = {
+  primary: "bg-primary/10 text-primary",
+  warn: "bg-warn-soft text-warn",
+  good: "bg-good-soft text-good",
+  critical: "bg-critical-soft text-critical",
+};
+
+function StatTile({
+  label,
+  value,
+  icon: Icon,
+  tono,
+}: {
+  label: string;
+  value: number;
+  icon: React.ComponentType<{ className?: string }>;
+  tono: keyof typeof TONO;
+}) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{label}</p>
-      <p className="font-heading text-3xl">{value}</p>
+    <div className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 shadow-sm">
+      <div className={`flex size-11 flex-none items-center justify-center rounded-lg ${TONO[tono]}`}>
+        <Icon className="size-5" />
+      </div>
+      <div>
+        <p className="font-heading text-2xl leading-none font-bold">{value}</p>
+        <p className="mt-1 text-xs font-medium text-muted-foreground">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function CardChart({
+  icon: Icon,
+  titulo,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  titulo: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card shadow-sm">
+      <div className="flex items-center gap-2 border-b border-border p-4 text-primary">
+        <Icon className="size-4" />
+        <h3 className="font-heading text-base font-semibold text-foreground">{titulo}</h3>
+      </div>
+      <div className="p-4">{children}</div>
     </div>
   );
 }
@@ -51,30 +96,31 @@ export default async function AdminDashboardPage() {
         eyebrow="Administración"
         title="Dashboard general del colegio"
         description="Vista agregada con permisos administrativos (equivalente a service role, solo en el servidor)."
+        actions={
+          <Button
+            variant="outline"
+            render={
+              <Link href="/admin/usuarios">
+                <UserCog className="size-4" />
+                Gestionar usuarios
+              </Link>
+            }
+          />
+        }
       />
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-        <StatTile label="Alumnos matriculados" value={matriculas?.length ?? 0} />
-        <StatTile label="Usuarios activos" value={(usuarios ?? []).filter((u) => u.activo).length} />
-        <StatTile label="Casos abiertos" value={(casos ?? []).filter((c) => c.estado !== "cerrado").length} />
-        <StatTile label={`Incidencias ${anioNum}`} value={incidenciasEsteAnio} />
+        <StatTile label="Alumnos matriculados" value={matriculas?.length ?? 0} icon={GraduationCap} tono="primary" />
+        <StatTile label="Usuarios activos" value={(usuarios ?? []).filter((u) => u.activo).length} icon={Users} tono="good" />
+        <StatTile label="Casos abiertos" value={(casos ?? []).filter((c) => c.estado !== "cerrado").length} icon={FolderOpen} tono="warn" />
+        <StatTile label={`Incidencias ${anioNum}`} value={incidenciasEsteAnio} icon={TriangleAlert} tono="critical" />
       </div>
       <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
-        <div className="rounded-xl border border-border bg-card shadow-sm">
-          <div className="border-b border-border p-4">
-            <h3 className="font-heading text-base font-semibold">Usuarios por rol</h3>
-          </div>
-          <div className="p-4">
-            <BarChart data={porRol} />
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-card shadow-sm">
-          <div className="border-b border-border p-4">
-            <h3 className="font-heading text-base font-semibold">Alumnos por nivel</h3>
-          </div>
-          <div className="p-4">
-            <BarChart data={porNivel} />
-          </div>
-        </div>
+        <CardChart icon={ChartPie} titulo="Usuarios por rol">
+          <BarChart data={porRol} />
+        </CardChart>
+        <CardChart icon={Layers} titulo="Alumnos por nivel">
+          <BarChart data={porNivel} />
+        </CardChart>
       </div>
     </>
   );
