@@ -53,7 +53,7 @@ export function AppShell({
             <GraduationCap className="size-4.5" />
           </div>
           <div className="leading-tight">
-            <p className="font-heading text-sm font-semibold text-sidebar-foreground">Psicología Escolar</p>
+            <p className="font-heading text-sm font-semibold text-sidebar-foreground">Departamento Psicopedagógico</p>
             <p className="text-[11px] text-sidebar-foreground/60">Colegio Lord Byron</p>
           </div>
         </div>

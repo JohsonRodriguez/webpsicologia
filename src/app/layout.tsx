@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Psicología Escolar — Colegio Lord Byron",
-  description: "Gestión de casos, incidencias y citas del área de psicología escolar.",
+  title: "Departamento Psicopedagógico — Colegio Lord Byron",
+  description: "Gestión de casos, incidencias y citas del Departamento Psicopedagógico.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

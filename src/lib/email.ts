@@ -31,7 +31,7 @@ function wrapper(title: string, bodyHtml: string) {
   return `
     <div style="font-family: Poppins, -apple-system, Segoe UI, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; color: #1a2b23;">
       <p style="font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #166c52; margin: 0 0 8px;">
-        Psicología Escolar · Colegio Lord Byron
+        Departamento Psicopedagógico · Colegio Lord Byron
       </p>
       <h1 style="font-size: 19px; margin: 0 0 16px;">${title}</h1>
       ${bodyHtml}

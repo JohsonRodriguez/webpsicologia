@@ -1,11 +1,14 @@
 import { Document, Page, Text, View, Image, StyleSheet, Font } from "@react-pdf/renderer";
 import { ParrafoConEnfasis } from "./parrafo-enfasis";
+import { logoDataUrl } from "./logo";
 
 // Evita que @react-pdf/renderer corte palabras a la mitad al ajustar el texto.
 Font.registerHyphenationCallback((word) => [word]);
 
 const styles = StyleSheet.create({
   page: { padding: 44, fontSize: 10, fontFamily: "Helvetica", color: "#1a2b23" },
+  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  logo: { width: 64, height: 31.5, objectFit: "contain" },
   eyebrow: { fontSize: 8, fontWeight: 700, letterSpacing: 1, color: "#166c52", marginBottom: 4 },
   title: { fontSize: 18, fontFamily: "Helvetica-Bold", marginBottom: 2 },
   subtitle: { fontSize: 10, color: "#5e6c72", marginBottom: 18 },
@@ -69,11 +72,16 @@ export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
   return (
     <Document title={`Acta de reunión — ${data.alumnoNombre}`}>
       <Page size="A4" style={styles.page}>
-        <Text style={styles.eyebrow}>PSICOLOGÍA ESCOLAR · COLEGIO LORD BYRON</Text>
-        <Text style={styles.title}>Acta de reunión con padres de familia</Text>
-        <Text style={styles.subtitle}>
-          {data.alumnoNombre} · {data.alumnoCodigo}
-        </Text>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.eyebrow}>DEPARTAMENTO PSICOPEDAGÓGICO · COLEGIO LORD BYRON</Text>
+            <Text style={styles.title}>Acta de reunión con padres de familia</Text>
+            <Text style={styles.subtitle}>
+              {data.alumnoNombre} · {data.alumnoCodigo}
+            </Text>
+          </View>
+          <Image src={logoDataUrl} style={styles.logo} />
+        </View>
 
         <View style={styles.row}>
           <View style={styles.field}>
