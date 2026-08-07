@@ -1,4 +1,4 @@
-import { PenLine } from "lucide-react";
+import { Download, PenLine } from "lucide-react";
 
 type Firma = { id: string; firmante_tipo: string; firmante_nombre: string; fecha_hora: string };
 type Cita = { id: string; fecha: string; hora: string; detalle: string; firmas: Firma[] };
@@ -8,19 +8,30 @@ export function ActaResumen({ cita }: { cita: Cita }) {
 
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border p-3.5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <strong className="tabular-nums text-sm">
           {new Date(cita.fecha + "T00:00:00").toLocaleDateString("es-PE", { dateStyle: "long" })} · {cita.hora}
         </strong>
-        <span
-          className={
-            firmada
-              ? "inline-flex items-center rounded-full bg-good px-2.5 py-1 text-xs font-bold text-white"
-              : "inline-flex items-center rounded-full bg-warn px-2.5 py-1 text-xs font-bold text-white"
-          }
-        >
-          {firmada ? "Firmada" : "Pendiente de firma"}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className={
+              firmada
+                ? "inline-flex items-center rounded-full bg-good px-2.5 py-1 text-xs font-bold text-white"
+                : "inline-flex items-center rounded-full bg-warn px-2.5 py-1 text-xs font-bold text-white"
+            }
+          >
+            {firmada ? "Firmada" : "Pendiente de firma"}
+          </span>
+          {firmada && (
+            <a
+              href={`/api/citas/${cita.id}/pdf`}
+              className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
+            >
+              <Download className="size-3.5" />
+              PDF
+            </a>
+          )}
+        </div>
       </div>
       <p className="text-sm text-muted-foreground">{cita.detalle}</p>
       {cita.firmas.length > 0 && (

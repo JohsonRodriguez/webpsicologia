@@ -43,3 +43,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# copias sueltas de assets fuente en la raíz (la versión usada vive en /public)
+/insignia.png
+/logo.png
+/LordByronSchool_logo_2020_fondo_verde.png
