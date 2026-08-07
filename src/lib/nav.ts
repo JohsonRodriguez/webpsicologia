@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Settings,
   CalendarClock,
+  PenLine,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -42,6 +43,7 @@ export function navFor(rol: Rol): NavGroup[] {
         { href: "/reuniones", label: "Reuniones con padres", icon: CalendarClock },
         { href: "/alumnos", label: "Alumnos de mi nivel", icon: Users },
         { href: "/notificaciones", label: "Notificaciones", icon: Bell },
+        { href: "/mi-firma", label: "Mi firma", icon: PenLine },
       ],
     });
   }

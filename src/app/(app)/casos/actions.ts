@@ -111,16 +111,14 @@ export async function crearActaFirmada(_prev: EstadoAccion, formData: FormData):
   const detalle = String(formData.get("detalle") ?? "").trim();
   const acuerdosPsicologo = String(formData.get("acuerdos_psicologo") ?? "").trim();
   const compromisosPadre = String(formData.get("compromisos_padre") ?? "").trim();
-  const firmaPsicologo = String(formData.get("firma_psicologo") ?? "");
-  const firmaPsicologoNombre = String(formData.get("firma_psicologo_nombre") ?? "").trim();
   const firmaPadre = String(formData.get("firma_padre") ?? "");
   const firmaPadreNombre = String(formData.get("firma_padre_nombre") ?? "").trim();
 
   if (!fecha || !hora || !asistentes || !detalle || !acuerdosPsicologo || !compromisosPadre) {
     return { error: "Completa todos los campos del acta." };
   }
-  if (!firmaPsicologo || !firmaPsicologoNombre || !firmaPadre || !firmaPadreNombre) {
-    return { error: "Faltan firmas: ambas partes deben firmar en pantalla." };
+  if (!firmaPadre || !firmaPadreNombre) {
+    return { error: "Falta la firma del padre / madre / apoderado." };
   }
 
   const { data: cita, error } = await supabase
@@ -140,10 +138,22 @@ export async function crearActaFirmada(_prev: EstadoAccion, formData: FormData):
 
   if (error || !cita) return { error: "No se pudo guardar el acta." };
 
-  await supabase.from("firmas").insert([
-    { cita_id: cita.id, firmante_tipo: "psicologo", firmante_nombre: firmaPsicologoNombre, firma_data: firmaPsicologo },
-    { cita_id: cita.id, firmante_tipo: "padre", firmante_nombre: firmaPadreNombre, firma_data: firmaPadre },
-  ]);
+  const { data: perfil } = await supabase
+    .from("usuarios")
+    .select("firma_guardada")
+    .eq("id", usuario.id)
+    .maybeSingle();
+
+  const firmas = [{ cita_id: cita.id, firmante_tipo: "padre", firmante_nombre: firmaPadreNombre, firma_data: firmaPadre }];
+  if (perfil?.firma_guardada) {
+    firmas.push({
+      cita_id: cita.id,
+      firmante_tipo: "psicologo",
+      firmante_nombre: usuario.nombre,
+      firma_data: perfil.firma_guardada,
+    });
+  }
+  await supabase.from("firmas").insert(firmas);
 
   redirect(`/casos/${casoId}`);
 }

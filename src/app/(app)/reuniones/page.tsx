@@ -33,10 +33,10 @@ export default async function ReunionesPage() {
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
         <StatTile label="Total" value={reuniones.length} />
         <StatTile label="Próximas o de hoy" value={proximas} />
-        <StatTile label="Firmadas" value={reuniones.filter((r) => (r.firmas?.length ?? 0) >= 2).length} />
+        <StatTile label="Firmadas" value={reuniones.filter((r) => (r.firmas?.length ?? 0) >= 1).length} />
         <StatTile
           label="Pendientes de firma"
-          value={reuniones.filter((r) => (r.firmas?.length ?? 0) < 2).length}
+          value={reuniones.filter((r) => (r.firmas?.length ?? 0) < 1).length}
         />
       </div>
 
@@ -62,7 +62,7 @@ export default async function ReunionesPage() {
                   alumno_id: string;
                   alumnos: { nombres: string; apellidos: string } | null;
                 };
-                const firmada = (r.firmas?.length ?? 0) >= 2;
+                const firmada = (r.firmas?.length ?? 0) >= 1;
                 return (
                   <ClickableRow key={r.id} href={`/casos/${r.caso_id}`}>
                     <TableCell className="font-semibold">

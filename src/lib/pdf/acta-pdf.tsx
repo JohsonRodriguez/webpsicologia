@@ -120,9 +120,9 @@ export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
         <View style={styles.signaturesRow}>
           <View style={styles.signatureBox}>
             {firmaPsicologo && <Image src={firmaPsicologo.firmaData} style={styles.signatureImg} />}
-            <Text style={styles.signatureName}>{firmaPsicologo?.firmanteNombre ?? "—"}</Text>
+            <Text style={styles.signatureName}>{data.psicologoNombre}</Text>
             <Text style={styles.signatureMeta}>
-              Psicólogo · {firmaPsicologo ? new Date(firmaPsicologo.fechaHora).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" }) : "—"}
+              Psicólogo · {firmaPsicologo ? new Date(firmaPsicologo.fechaHora).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" }) : "Firma no registrada"}
             </Text>
           </View>
           <View style={styles.signatureBox}>

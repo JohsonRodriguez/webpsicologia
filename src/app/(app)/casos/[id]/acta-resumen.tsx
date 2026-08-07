@@ -6,7 +6,7 @@ type Firma = { id: string; firmante_tipo: string; firmante_nombre: string; fecha
 type Cita = { id: string; fecha: string; hora: string; detalle: string; firmas: Firma[] };
 
 export function ActaResumen({ cita }: { cita: Cita }) {
-  const firmada = cita.firmas.length >= 2;
+  const firmada = cita.firmas.length >= 1;
 
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border p-3.5">

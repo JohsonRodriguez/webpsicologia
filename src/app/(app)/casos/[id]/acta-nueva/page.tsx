@@ -23,6 +23,12 @@ export default async function ActaNuevaPage({ params }: { params: Promise<{ id: 
   if (!caso) notFound();
   const alumno = caso.alumnos as unknown as { nombres: string; apellidos: string };
 
+  const { data: perfil } = await supabase
+    .from("usuarios")
+    .select("firma_guardada")
+    .eq("id", usuario.id)
+    .maybeSingle();
+
   let motivoSugerido: string | undefined;
   if (caso.incidencia_id) {
     const { data: inc } = await supabase
@@ -69,6 +75,7 @@ export default async function ActaNuevaPage({ params }: { params: Promise<{ id: 
         alumnoNombre={nombreAlumno(alumno)}
         psicologoNombre={usuario.nombre}
         motivoSugerido={motivoSugerido}
+        tieneFirmaGuardada={Boolean(perfil?.firma_guardada)}
       />
     </>
   );

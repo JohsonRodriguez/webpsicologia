@@ -611,6 +611,7 @@ export type Database = {
           activo: boolean
           created_at: string
           email: string
+          firma_guardada: string | null
           id: string
           nombre: string
           rol: string | null
@@ -619,6 +620,7 @@ export type Database = {
           activo?: boolean
           created_at?: string
           email: string
+          firma_guardada?: string | null
           id: string
           nombre: string
           rol?: string | null
@@ -627,6 +629,7 @@ export type Database = {
           activo?: boolean
           created_at?: string
           email?: string
+          firma_guardada?: string | null
           id?: string
           nombre?: string
           rol?: string | null
