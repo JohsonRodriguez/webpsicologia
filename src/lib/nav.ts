@@ -14,6 +14,7 @@ import {
   Layers,
   RefreshCw,
   Settings,
+  CalendarClock,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -38,6 +39,7 @@ export function navFor(rol: Rol): NavGroup[] {
       items: [
         { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
         { href: "/casos", label: "Mis casos e incidencias", icon: FolderOpen },
+        { href: "/reuniones", label: "Reuniones con padres", icon: CalendarClock },
         { href: "/alumnos", label: "Alumnos de mi nivel", icon: Users },
         { href: "/notificaciones", label: "Notificaciones", icon: Bell },
       ],
