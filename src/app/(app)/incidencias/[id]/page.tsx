@@ -12,6 +12,10 @@ import {
   ShieldCheck,
   Users,
   FolderOpen,
+  Paperclip,
+  Download,
+  Eye,
+  FileText,
 } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -50,6 +54,15 @@ function InfoItem({
       </div>
     </div>
   );
+}
+
+function nombreOriginal(archivoUrl: string) {
+  const parte = archivoUrl.split("/").pop() ?? archivoUrl;
+  return parte.replace(/^\d+-/, "");
+}
+
+function esImagen(nombre: string) {
+  return /\.(png|jpe?g|webp|gif)$/i.test(nombre);
 }
 
 function BloqueTexto({
@@ -103,6 +116,28 @@ export default async function IncidenciaDetallePage({
     .select("id, estado, psicologo_id, usuarios!casos_psicologo_id_fkey(nombre)")
     .eq("incidencia_id", inc.id)
     .maybeSingle();
+
+  const { data: evidenciasRaw } = await supabase
+    .from("evidencias")
+    .select("id, archivo_url")
+    .eq("incidencia_id", inc.id);
+
+  const evidencias = await Promise.all(
+    (evidenciasRaw ?? []).map(async (e) => {
+      const nombre = nombreOriginal(e.archivo_url);
+      const [{ data: urlVista }, { data: urlDescarga }] = await Promise.all([
+        supabase.storage.from("evidencias").createSignedUrl(e.archivo_url, 60 * 15),
+        supabase.storage.from("evidencias").createSignedUrl(e.archivo_url, 60 * 15, { download: nombre }),
+      ]);
+      return {
+        id: e.id,
+        nombre,
+        esImagen: esImagen(nombre),
+        urlVista: urlVista?.signedUrl ?? null,
+        urlDescarga: urlDescarga?.signedUrl ?? null,
+      };
+    }),
+  );
 
   const puedeGestionar = usuario.rol === "psicologo" || usuario.rol === "jefe_psicologia";
 
@@ -170,6 +205,82 @@ export default async function IncidenciaDetallePage({
             <BloqueTexto icon={Users} titulo="Personas involucradas">
               {inc.involucrados}
             </BloqueTexto>
+          )}
+
+          {evidencias.length > 0 && (
+            <div className="rounded-xl border border-border bg-card p-4.5 shadow-sm">
+              <div className="mb-3 flex items-center gap-2 text-primary">
+                <Paperclip className="size-4" />
+                <h3 className="text-sm font-bold">Evidencia adjunta</h3>
+              </div>
+              <div className="flex flex-col gap-3">
+                {evidencias.map((ev) =>
+                  ev.esImagen && ev.urlVista ? (
+                    <div key={ev.id} className="overflow-hidden rounded-lg border border-border">
+                      <a href={ev.urlVista} target="_blank" rel="noopener noreferrer">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={ev.urlVista} alt={ev.nombre} className="max-h-80 w-full object-contain bg-secondary/40" />
+                      </a>
+                      <div className="flex items-center justify-between gap-2 border-t border-border bg-secondary/40 px-3 py-2">
+                        <span className="truncate text-xs text-muted-foreground">{ev.nombre}</span>
+                        <div className="flex flex-none items-center gap-3">
+                          <a
+                            href={ev.urlVista}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                          >
+                            <Eye className="size-3.5" />
+                            Previsualizar
+                          </a>
+                          {ev.urlDescarga && (
+                            <a
+                              href={ev.urlDescarga}
+                              className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                            >
+                              <Download className="size-3.5" />
+                              Descargar
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      key={ev.id}
+                      className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 px-3.5 py-2.5"
+                    >
+                      <div className="flex size-9 flex-none items-center justify-center rounded-md bg-primary/10 text-primary">
+                        <FileText className="size-4.5" />
+                      </div>
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium">{ev.nombre}</span>
+                      <div className="flex flex-none items-center gap-3">
+                        {ev.urlVista && (
+                          <a
+                            href={ev.urlVista}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                          >
+                            <Eye className="size-3.5" />
+                            Ver
+                          </a>
+                        )}
+                        {ev.urlDescarga && (
+                          <a
+                            href={ev.urlDescarga}
+                            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                          >
+                            <Download className="size-3.5" />
+                            Descargar
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
           )}
 
           {usuario.rol === "profesor" && (
