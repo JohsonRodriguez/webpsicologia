@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, CircleAlert, TriangleAlert, Flame, FileUp, File, Image, X } from "lucide-react";
+import { comprimirImagenSiAplica } from "@/lib/comprimir-imagen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,21 +76,29 @@ function formatearTamano(bytes: number) {
 
 function EvidenciaDropzone() {
   const [archivo, setArchivo] = useState<File | null>(null);
+  const [tamanoOriginal, setTamanoOriginal] = useState<number | null>(null);
   const [sobreZona, setSobreZona] = useState(false);
+  const [comprimiendo, setComprimiendo] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  function asignarArchivo(file: File | undefined) {
+  async function asignarArchivo(file: File | undefined) {
     if (!file) return;
-    setArchivo(file);
+    setComprimiendo(true);
+    const original = file.size;
+    const listo = await comprimirImagenSiAplica(file);
+    setComprimiendo(false);
+    setTamanoOriginal(listo.size < original ? original : null);
+    setArchivo(listo);
     if (inputRef.current) {
       const dt = new DataTransfer();
-      dt.items.add(file);
+      dt.items.add(listo);
       inputRef.current.files = dt.files;
     }
   }
 
   function limpiar() {
     setArchivo(null);
+    setTamanoOriginal(null);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -101,9 +110,14 @@ function EvidenciaDropzone() {
         name="evidencia"
         accept="image/*,application/pdf"
         className="hidden"
-        onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
+        onChange={(e) => asignarArchivo(e.target.files?.[0])}
       />
-      {!archivo ? (
+      {comprimiendo ? (
+        <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-secondary/40 px-4 py-7 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" />
+          Comprimiendo imagen…
+        </div>
+      ) : !archivo ? (
         <label
           onDragOver={(e) => {
             e.preventDefault();
@@ -136,7 +150,12 @@ function EvidenciaDropzone() {
           </div>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-sm font-medium">{archivo.name}</span>
-            <span className="text-xs text-muted-foreground">{formatearTamano(archivo.size)}</span>
+            <span className="text-xs text-muted-foreground">
+              {formatearTamano(archivo.size)}
+              {tamanoOriginal && (
+                <span className="text-good"> · comprimido desde {formatearTamano(tamanoOriginal)}</span>
+              )}
+            </span>
           </div>
           <button
             type="button"
