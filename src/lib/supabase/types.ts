@@ -9,6 +9,64 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      actas_alumno: {
+        Row: {
+          acuerdos: string
+          caso_id: string
+          created_at: string
+          detalle: string
+          fecha: string
+          firma_alumno_data: string
+          firma_alumno_nombre: string
+          firma_fecha_hora: string
+          hora: string
+          id: string
+          observaciones: string
+          psicologo_id: string
+        }
+        Insert: {
+          acuerdos: string
+          caso_id: string
+          created_at?: string
+          detalle: string
+          fecha: string
+          firma_alumno_data: string
+          firma_alumno_nombre: string
+          firma_fecha_hora?: string
+          hora: string
+          id?: string
+          observaciones: string
+          psicologo_id: string
+        }
+        Update: {
+          acuerdos?: string
+          caso_id?: string
+          created_at?: string
+          detalle?: string
+          fecha?: string
+          firma_alumno_data?: string
+          firma_alumno_nombre?: string
+          firma_fecha_hora?: string
+          hora?: string
+          id?: string
+          observaciones?: string
+          psicologo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actas_alumno_caso_id_fkey"
+            columns: ["caso_id"]
+            referencedRelation: "casos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "actas_alumno_psicologo_id_fkey"
+            columns: ["psicologo_id"]
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alumnos: {
         Row: {
           apellidos: string

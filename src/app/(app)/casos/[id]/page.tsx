@@ -11,6 +11,7 @@ import { NotaForm } from "./nota-form";
 import { CerrarCasoButton } from "./cerrar-caso-button";
 import { DerivarDialog } from "./derivar-dialog";
 import { ActaResumen } from "./acta-resumen";
+import { ActaAlumnoResumen } from "./acta-alumno-resumen";
 
 export default async function CasoDetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -34,13 +35,18 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
   const puedeGestionar = usuario.rol === "jefe_psicologia" || caso.psicologo_id === usuario.id;
   const abierto = caso.estado !== "cerrado";
 
-  const [{ data: notas }, { data: citas }, { data: psicologos }] = await Promise.all([
+  const [{ data: notas }, { data: citas }, { data: actasAlumno }, { data: psicologos }] = await Promise.all([
     supabase
       .from("notas_seguimiento")
       .select("id, fecha, contenido, usuarios(nombre)")
       .eq("caso_id", caso.id)
       .order("fecha", { ascending: true }),
     supabase.from("citas_padres").select("id, fecha, hora, detalle, firmas(id, firmante_tipo, firmante_nombre, fecha_hora)").eq("caso_id", caso.id),
+    supabase
+      .from("actas_alumno")
+      .select("id, fecha, hora, detalle, firma_alumno_nombre, firma_fecha_hora")
+      .eq("caso_id", caso.id)
+      .order("fecha", { ascending: false }),
     usuario.rol === "jefe_psicologia"
       ? supabase.from("usuarios").select("id, nombre").eq("rol", "psicologo").eq("activo", true).neq("id", caso.psicologo_id)
       : Promise.resolve({ data: [] }),
@@ -150,6 +156,33 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
               ) : (
                 <p className="text-sm text-muted-foreground">
                   Sin actas registradas. Las citas se agendan en SIANET; aquí se documenta el acta de la reunión.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card shadow-sm">
+            <div className="flex items-center justify-between border-b border-border p-4">
+              <h3 className="font-heading text-base font-semibold">Actas de sesión con el alumno</h3>
+              {abierto && puedeGestionar && (
+                <Button
+                  size="sm"
+                  render={
+                    <Link href={`/casos/${caso.id}/acta-alumno-nueva`}>
+                      <Plus className="size-4" />
+                      Registrar acta
+                    </Link>
+                  }
+                />
+              )}
+            </div>
+            <div className="flex flex-col gap-3 p-4">
+              {actasAlumno && actasAlumno.length > 0 ? (
+                actasAlumno.map((a) => <ActaAlumnoResumen key={a.id} acta={a} />)
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Sin actas de sesión individual registradas. A diferencia del acta con padres, aquí solo firma el
+                  alumno.
                 </p>
               )}
             </div>
