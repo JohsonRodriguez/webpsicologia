@@ -22,6 +22,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCatalogoMotivos, getMatriculasPorAlumno, nombreAlumno } from "@/lib/queries";
 import { PillEstadoIncidencia, PillEstadoCaso, PillPrioridad } from "@/components/status-pills";
 import { Button } from "@/components/ui/button";
+import { InfoItem, iniciales } from "@/components/detail-ui";
 import { AbrirCasoButton } from "./abrir-caso-button";
 import { EditarIncidenciaDialog } from "./editar-incidencia-dialog";
 
@@ -30,32 +31,6 @@ const PRIORIDAD_BORDE: Record<string, string> = {
   media: "border-l-warn",
   alta: "border-l-critical",
 };
-
-function iniciales(nombres: string, apellidos: string) {
-  return `${nombres[0] ?? ""}${apellidos[0] ?? ""}`.toUpperCase();
-}
-
-function InfoItem({
-  icon: Icon,
-  label,
-  children,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-start gap-2.5">
-      <div className="flex size-8 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-        <Icon className="size-4" />
-      </div>
-      <div className="flex min-w-0 flex-col">
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
-        <span className="truncate text-sm font-semibold">{children}</span>
-      </div>
-    </div>
-  );
-}
 
 function nombreOriginal(archivoUrl: string) {
   const parte = archivoUrl.split("/").pop() ?? archivoUrl;

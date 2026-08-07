@@ -1,17 +1,34 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Plus, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  CalendarClock,
+  CalendarCheck2,
+  FileText,
+  MessagesSquare,
+  Plus,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { nombreAlumno } from "@/lib/queries";
-import { PageHeader } from "@/components/page-header";
 import { PillEstadoCaso } from "@/components/status-pills";
 import { Button } from "@/components/ui/button";
+import { InfoItem, SeccionCard, iniciales } from "@/components/detail-ui";
 import { NotaForm } from "./nota-form";
 import { CerrarCasoButton } from "./cerrar-caso-button";
 import { DerivarDialog } from "./derivar-dialog";
 import { ActaResumen } from "./acta-resumen";
 import { ActaAlumnoResumen } from "./acta-alumno-resumen";
+
+const ESTADO_BORDE: Record<string, string> = {
+  abierto: "border-l-info",
+  en_atencion: "border-l-warn",
+  derivado: "border-l-purple",
+  cerrado: "border-l-good",
+};
 
 export default async function CasoDetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -66,79 +83,87 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
         }
       />
 
-      <PageHeader
-        eyebrow="Caso"
-        title={nombreAlumno(alumno)}
-        description={
-          caso.tipo === "caso_1"
-            ? "Originado desde una incidencia reportada por un docente."
-            : "Caso abierto directamente por el psicólogo."
-        }
-        actions={
-          <>
-            {abierto && puedeGestionar && <CerrarCasoButton casoId={caso.id} />}
-            {abierto && usuario.rol === "jefe_psicologia" && (
-              <DerivarDialog
-                casoId={caso.id}
-                psicologoActual={psicologo?.nombre ?? ""}
-                psicologos={psicologos ?? []}
-              />
-            )}
-          </>
-        }
-      />
+      <div
+        className={`flex flex-col gap-4 rounded-2xl border border-l-4 border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between ${
+          ESTADO_BORDE[caso.estado] ?? "border-l-border"
+        }`}
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex size-14 flex-none items-center justify-center rounded-full bg-primary/10 font-heading text-lg font-bold text-primary">
+            {iniciales(alumno.nombres, alumno.apellidos)}
+          </div>
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Caso</p>
+            <h1 className="font-heading text-xl font-bold text-foreground">{nombreAlumno(alumno)}</h1>
+            <p className="text-sm text-muted-foreground">
+              {caso.tipo === "caso_1"
+                ? "Originado desde una incidencia reportada por un docente."
+                : "Caso abierto directamente por el psicólogo."}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <PillEstadoCaso estado={caso.estado} />
+          {derivado && (
+            <span className="inline-flex items-center rounded-full bg-purple px-2.5 py-1 text-xs font-bold text-white">
+              Derivado
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {abierto && puedeGestionar && <CerrarCasoButton casoId={caso.id} />}
+        {abierto && usuario.rol === "jefe_psicologia" && (
+          <DerivarDialog casoId={caso.id} psicologoActual={psicologo?.nombre ?? ""} psicologos={psicologos ?? []} />
+        )}
+      </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.1fr]">
         <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
-            <div className="flex flex-wrap gap-2">
-              <PillEstadoCaso estado={caso.estado} />
+          <div className="flex flex-col gap-3.5 rounded-xl border border-border bg-card p-4.5 shadow-sm">
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+              <InfoItem icon={UserRound} label="Código de alumno">
+                <span className="font-mono">{alumno.codigo}</span>
+              </InfoItem>
+              <InfoItem icon={UserRound} label="Psicólogo actual">
+                {psicologo?.nombre ?? "—"}
+              </InfoItem>
               {derivado && (
-                <span className="inline-flex items-center rounded-full bg-purple px-2.5 py-1 text-xs font-bold text-white">
-                  Derivado
-                </span>
+                <InfoItem icon={UserRound} label="Psicólogo original">
+                  {original?.nombre ?? "—"}
+                </InfoItem>
+              )}
+              <InfoItem icon={CalendarClock} label="Apertura">
+                {new Date(caso.fecha_apertura).toLocaleDateString("es-PE", { dateStyle: "long" })}
+              </InfoItem>
+              {caso.fecha_cierre && (
+                <InfoItem icon={CalendarCheck2} label="Cierre">
+                  {new Date(caso.fecha_cierre).toLocaleDateString("es-PE", { dateStyle: "long" })}
+                </InfoItem>
               )}
             </div>
-            <dl className="grid grid-cols-[140px_1fr] gap-x-3 gap-y-2 text-sm">
-              <dt className="text-muted-foreground">Alumno</dt>
-              <dd>
-                {nombreAlumno(alumno)} · <span className="font-mono">{alumno.codigo}</span>
-              </dd>
-              <dt className="text-muted-foreground">Psicólogo actual</dt>
-              <dd>{psicologo?.nombre ?? "—"}</dd>
-              {derivado && (
-                <>
-                  <dt className="text-muted-foreground">Psicólogo original</dt>
-                  <dd>{original?.nombre ?? "—"}</dd>
-                </>
-              )}
-              <dt className="text-muted-foreground">Apertura</dt>
-              <dd className="tabular-nums">
-                {new Date(caso.fecha_apertura).toLocaleDateString("es-PE", { dateStyle: "long" })}
-              </dd>
-              {caso.fecha_cierre && (
-                <>
-                  <dt className="text-muted-foreground">Cierre</dt>
-                  <dd className="tabular-nums">
-                    {new Date(caso.fecha_cierre).toLocaleDateString("es-PE", { dateStyle: "long" })}
-                  </dd>
-                </>
-              )}
-            </dl>
             {caso.incidencia_id && (
               <Button
                 variant="outline"
                 size="sm"
                 className="self-start"
-                render={<Link href={`/incidencias/${caso.incidencia_id}`}>Ver incidencia de origen</Link>}
+                render={
+                  <Link href={`/incidencias/${caso.incidencia_id}`}>
+                    <ArrowUpRight className="size-4" />
+                    Ver incidencia de origen
+                  </Link>
+                }
               />
             )}
           </div>
 
-          <div className="rounded-xl border border-border bg-card shadow-sm">
-            <div className="flex items-center justify-between border-b border-border p-4">
-              <h3 className="font-heading text-base font-semibold">Actas de reunión con padres</h3>
-              {abierto && puedeGestionar && (
+          <SeccionCard
+            icon={FileText}
+            titulo="Actas de reunión con padres"
+            accion={
+              abierto &&
+              puedeGestionar && (
                 <Button
                   size="sm"
                   render={
@@ -148,9 +173,10 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
                     </Link>
                   }
                 />
-              )}
-            </div>
-            <div className="flex flex-col gap-3 p-4">
+              )
+            }
+          >
+            <div className="flex flex-col gap-3">
               {citas && citas.length > 0 ? (
                 citas.map((c) => <ActaResumen key={c.id} cita={c} />)
               ) : (
@@ -159,12 +185,14 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
                 </p>
               )}
             </div>
-          </div>
+          </SeccionCard>
 
-          <div className="rounded-xl border border-border bg-card shadow-sm">
-            <div className="flex items-center justify-between border-b border-border p-4">
-              <h3 className="font-heading text-base font-semibold">Actas de sesión con el alumno</h3>
-              {abierto && puedeGestionar && (
+          <SeccionCard
+            icon={FileText}
+            titulo="Actas de sesión con el alumno"
+            accion={
+              abierto &&
+              puedeGestionar && (
                 <Button
                   size="sm"
                   render={
@@ -174,9 +202,10 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
                     </Link>
                   }
                 />
-              )}
-            </div>
-            <div className="flex flex-col gap-3 p-4">
+              )
+            }
+          >
+            <div className="flex flex-col gap-3">
               {actasAlumno && actasAlumno.length > 0 ? (
                 actasAlumno.map((a) => (
                   <ActaAlumnoResumen key={a.id} acta={a} alumnoNombre={nombreAlumno(alumno)} />
@@ -188,38 +217,33 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
                 </p>
               )}
             </div>
-          </div>
+          </SeccionCard>
         </div>
 
-        <div className="rounded-xl border border-border bg-card shadow-sm">
-          <div className="border-b border-border p-4">
-            <h3 className="font-heading text-base font-semibold">Notas de seguimiento</h3>
-          </div>
-          <div className="p-4">
-            <div className="flex flex-col">
-              {(notas ?? []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Sin notas todavía.</p>
-              ) : (
-                (notas ?? []).map((n, i, arr) => (
-                  <div key={n.id} className="grid grid-cols-[24px_1fr] gap-x-3">
-                    <div className="flex flex-col items-center">
-                      <Sparkles className="mt-1 size-3 text-primary" />
-                      {i < arr.length - 1 && <div className="my-1 w-px flex-1 bg-border" />}
-                    </div>
-                    <div className="pb-4">
-                      <p className="text-xs text-muted-foreground">
-                        {(n.usuarios as unknown as { nombre: string } | null)?.nombre} ·{" "}
-                        {new Date(n.fecha).toLocaleString("es-PE", { dateStyle: "long", timeStyle: "short" })}
-                      </p>
-                      <div className="mt-1 rounded-lg bg-secondary px-3 py-2 text-sm">{n.contenido}</div>
-                    </div>
+        <SeccionCard icon={MessagesSquare} titulo="Notas de seguimiento">
+          <div className="flex flex-col">
+            {(notas ?? []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">Sin notas todavía.</p>
+            ) : (
+              (notas ?? []).map((n, i, arr) => (
+                <div key={n.id} className="grid grid-cols-[24px_1fr] gap-x-3">
+                  <div className="flex flex-col items-center">
+                    <Sparkles className="mt-1 size-3 text-primary" />
+                    {i < arr.length - 1 && <div className="my-1 w-px flex-1 bg-border" />}
                   </div>
-                ))
-              )}
-            </div>
-            {abierto && puedeGestionar && <NotaForm casoId={caso.id} />}
+                  <div className="pb-4">
+                    <p className="text-xs text-muted-foreground">
+                      {(n.usuarios as unknown as { nombre: string } | null)?.nombre} ·{" "}
+                      {new Date(n.fecha).toLocaleString("es-PE", { dateStyle: "long", timeStyle: "short" })}
+                    </p>
+                    <div className="mt-1 rounded-lg bg-secondary px-3 py-2 text-sm">{n.contenido}</div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-        </div>
+          {abierto && puedeGestionar && <NotaForm casoId={caso.id} />}
+        </SeccionCard>
       </div>
     </>
   );
