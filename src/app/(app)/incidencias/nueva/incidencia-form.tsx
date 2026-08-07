@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, CircleAlert, TriangleAlert, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,59 @@ import { crearIncidencia, type EstadoAccion } from "../actions";
 type AlumnoOpcion = { alumnoId: string; seccionId: string; nombre: string; codigo: string };
 
 const initialState: EstadoAccion = {};
+
+const PRIORIDADES = [
+  {
+    value: "baja",
+    label: "Baja",
+    hint: "Puede esperar",
+    icon: CircleAlert,
+    activeClass: "border-good bg-good-soft text-good ring-2 ring-good/30",
+  },
+  {
+    value: "media",
+    label: "Media",
+    hint: "Requiere atención",
+    icon: TriangleAlert,
+    activeClass: "border-warn bg-warn-soft text-warn ring-2 ring-warn/30",
+  },
+  {
+    value: "alta",
+    label: "Alta",
+    hint: "Urgente",
+    icon: Flame,
+    activeClass: "border-critical bg-critical-soft text-critical ring-2 ring-critical/30",
+  },
+] as const;
+
+function SelectorPrioridad() {
+  const [valor, setValor] = useState("");
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <input type="hidden" name="prioridad" value={valor} required />
+      <div className="grid grid-cols-3 gap-2.5">
+        {PRIORIDADES.map(({ value, label, hint, icon: Icon, activeClass }) => {
+          const activo = valor === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setValor(value)}
+              className={`flex flex-col items-center gap-1 rounded-lg border p-3 text-center transition-all ${
+                activo ? activeClass : "border-border bg-card text-muted-foreground hover:bg-secondary/60"
+              }`}
+            >
+              <Icon className="size-5" />
+              <span className="text-sm font-semibold">{label}</span>
+              <span className={`text-xs ${activo ? "" : "text-muted-foreground"}`}>{hint}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function IncidenciaForm({
   estructura,
@@ -141,18 +194,9 @@ export function IncidenciaForm({
               ))}
             </select>
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
             <Label>Nivel de prioridad</Label>
-            <select
-              required
-              name="prioridad"
-              className="h-9 rounded-md border border-input bg-card px-3 text-sm"
-            >
-              <option value="">Selecciona…</option>
-              <option value="baja">Baja</option>
-              <option value="media">Media</option>
-              <option value="alta">Alta</option>
-            </select>
+            <SelectorPrioridad />
           </div>
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <Label>Descripción</Label>
