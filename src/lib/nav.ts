@@ -16,6 +16,7 @@ import {
   Settings,
   CalendarClock,
   PenLine,
+  Scale,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -53,6 +54,7 @@ export function navFor(rol: Rol): NavGroup[] {
       label: "Jefatura",
       items: [
         { href: "/todas", label: "Todas las incidencias y casos", icon: ShieldCheck },
+        { href: "/carga-psicologos", label: "Carga por psicólogo", icon: Scale },
         { href: "/reportes", label: "Reportes y estadísticas", icon: BarChart3 },
       ],
     });
