@@ -127,7 +127,9 @@ async function IncidenciasTab({
 
   let query = supabase
     .from("incidencias")
-    .select("id, alumno_id, prioridad, estado, fecha_hora, alumnos(nombres, apellidos), catalogo_motivos(nombre)")
+    .select(
+      "id, alumno_id, prioridad, estado, fecha_hora, motivo_otro, alumnos(nombres, apellidos), catalogo_motivos(nombre)",
+    )
     .order("fecha_hora", { ascending: false });
 
   if (estado) query = query.eq("estado", estado);

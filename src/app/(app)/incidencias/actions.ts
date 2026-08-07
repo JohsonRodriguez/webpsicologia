@@ -14,6 +14,7 @@ export async function crearIncidencia(_prev: EstadoAccion, formData: FormData): 
 
   const alumnoId = String(formData.get("alumno") ?? "");
   const motivoId = String(formData.get("motivo") ?? "");
+  const motivoOtro = String(formData.get("motivo_otro") ?? "").trim();
   const prioridad = String(formData.get("prioridad") ?? "");
   const descripcion = String(formData.get("descripcion") ?? "").trim();
   const acciones = String(formData.get("acciones") ?? "").trim();
@@ -24,12 +25,23 @@ export async function crearIncidencia(_prev: EstadoAccion, formData: FormData): 
     return { error: "Completa todos los campos obligatorios." };
   }
 
+  const { data: motivoSeleccionado } = await supabase
+    .from("catalogo_motivos")
+    .select("nombre")
+    .eq("id", motivoId)
+    .maybeSingle();
+
+  if (motivoSeleccionado?.nombre === "Otro" && !motivoOtro) {
+    return { error: "Especifica el motivo." };
+  }
+
   const { data: incidencia, error } = await supabase
     .from("incidencias")
     .insert({
       alumno_id: alumnoId,
       profesor_id: usuario.id,
       motivo_id: motivoId,
+      motivo_otro: motivoSeleccionado?.nombre === "Otro" ? motivoOtro : null,
       prioridad,
       descripcion,
       acciones_tomadas: acciones,
@@ -54,6 +66,7 @@ export async function crearIncidencia(_prev: EstadoAccion, formData: FormData): 
     alumnoId,
     alumno: incidencia.alumnos as unknown as { nombres: string; apellidos: string } | null,
     motivo: incidencia.catalogo_motivos as unknown as { nombre: string } | null,
+    motivoOtro: motivoSeleccionado?.nombre === "Otro" ? motivoOtro : null,
     prioridad,
   });
 
@@ -66,6 +79,7 @@ async function notificarPsicologoPorCorreo(
     alumnoId: string;
     alumno: { nombres: string; apellidos: string } | null;
     motivo: { nombre: string } | null;
+    motivoOtro: string | null;
     prioridad: string;
   },
 ) {
@@ -90,7 +104,7 @@ async function notificarPsicologoPorCorreo(
     psicologoEmail: psicologo.email,
     psicologoNombre: psicologo.nombre,
     alumnoNombre: `${params.alumno.nombres} ${params.alumno.apellidos}`,
-    motivo: params.motivo?.nombre ?? "—",
+    motivo: params.motivoOtro || params.motivo?.nombre || "—",
     prioridad: params.prioridad,
   });
 }

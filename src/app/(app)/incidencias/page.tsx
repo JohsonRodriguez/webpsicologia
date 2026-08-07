@@ -31,7 +31,9 @@ export default async function IncidenciasPage({
 
   let query = supabase
     .from("incidencias")
-    .select("id, alumno_id, prioridad, estado, fecha_hora, alumnos(nombres, apellidos), catalogo_motivos(nombre)")
+    .select(
+      "id, alumno_id, prioridad, estado, fecha_hora, motivo_otro, alumnos(nombres, apellidos), catalogo_motivos(nombre)",
+    )
     .eq("profesor_id", usuario.id)
     .order("fecha_hora", { ascending: false });
 

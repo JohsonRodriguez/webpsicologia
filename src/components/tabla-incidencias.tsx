@@ -18,6 +18,7 @@ export type IncidenciaFila = {
   fecha_hora: string;
   alumnos: { nombres: string; apellidos: string } | null;
   catalogo_motivos: { nombre: string } | null;
+  motivo_otro?: string | null;
   usuarios: { nombre: string } | null;
 };
 
@@ -69,7 +70,7 @@ export function TablaIncidencias({
                     {mat ? `${mat.gradoNombre} "${mat.seccionNombre}"` : "—"}
                   </div>
                 </TableCell>
-                <TableCell>{inc.catalogo_motivos?.nombre ?? "—"}</TableCell>
+                <TableCell>{inc.motivo_otro || inc.catalogo_motivos?.nombre || "—"}</TableCell>
                 {mostrarProfesor && (
                   <TableCell className="text-muted-foreground">
                     {inc.usuarios?.nombre ?? "—"}

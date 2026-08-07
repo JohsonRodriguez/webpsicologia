@@ -350,6 +350,7 @@ export type Database = {
           id: string
           involucrados: string | null
           motivo_id: string
+          motivo_otro: string | null
           prioridad: string
           profesor_id: string
         }
@@ -363,6 +364,7 @@ export type Database = {
           id?: string
           involucrados?: string | null
           motivo_id: string
+          motivo_otro?: string | null
           prioridad: string
           profesor_id: string
         }
@@ -376,6 +378,7 @@ export type Database = {
           id?: string
           involucrados?: string | null
           motivo_id?: string
+          motivo_otro?: string | null
           prioridad?: string
           profesor_id?: string
         }

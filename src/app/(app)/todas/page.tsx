@@ -51,7 +51,7 @@ export default async function TodasPage({
     let query = supabase
       .from("incidencias")
       .select(
-        "id, alumno_id, prioridad, estado, fecha_hora, alumnos(nombres, apellidos), catalogo_motivos(nombre), usuarios!incidencias_profesor_id_fkey(nombre)",
+        "id, alumno_id, prioridad, estado, fecha_hora, motivo_otro, alumnos(nombres, apellidos), catalogo_motivos(nombre), usuarios!incidencias_profesor_id_fkey(nombre)",
       )
       .order("fecha_hora", { ascending: false });
     if (estado) query = query.eq("estado", estado);

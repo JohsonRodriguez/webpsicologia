@@ -25,7 +25,9 @@ export default async function DashboardPage() {
   let casosQuery = supabase.from("casos").select("id, estado, alumno_id");
   let incQuery = supabase
     .from("incidencias")
-    .select("id, alumno_id, prioridad, estado, fecha_hora, alumnos(nombres, apellidos), catalogo_motivos(nombre)")
+    .select(
+      "id, alumno_id, prioridad, estado, fecha_hora, motivo_otro, alumnos(nombres, apellidos), catalogo_motivos(nombre)",
+    )
     .order("fecha_hora", { ascending: false });
 
   if (!esJefe) {
@@ -140,7 +142,9 @@ export default async function DashboardPage() {
                       <div className="font-semibold">{alumno ? nombreAlumno(alumno) : "—"}</div>
                       <div className="text-xs text-muted-foreground">{mat ? mat.gradoNombre : ""}</div>
                     </TableCell>
-                    <TableCell>{(i.catalogo_motivos as unknown as { nombre: string } | null)?.nombre}</TableCell>
+                    <TableCell>
+                      {i.motivo_otro || (i.catalogo_motivos as unknown as { nombre: string } | null)?.nombre}
+                    </TableCell>
                     <TableCell className="tabular-nums text-muted-foreground">
                       {new Date(i.fecha_hora).toLocaleDateString("es-PE", { day: "numeric", month: "short" })}
                     </TableCell>

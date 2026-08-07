@@ -97,7 +97,7 @@ export default async function IncidenciaDetallePage({
   const { data: inc } = await supabase
     .from("incidencias")
     .select(
-      "id, alumno_id, motivo_id, prioridad, estado, descripcion, acciones_tomadas, involucrados, fecha_hora, profesor_id, alumnos(nombres, apellidos, codigo), catalogo_motivos(nombre), usuarios!incidencias_profesor_id_fkey(nombre)",
+      "id, alumno_id, motivo_id, motivo_otro, prioridad, estado, descripcion, acciones_tomadas, involucrados, fecha_hora, profesor_id, alumnos(nombres, apellidos, codigo), catalogo_motivos(nombre), usuarios!incidencias_profesor_id_fkey(nombre)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -107,6 +107,7 @@ export default async function IncidenciaDetallePage({
   const alumno = inc.alumnos as unknown as { nombres: string; apellidos: string; codigo: string };
   const profesor = inc.usuarios as unknown as { nombre: string } | null;
   const motivo = inc.catalogo_motivos as unknown as { nombre: string } | null;
+  const motivoTexto = inc.motivo_otro || motivo?.nombre || "—";
 
   const matriculas = await getMatriculasPorAlumno(supabase);
   const mat = matriculas.get(inc.alumno_id);
@@ -167,7 +168,7 @@ export default async function IncidenciaDetallePage({
           <div className="flex flex-col gap-1">
             <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Incidencia</p>
             <h1 className="font-heading text-xl font-bold text-foreground">{nombreAlumno(alumno)}</h1>
-            <p className="text-sm text-muted-foreground">{motivo?.nombre ?? "—"}</p>
+            <p className="text-sm text-muted-foreground">{motivoTexto}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">

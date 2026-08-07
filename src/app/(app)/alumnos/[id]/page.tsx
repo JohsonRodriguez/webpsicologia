@@ -55,7 +55,7 @@ export default async function FichaAlumnoPage({
 
   const { data: incidencias } = await supabase
     .from("incidencias")
-    .select("id, motivo_id, prioridad, estado, fecha_hora, catalogo_motivos(nombre)")
+    .select("id, motivo_id, motivo_otro, prioridad, estado, fecha_hora, catalogo_motivos(nombre)")
     .eq("alumno_id", id)
     .gte("fecha_hora", `${yearStr}-01-01`)
     .lt("fecha_hora", `${Number(yearStr) + 1}-01-01`)
@@ -132,7 +132,9 @@ export default async function FichaAlumnoPage({
                   <TableCell className="tabular-nums">
                     {new Date(i.fecha_hora).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
                   </TableCell>
-                  <TableCell>{(i.catalogo_motivos as unknown as { nombre: string } | null)?.nombre}</TableCell>
+                  <TableCell>
+                    {i.motivo_otro || (i.catalogo_motivos as unknown as { nombre: string } | null)?.nombre}
+                  </TableCell>
                   <TableCell>
                     <PillPrioridad prioridad={i.prioridad} />
                   </TableCell>

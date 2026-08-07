@@ -185,6 +185,12 @@ export function IncidenciaForm({
   const [nivelId, setNivelId] = useState("");
   const [gradoId, setGradoId] = useState("");
   const [seccionId, setSeccionId] = useState("");
+  const [motivoId, setMotivoId] = useState("");
+
+  const motivoEsOtro = useMemo(
+    () => motivos.find((m) => m.id === motivoId)?.nombre === "Otro",
+    [motivos, motivoId],
+  );
 
   const grados = useMemo(
     () => estructura.grados.filter((g) => g.nivel_id === nivelId),
@@ -287,6 +293,8 @@ export function IncidenciaForm({
             <select
               required
               name="motivo"
+              value={motivoId}
+              onChange={(e) => setMotivoId(e.target.value)}
               className="h-9 w-full rounded-md border border-input bg-card px-3 text-sm"
             >
               <option value="">Selecciona…</option>
@@ -296,6 +304,14 @@ export function IncidenciaForm({
                 </option>
               ))}
             </select>
+            {motivoEsOtro && (
+              <Input
+                required
+                name="motivo_otro"
+                placeholder="Especifica el motivo…"
+                className="mt-1"
+              />
+            )}
           </div>
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <Label>Nivel de prioridad</Label>
