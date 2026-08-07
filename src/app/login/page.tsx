@@ -2,19 +2,88 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { GraduationCap, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { Loader2, Lock, ShieldCheck, HeartHandshake, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   return (
     <Suspense fallback={null}>
-      <LoginForm />
+      <LoginScreen />
     </Suspense>
   );
 }
 
-function LoginForm() {
+function LoginScreen() {
+  return (
+    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1fr_1.08fr]">
+      <HeroPanel />
+      <FormPanel />
+    </div>
+  );
+}
+
+function HeroPanel() {
+  return (
+    <section
+      className="relative hidden flex-col justify-between overflow-hidden px-16 py-16 text-[#f7ead4] lg:flex"
+      style={{ background: "radial-gradient(circle at 70% 45%, #06624d, #003f32 65%)" }}
+    >
+      <div className="flex items-center gap-3.5">
+        <Image
+          src="/lord-byron-crest.png"
+          alt="Escudo del Colegio Lord Byron"
+          width={70}
+          height={80}
+          className="h-20 w-auto flex-none"
+          priority
+        />
+        <div>
+          <strong className="block text-[26px] leading-[22px] font-bold">
+            LORD
+            <br />
+            BYRON
+          </strong>
+          <small className="mt-1.5 block text-[10px] tracking-[0.2em]">SCHOOL</small>
+        </div>
+      </div>
+
+      <div className="my-auto max-w-[500px]">
+        <h1 className="text-[64px] leading-[1.05] font-semibold text-balance">
+          Psicología
+          <br />
+          Escolar
+        </h1>
+        <p className="mt-4 text-[22px] text-[#f7ead4]">
+          Un espacio seguro para acompañar, orientar y fortalecer a nuestra comunidad educativa.
+        </p>
+        <ul className="mt-5 flex list-none flex-col gap-[18px] p-0">
+          <Feature icon={Lock}>Información protegida</Feature>
+          <Feature icon={Users}>Acceso según tu función</Feature>
+          <Feature icon={HeartHandshake}>Acompañamiento conectado</Feature>
+        </ul>
+        <blockquote className="mt-[30px] w-[65%] min-w-[280px] border-t border-[#d8c99e] pt-7 text-[22px] font-medium italic">
+          &ldquo;El bienestar también forma parte del aprendizaje.&rdquo;
+        </blockquote>
+      </div>
+
+      <small className="text-xs text-[#f7ead4]/75">Lord Byron School · Área de Psicología</small>
+    </section>
+  );
+}
+
+function Feature({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
+  return (
+    <li className="flex items-center gap-[15px] text-lg">
+      <span className="flex size-9 flex-none items-center justify-center rounded-full bg-white/12">
+        <Icon className="size-4.5" strokeWidth={1.8} />
+      </span>
+      {children}
+    </li>
+  );
+}
+
+function FormPanel() {
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/";
@@ -36,42 +105,77 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center text-center">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <GraduationCap className="size-6" />
-          </div>
-          <h1 className="mt-4 font-heading text-2xl font-semibold text-balance">
-            Área de Psicología
-          </h1>
-          <p className="text-sm text-muted-foreground">Colegio Lord Byron</p>
+    <section className="flex flex-col bg-[#fffdfa] px-8 py-10 sm:px-[12%]">
+      <div className="mx-auto flex w-full max-w-[520px] flex-1 flex-col justify-center gap-8 py-10">
+        <div>
+          <p className="text-lg font-semibold" style={{ color: "#087d4f" }}>
+            Bienvenido
+          </p>
+          <h2 className="mt-1 text-[38px] leading-tight font-semibold">Ingresa a tu cuenta</h2>
+          <p className="mt-3 text-lg text-[#68736f]">
+            Psicólogos, docentes, jefatura y administración ingresan con su cuenta institucional de Google.
+          </p>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3">
-          <Button
-            size="lg"
-            className="w-full"
+        <div className="flex flex-col gap-4">
+          <button
             onClick={iniciarSesion}
             disabled={loading}
+            className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-[#789589] bg-white py-4 text-lg font-medium text-[#0b3027] transition hover:bg-[#f7f4ee] disabled:cursor-wait disabled:opacity-60"
           >
-            {loading ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <GoogleIcon className="size-4" />
-            )}
-            Iniciar sesión con Google
-          </Button>
-          <p className="text-center text-xs text-muted-foreground">
-            Acceso restringido a cuentas institucionales <span className="font-mono">@byron.edu.pe</span>.
-          </p>
+            {loading ? <Loader2 className="size-5 animate-spin" /> : <GoogleIcon className="size-5" />}
+            Continuar con Google
+          </button>
+
           {error === "auth" && (
-            <div className="rounded-md bg-critical-soft px-3 py-2 text-center text-sm text-critical">
+            <div className="rounded-md bg-[#fff1ef] px-4 py-3 text-sm text-[#8d2922]">
               <p>No se pudo iniciar sesión. Intenta nuevamente.</p>
               {detail && <p className="mt-1 font-mono text-xs break-words">{detail}</p>}
             </div>
           )}
+
+          <div className="mt-2 flex items-start gap-3 rounded-lg border border-[#bed0b9] bg-[#eff6ed] p-4">
+            <ShieldCheck className="mt-0.5 size-5 flex-none" style={{ color: "#087d4f" }} strokeWidth={1.8} />
+            <div>
+              <p className="font-semibold text-[#0b3027]">Acceso seguro y confidencial</p>
+              <p className="mt-0.5 text-sm text-[#68736f]">
+                Solo cuentas <span className="font-mono">@byron.edu.pe</span> con un rol asignado por el
+                administrador pueden ingresar.
+              </p>
+            </div>
+          </div>
         </div>
+
+        <div className="flex justify-between border-t border-[#dedfd8] pt-6">
+          <BottomFeature icon={ShieldCheck} title="Seguridad" subtitle="Tus datos protegidos" />
+          <BottomFeature icon={HeartHandshake} title="Acompañamiento" subtitle="Para tu bienestar" />
+          <BottomFeature icon={Users} title="Trazabilidad" subtitle="Acceso por rol" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BottomFeature({
+  icon: Icon,
+  title,
+  subtitle,
+}: {
+  icon: React.ElementType;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span
+        className="flex size-9 flex-none items-center justify-center rounded-full"
+        style={{ background: "#003f32", color: "#f7ead4" }}
+      >
+        <Icon className="size-4" strokeWidth={1.8} />
+      </span>
+      <div className="leading-tight">
+        <p className="text-sm font-semibold text-[#0b3027]">{title}</p>
+        <p className="text-xs text-[#68736f]">{subtitle}</p>
       </div>
     </div>
   );
