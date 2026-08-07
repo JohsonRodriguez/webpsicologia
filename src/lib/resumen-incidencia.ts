@@ -28,3 +28,29 @@ export function construirMotivoDesdeIncidencia(inc: IncidenciaParaResumen) {
 
   return partes.join("\n\n");
 }
+
+export type SegmentoTexto = { texto: string; bold?: boolean; italic?: boolean };
+
+const PATRON_MOTIVO_DESCRIPCION = /por "([^"]+)":\n"([^"]+)"/;
+
+/**
+ * Si el texto sigue el patrón generado por construirMotivoDesdeIncidencia,
+ * separa el motivo (para negrita) y la descripción (para cursiva) del resto.
+ * Si el texto fue editado y ya no calza con el patrón, lo devuelve tal cual.
+ */
+export function partirDetalleConEnfasis(texto: string): SegmentoTexto[] {
+  const match = texto.match(PATRON_MOTIVO_DESCRIPCION);
+  if (!match || match.index === undefined) return [{ texto }];
+
+  const [completo, motivo, descripcion] = match;
+  const antes = texto.slice(0, match.index);
+  const despues = texto.slice(match.index + completo.length);
+
+  return [
+    { texto: `${antes}por "` },
+    { texto: motivo, bold: true },
+    { texto: '":\n"' },
+    { texto: descripcion, italic: true },
+    { texto: `"${despues}` },
+  ];
+}

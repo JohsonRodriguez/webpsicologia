@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, Image, StyleSheet, Font } from "@react-pdf/renderer";
+import { ParrafoConEnfasis } from "./parrafo-enfasis";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -21,6 +22,8 @@ const styles = StyleSheet.create({
   fieldLabel: { fontSize: 8, color: "#5e6c72" },
   fieldValue: { fontSize: 10.5 },
   paragraph: { fontSize: 10, lineHeight: 1.5 },
+  paragraphBold: { fontFamily: "Helvetica-Bold" },
+  paragraphItalic: { fontFamily: "Helvetica-Oblique" },
   divider: { borderBottomWidth: 1, borderBottomColor: "#e1e3ea", marginVertical: 12 },
   signatureBox: {
     width: 260,
@@ -95,7 +98,12 @@ export function ActaAlumnoPdfDocument({ data }: { data: ActaAlumnoPdfData }) {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Motivo de la sesión</Text>
-          <Text style={styles.paragraph}>{data.detalle}</Text>
+          <ParrafoConEnfasis
+            texto={data.detalle}
+            style={styles.paragraph}
+            boldStyle={styles.paragraphBold}
+            italicStyle={styles.paragraphItalic}
+          />
         </View>
 
         <View style={styles.section}>

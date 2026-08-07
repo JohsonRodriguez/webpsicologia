@@ -1,5 +1,6 @@
 import { PenLine } from "lucide-react";
 import { PdfDownloadLink } from "@/components/pdf-download-link";
+import { TextoConEnfasis } from "@/components/texto-con-enfasis";
 
 type Firma = { id: string; firmante_tipo: string; firmante_nombre: string; fecha_hora: string };
 type Cita = { id: string; fecha: string; hora: string; detalle: string; firmas: Firma[] };
@@ -26,7 +27,7 @@ export function ActaResumen({ cita }: { cita: Cita }) {
           {firmada && <PdfDownloadLink href={`/api/citas/${cita.id}/pdf`} />}
         </div>
       </div>
-      <p className="text-sm text-muted-foreground">{cita.detalle}</p>
+      <TextoConEnfasis texto={cita.detalle} className="text-sm text-muted-foreground" />
       {cita.firmas.length > 0 && (
         <div className="flex flex-col gap-1 text-xs text-muted-foreground">
           {cita.firmas.map((f) => (

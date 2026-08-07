@@ -1,5 +1,6 @@
 import { PenLine } from "lucide-react";
 import { PdfDownloadLink } from "@/components/pdf-download-link";
+import { TextoConEnfasis } from "@/components/texto-con-enfasis";
 import { CompletarActaAlumnoDialog } from "./completar-acta-alumno-dialog";
 
 type ActaAlumno = {
@@ -44,7 +45,7 @@ export function ActaAlumnoResumen({ acta, alumnoNombre }: { acta: ActaAlumno; al
           )}
         </div>
       </div>
-      <p className="text-sm text-muted-foreground">{acta.detalle}</p>
+      <TextoConEnfasis texto={acta.detalle} className="text-sm text-muted-foreground" />
       {!firmada && (
         <p className="text-xs text-muted-foreground">
           Declaración: {acta.declaracion_alumno ? "lista" : "pendiente"} · Compromiso:{" "}
