@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, CircleAlert, TriangleAlert, Flame } from "lucide-react";
+import { Check, Loader2, CircleAlert, TriangleAlert, Flame, FileUp, File, Image, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +63,90 @@ function SelectorPrioridad() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function formatearTamano(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function EvidenciaDropzone() {
+  const [archivo, setArchivo] = useState<File | null>(null);
+  const [sobreZona, setSobreZona] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function asignarArchivo(file: File | undefined) {
+    if (!file) return;
+    setArchivo(file);
+    if (inputRef.current) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      inputRef.current.files = dt.files;
+    }
+  }
+
+  function limpiar() {
+    setArchivo(null);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  return (
+    <div>
+      <input
+        ref={inputRef}
+        type="file"
+        name="evidencia"
+        accept="image/*,application/pdf"
+        className="hidden"
+        onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
+      />
+      {!archivo ? (
+        <label
+          onDragOver={(e) => {
+            e.preventDefault();
+            setSobreZona(true);
+          }}
+          onDragLeave={() => setSobreZona(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setSobreZona(false);
+            asignarArchivo(e.dataTransfer.files?.[0]);
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            inputRef.current?.click();
+          }}
+          className={`flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-7 text-center transition-colors ${
+            sobreZona ? "border-primary bg-primary/5" : "border-border bg-secondary/40 hover:bg-secondary/70"
+          }`}
+        >
+          <FileUp className="size-6 text-muted-foreground" />
+          <span className="text-sm font-medium">
+            Arrastra un archivo aquí o <span className="text-primary">selecciónalo</span>
+          </span>
+          <span className="text-xs text-muted-foreground">Imagen o PDF</span>
+        </label>
+      ) : (
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 px-3.5 py-2.5">
+          <div className="flex size-9 flex-none items-center justify-center rounded-md bg-primary/10 text-primary">
+            {archivo.type.startsWith("image/") ? <Image className="size-4.5" /> : <File className="size-4.5" />}
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-sm font-medium">{archivo.name}</span>
+            <span className="text-xs text-muted-foreground">{formatearTamano(archivo.size)}</span>
+          </div>
+          <button
+            type="button"
+            onClick={limpiar}
+            className="flex size-7 flex-none items-center justify-center rounded-md text-muted-foreground hover:bg-critical-soft hover:text-critical"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -216,7 +300,7 @@ export function IncidenciaForm({
             <Label>
               Evidencia adjunta <span className="font-normal text-muted-foreground">(opcional)</span>
             </Label>
-            <Input type="file" name="evidencia" accept="image/*,application/pdf" />
+            <EvidenciaDropzone />
           </div>
         </div>
 
