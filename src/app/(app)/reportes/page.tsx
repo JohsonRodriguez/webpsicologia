@@ -80,7 +80,7 @@ export default async function ReportesPage() {
           )}
         </Panel>
         <Panel icon={BarChart3} title="Incidencias por prioridad">
-          <BarChart data={porPrioridad} />
+          <BarChart data={porPrioridad} barWidthRatio={0.45} />
         </Panel>
       </div>
     </>

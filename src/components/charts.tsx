@@ -1,17 +1,26 @@
 type BarDatum = { label: string; value: number; color: string };
 
-export function BarChart({ data, height = 170 }: { data: BarDatum[]; height?: number }) {
+export function BarChart({
+  data,
+  height = 170,
+  barWidthRatio = 1,
+}: {
+  data: BarDatum[];
+  height?: number;
+  barWidthRatio?: number;
+}) {
   const width = 480;
   const pad = 28;
   const gap = 14;
   const max = Math.max(...data.map((d) => d.value), 1);
-  const barWidth = (width - pad * 2 - gap * (data.length - 1)) / Math.max(data.length, 1);
+  const slotWidth = (width - pad * 2 - gap * (data.length - 1)) / Math.max(data.length, 1);
+  const barWidth = slotWidth * barWidthRatio;
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} className="overflow-visible">
       {data.map((d, i) => {
         const barHeight = max ? (d.value / max) * (height - 40) : 0;
-        const x = pad + i * (barWidth + gap);
+        const x = pad + i * (slotWidth + gap) + (slotWidth - barWidth) / 2;
         const y = height - 26 - barHeight;
         return (
           <g key={d.label}>
