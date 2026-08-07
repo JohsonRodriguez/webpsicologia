@@ -29,30 +29,20 @@ function HeroPanel() {
       className="relative hidden flex-col justify-between overflow-hidden px-16 py-16 text-[#f7ead4] lg:flex"
       style={{ background: "radial-gradient(circle at 70% 45%, #06624d, #003f32 65%)" }}
     >
-      <div className="flex items-center gap-3.5">
-        <Image
-          src="/lord-byron-crest.png"
-          alt="Escudo del Colegio Lord Byron"
-          width={70}
-          height={80}
-          className="h-20 w-auto flex-none"
-          priority
-        />
-        <div>
-          <strong className="block text-[26px] leading-[22px] font-bold">
-            LORD
-            <br />
-            BYRON
-          </strong>
-          <small className="mt-1.5 block text-[10px] tracking-[0.2em]">SCHOOL</small>
-        </div>
-      </div>
+      <Image
+        src="/logo.png"
+        alt="Colegio Lord Byron"
+        width={220}
+        height={128}
+        className="h-16 w-auto flex-none"
+        priority
+      />
 
       <div className="my-auto max-w-[500px]">
-        <h1 className="text-[64px] leading-[1.05] font-semibold text-balance">
-          Psicología
+        <h1 className="text-[46px] leading-[1.1] font-semibold text-balance">
+          Departamento
           <br />
-          Escolar
+          Psicopedagógico
         </h1>
         <p className="mt-4 text-[22px] text-[#f7ead4]">
           Un espacio seguro para acompañar, orientar y fortalecer a nuestra comunidad educativa.
