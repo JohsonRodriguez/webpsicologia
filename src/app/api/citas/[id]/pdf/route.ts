@@ -12,7 +12,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { data: cita } = await supabase
     .from("citas_padres")
     .select(
-      "id, fecha, hora, detalle, asistentes, obs_psicologo, obs_padre, acuerdos_psicologo, compromisos_padre, usuarios!citas_padres_psicologo_id_fkey(nombre), casos(alumnos(nombres, apellidos, codigo)), firmas(firmante_tipo, firmante_nombre, firma_data, fecha_hora)",
+      "id, fecha, hora, detalle, asistentes, acuerdos_psicologo, compromisos_padre, usuarios!citas_padres_psicologo_id_fkey(nombre), casos(alumnos(nombres, apellidos, codigo)), firmas(firmante_tipo, firmante_nombre, firma_data, fecha_hora)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -43,8 +43,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     psicologoNombre: psicologo?.nombre ?? "—",
     asistentes: cita.asistentes,
     detalle: cita.detalle,
-    obsPsicologo: cita.obs_psicologo ?? "—",
-    obsPadre: cita.obs_padre ?? "—",
     acuerdosPsicologo: cita.acuerdos_psicologo ?? "—",
     compromisosPadre: cita.compromisos_padre ?? "—",
     firmas: firmas.map((f) => ({

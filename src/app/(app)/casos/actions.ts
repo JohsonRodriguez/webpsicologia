@@ -109,8 +109,6 @@ export async function crearActaFirmada(_prev: EstadoAccion, formData: FormData):
   const hora = String(formData.get("hora") ?? "");
   const asistentes = String(formData.get("asistentes") ?? "").trim();
   const detalle = String(formData.get("detalle") ?? "").trim();
-  const obsPsicologo = String(formData.get("obs_psicologo") ?? "").trim();
-  const obsPadre = String(formData.get("obs_padre") ?? "").trim();
   const acuerdosPsicologo = String(formData.get("acuerdos_psicologo") ?? "").trim();
   const compromisosPadre = String(formData.get("compromisos_padre") ?? "").trim();
   const firmaPsicologo = String(formData.get("firma_psicologo") ?? "");
@@ -118,7 +116,7 @@ export async function crearActaFirmada(_prev: EstadoAccion, formData: FormData):
   const firmaPadre = String(formData.get("firma_padre") ?? "");
   const firmaPadreNombre = String(formData.get("firma_padre_nombre") ?? "").trim();
 
-  if (!fecha || !hora || !asistentes || !detalle || !obsPsicologo || !obsPadre || !acuerdosPsicologo || !compromisosPadre) {
+  if (!fecha || !hora || !asistentes || !detalle || !acuerdosPsicologo || !compromisosPadre) {
     return { error: "Completa todos los campos del acta." };
   }
   if (!firmaPsicologo || !firmaPsicologoNombre || !firmaPadre || !firmaPadreNombre) {
@@ -134,8 +132,6 @@ export async function crearActaFirmada(_prev: EstadoAccion, formData: FormData):
       hora,
       asistentes,
       detalle,
-      obs_psicologo: obsPsicologo,
-      obs_padre: obsPadre,
       acuerdos_psicologo: acuerdosPsicologo,
       compromisos_padre: compromisosPadre,
     })

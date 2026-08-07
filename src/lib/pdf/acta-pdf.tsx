@@ -51,8 +51,6 @@ export type ActaPdfData = {
   psicologoNombre: string;
   asistentes: string;
   detalle: string;
-  obsPsicologo: string;
-  obsPadre: string;
   acuerdosPsicologo: string;
   compromisosPadre: string;
   firmas: { firmanteTipo: string; firmanteNombre: string; firmaData: string; fechaHora: string }[];
@@ -106,17 +104,6 @@ export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
             boldStyle={styles.paragraphBold}
             italicStyle={styles.paragraphItalic}
           />
-        </View>
-
-        <View style={[styles.section, styles.twoCol]}>
-          <View style={styles.col}>
-            <Text style={styles.sectionTitle}>Observaciones del psicólogo</Text>
-            <Text style={styles.paragraph}>{data.obsPsicologo}</Text>
-          </View>
-          <View style={styles.col}>
-            <Text style={styles.sectionTitle}>Observaciones del padre de familia</Text>
-            <Text style={styles.paragraph}>{data.obsPadre}</Text>
-          </View>
         </View>
 
         <View style={[styles.section, styles.twoCol]}>

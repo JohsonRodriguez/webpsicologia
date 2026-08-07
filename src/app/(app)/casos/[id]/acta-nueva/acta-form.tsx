@@ -93,14 +93,6 @@ export function ActaForm({
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <Label>Observaciones del psicólogo</Label>
-            <Textarea name="obs_psicologo" required />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>Observaciones del padre de familia</Label>
-            <Textarea name="obs_padre" required />
-          </div>
-          <div className="flex flex-col gap-1.5">
             <Label>Acuerdos y compromisos del psicólogo</Label>
             <Textarea name="acuerdos_psicologo" required />
           </div>
