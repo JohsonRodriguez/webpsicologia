@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ClickableRow } from "@/components/clickable-row";
 import { FiltroAcademico } from "@/components/filtro-academico";
@@ -15,7 +16,6 @@ export type FilaAlumno = {
   gradoNombre: string;
   seccionId: string;
   seccionNombre: string;
-  tieneCasoAbierto: boolean;
 };
 
 export function AlumnosFiltro({ filas }: { filas: FilaAlumno[] }) {
@@ -33,7 +33,7 @@ export function AlumnosFiltro({ filas }: { filas: FilaAlumno[] }) {
                 <TableRow>
                   <TableHead>Alumno</TableHead>
                   <TableHead>Grado y sección</TableHead>
-                  <TableHead>Seguimiento</TableHead>
+                  <TableHead>Ver ficha</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -49,15 +49,10 @@ export function AlumnosFiltro({ filas }: { filas: FilaAlumno[] }) {
                       {f.gradoNombre} &quot;{f.seccionNombre}&quot;
                     </TableCell>
                     <TableCell>
-                      {f.tieneCasoAbierto ? (
-                        <span className="inline-flex items-center rounded-full bg-warn px-2.5 py-1 text-xs font-bold text-white">
-                          Caso activo
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 text-xs font-bold text-muted-foreground">
-                          Sin caso abierto
-                        </span>
-                      )}
+                      <span className="inline-flex items-center gap-1 text-sm font-medium text-primary">
+                        Ver ficha
+                        <ArrowRight className="size-3.5" />
+                      </span>
                     </TableCell>
                   </ClickableRow>
                 ))}

@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getAnios, getAnioActivo, nombreAlumno } from "@/lib/queries";
@@ -6,6 +8,7 @@ import { PageHeader } from "@/components/page-header";
 import { PillEstadoIncidencia, PillEstadoCaso, PillPrioridad } from "@/components/status-pills";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ClickableRow } from "@/components/clickable-row";
+import { Button } from "@/components/ui/button";
 import { ActaResumen } from "@/app/(app)/casos/[id]/acta-resumen";
 import { AnioSelector } from "./anio-selector";
 
@@ -77,6 +80,17 @@ export default async function FichaAlumnoPage({
 
   return (
     <>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="self-start"
+        render={
+          <Link href="/alumnos">
+            <ArrowLeft className="size-4" />
+            Volver
+          </Link>
+        }
+      />
       <PageHeader
         eyebrow="Ficha del alumno"
         title={nombreAlumno(alumno)}

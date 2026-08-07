@@ -23,15 +23,6 @@ export default async function AlumnosPage() {
   }
 
   const { data: matriculas } = await query;
-  const alumnoIds = (matriculas ?? []).map((m) => m.alumno_id);
-
-  const { data: casosAbiertos } = await supabase
-    .from("casos")
-    .select("alumno_id")
-    .neq("estado", "cerrado")
-    .in("alumno_id", alumnoIds.length ? alumnoIds : ["00000000-0000-0000-0000-000000000000"]);
-
-  const conCasoAbierto = new Set((casosAbiertos ?? []).map((c) => c.alumno_id));
 
   const filas: FilaAlumno[] = (matriculas ?? [])
     .map((m) => {
@@ -49,7 +40,6 @@ export default async function AlumnosPage() {
         gradoNombre: grado?.nombre ?? "",
         seccionId: m.seccion_id,
         seccionNombre: seccion?.nombre ?? "",
-        tieneCasoAbierto: conCasoAbierto.has(m.alumno_id),
       };
     })
     .sort((a, b) => a.apellidos.localeCompare(b.apellidos));
