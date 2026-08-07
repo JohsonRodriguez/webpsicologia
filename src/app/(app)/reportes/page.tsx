@@ -2,7 +2,8 @@ import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getMatriculasPorAlumno } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
-import { BarChart } from "@/components/charts";
+import { Users, Layers, TrendingUp, BarChart3 } from "lucide-react";
+import { BarChart, DonutChart, Legend, LineChart, HorizontalBarList } from "@/components/charts";
 
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "set", "oct", "nov", "dic"];
 
@@ -18,17 +19,18 @@ export default async function ReportesPage() {
 
   const matriculas = await getMatriculasPorAlumno(supabase);
 
-  const porPsicologo = (psicologos ?? []).map((p) => ({
-    label: p.nombre.split(" ")[0],
-    value: (casos ?? []).filter((c) => c.psicologo_id === p.id).length,
-    color: "var(--primary)",
-  }));
+  const porPsicologo = (psicologos ?? [])
+    .map((p) => ({
+      label: p.nombre.split(" ")[0],
+      value: (casos ?? []).filter((c) => c.psicologo_id === p.id).length,
+    }))
+    .sort((a, b) => b.value - a.value);
 
   const niveles = ["Inicial", "Primaria", "Secundaria"];
-  const porNivel = niveles.map((n) => ({
+  const porNivel = niveles.map((n, i) => ({
     label: n,
     value: (casos ?? []).filter((c) => matriculas.get(c.alumno_id)?.nivelNombre === n).length,
-    color: "var(--info)",
+    color: ["var(--info)", "var(--primary)", "var(--purple)"][i],
   }));
 
   const conteoPorMes = new Map<string, number>();
@@ -41,13 +43,12 @@ export default async function ReportesPage() {
     .map(([key, value]) => ({
       label: MESES[Number(key.slice(5, 7)) - 1],
       value,
-      color: "var(--warn)",
     }));
 
   const porPrioridad = [
-    { label: "baja", value: (incidencias ?? []).filter((i) => i.prioridad === "baja").length, color: "var(--good)" },
-    { label: "media", value: (incidencias ?? []).filter((i) => i.prioridad === "media").length, color: "var(--warn)" },
-    { label: "alta", value: (incidencias ?? []).filter((i) => i.prioridad === "alta").length, color: "var(--critical)" },
+    { label: "Baja", value: (incidencias ?? []).filter((i) => i.prioridad === "baja").length, color: "var(--good)" },
+    { label: "Media", value: (incidencias ?? []).filter((i) => i.prioridad === "media").length, color: "var(--warn)" },
+    { label: "Alta", value: (incidencias ?? []).filter((i) => i.prioridad === "alta").length, color: "var(--critical)" },
   ];
 
   return (
@@ -58,20 +59,27 @@ export default async function ReportesPage() {
         description="Carga de trabajo del equipo, distribución por grado, por mes y por prioridad."
       />
       <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
-        <Panel title="Carga por psicólogo">
-          <BarChart data={porPsicologo} />
+        <Panel icon={Users} title="Carga por psicólogo">
+          {porPsicologo.length > 0 ? (
+            <HorizontalBarList data={porPsicologo} />
+          ) : (
+            <p className="text-sm text-muted-foreground">Sin psicólogos activos.</p>
+          )}
         </Panel>
-        <Panel title="Casos por nivel">
-          <BarChart data={porNivel} />
+        <Panel icon={Layers} title="Casos por nivel">
+          <div className="flex flex-wrap items-center gap-6">
+            <DonutChart data={porNivel} />
+            <Legend items={porNivel} />
+          </div>
         </Panel>
-        <Panel title="Incidencias por mes">
+        <Panel icon={TrendingUp} title="Incidencias por mes">
           {porMes.length ? (
-            <BarChart data={porMes} />
+            <LineChart data={porMes} />
           ) : (
             <p className="text-sm text-muted-foreground">Sin datos suficientes.</p>
           )}
         </Panel>
-        <Panel title="Incidencias por prioridad">
+        <Panel icon={BarChart3} title="Incidencias por prioridad">
           <BarChart data={porPrioridad} />
         </Panel>
       </div>
@@ -79,11 +87,20 @@ export default async function ReportesPage() {
   );
 }
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+function Panel({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm">
-      <div className="border-b border-border p-4">
-        <h3 className="font-heading text-base font-semibold">{title}</h3>
+      <div className="flex items-center gap-2 border-b border-border p-4 text-primary">
+        <Icon className="size-4" />
+        <h3 className="font-heading text-base font-semibold text-foreground">{title}</h3>
       </div>
       <div className="p-4">{children}</div>
     </div>
