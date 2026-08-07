@@ -102,7 +102,7 @@ export function CompletarActaAlumnoDialog({
           }}
           className="flex min-h-0 flex-1 flex-col"
         >
-          <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 overflow-y-auto px-5 py-6">
+          <div className="flex w-full flex-1 flex-col gap-6 overflow-y-auto px-5 py-6 sm:px-10">
             <div className="flex flex-col gap-1.5">
               <Label className="text-base">Declaración del alumno</Label>
               <Textarea
