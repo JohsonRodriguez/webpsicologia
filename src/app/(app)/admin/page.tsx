@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap, Users, FolderOpen, TriangleAlert, UserCog, ChartPie, Layers } from "lucide-react";
+import { GraduationCap, Users, BriefcaseBusiness, Presentation, UserCog, ChartPie, Layers } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getAnioActivo, getMatriculasPorAlumno } from "@/lib/queries";
@@ -65,16 +65,14 @@ export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
   const anioActivo = await getAnioActivo(supabase);
-  const [{ data: matriculas }, { data: usuarios }, { data: casos }, { data: incidencias }] = await Promise.all([
+  const [{ data: matriculas }, { data: usuarios }] = await Promise.all([
     supabase.from("matriculas").select("id").eq("anio_academico_id", anioActivo?.id ?? ""),
     supabase.from("usuarios").select("id, rol, activo"),
-    supabase.from("casos").select("id, estado"),
-    supabase.from("incidencias").select("id, fecha_hora"),
   ]);
 
   const matriculasPorAlumno = await getMatriculasPorAlumno(supabase);
-  const anioNum = anioActivo?.anio ?? new Date().getFullYear();
-  const incidenciasEsteAnio = (incidencias ?? []).filter((i) => new Date(i.fecha_hora).getFullYear() === anioNum).length;
+  const totalDocentes = (usuarios ?? []).filter((u) => u.rol === "profesor").length;
+  const totalPsicologos = (usuarios ?? []).filter((u) => u.rol === "psicologo" || u.rol === "jefe_psicologia").length;
 
   const roles: Rol[] = ["profesor", "psicologo", "jefe_psicologia", "administrador"];
   const porRol = roles.map((r) => ({
@@ -111,8 +109,8 @@ export default async function AdminDashboardPage() {
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
         <StatTile label="Alumnos matriculados" value={matriculas?.length ?? 0} icon={GraduationCap} tono="primary" />
         <StatTile label="Usuarios activos" value={(usuarios ?? []).filter((u) => u.activo).length} icon={Users} tono="good" />
-        <StatTile label="Casos abiertos" value={(casos ?? []).filter((c) => c.estado !== "cerrado").length} icon={FolderOpen} tono="warn" />
-        <StatTile label={`Incidencias ${anioNum}`} value={incidenciasEsteAnio} icon={TriangleAlert} tono="critical" />
+        <StatTile label="Total de psicólogos" value={totalPsicologos} icon={BriefcaseBusiness} tono="warn" />
+        <StatTile label="Total de docentes" value={totalDocentes} icon={Presentation} tono="critical" />
       </div>
       <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
         <CardChart icon={ChartPie} titulo="Usuarios por rol">
