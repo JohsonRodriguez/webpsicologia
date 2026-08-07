@@ -11,7 +11,7 @@ export function CerrarCasoButton({ casoId }: { casoId: string }) {
 
   return (
     <Button
-      variant="outline"
+      className="bg-critical text-white hover:bg-critical/90"
       disabled={pending}
       onClick={() => {
         if (!confirm("¿Cerrar este caso? Si viene de una incidencia, también se cerrará.")) return;

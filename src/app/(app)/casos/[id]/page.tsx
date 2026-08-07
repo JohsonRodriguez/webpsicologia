@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, CalendarClock, CalendarCheck2, FileText, Plus, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, CalendarClock, CalendarCheck2, FileText, History, Plus, UserRound } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { nombreAlumno } from "@/lib/queries";
@@ -18,6 +18,23 @@ const ESTADO_BORDE: Record<string, string> = {
   derivado: "border-l-purple",
   cerrado: "border-l-good",
 };
+
+type CasoHistorial = {
+  id: string;
+  estado: string;
+  fecha_apertura: string;
+  incidencia_id: string | null;
+  incidencias: { motivo_otro: string | null; catalogo_motivos: { nombre: string } | null } | null;
+  notas_seguimiento: { contenido: string; fecha: string }[];
+};
+
+function motivoDeCaso(c: CasoHistorial) {
+  if (c.incidencia_id) {
+    return c.incidencias?.motivo_otro || c.incidencias?.catalogo_motivos?.nombre || "—";
+  }
+  const notas = [...(c.notas_seguimiento ?? [])].sort((a, b) => a.fecha.localeCompare(b.fecha));
+  return notas[0]?.contenido || "—";
+}
 
 export default async function CasoDetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -41,7 +58,7 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
   const puedeGestionar = usuario.rol === "jefe_psicologia" || caso.psicologo_id === usuario.id;
   const abierto = caso.estado !== "cerrado";
 
-  const [{ data: citas }, { data: actasAlumno }, { data: psicologos }] = await Promise.all([
+  const [{ data: citas }, { data: actasAlumno }, { data: psicologos }, { data: historial }] = await Promise.all([
     supabase.from("citas_padres").select("id, fecha, hora, detalle, firmas(id, firmante_tipo, firmante_nombre, fecha_hora)").eq("caso_id", caso.id),
     supabase
       .from("actas_alumno")
@@ -51,6 +68,14 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
     usuario.rol === "jefe_psicologia"
       ? supabase.from("usuarios").select("id, nombre").eq("rol", "psicologo").eq("activo", true).neq("id", caso.psicologo_id)
       : Promise.resolve({ data: [] }),
+    supabase
+      .from("casos")
+      .select(
+        "id, estado, fecha_apertura, incidencia_id, incidencias(motivo_otro, catalogo_motivos(nombre)), notas_seguimiento(contenido, fecha)",
+      )
+      .eq("alumno_id", caso.alumno_id)
+      .neq("id", caso.id)
+      .order("fecha_apertura", { ascending: false }),
   ]);
 
   return (
@@ -95,6 +120,30 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
           )}
         </div>
       </div>
+
+      <SeccionCard icon={History} titulo="Historial de casos del alumno">
+        {historial && historial.length > 0 ? (
+          <div className="flex flex-col divide-y divide-border">
+            {(historial as unknown as CasoHistorial[]).map((h) => (
+              <Link
+                key={h.id}
+                href={`/casos/${h.id}`}
+                className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0 hover:text-primary"
+              >
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <PillEstadoCaso estado={h.estado} />
+                  <span className="truncate text-sm">{motivoDeCaso(h)}</span>
+                </div>
+                <span className="flex-none text-xs tabular-nums text-muted-foreground">
+                  {new Date(h.fecha_apertura).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                </span>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Este es el primer caso registrado para el alumno.</p>
+        )}
+      </SeccionCard>
 
       <div className="flex flex-wrap items-center gap-2">
         {abierto && puedeGestionar && <CerrarCasoButton casoId={caso.id} />}
