@@ -48,7 +48,7 @@ export default async function AlumnosPage() {
     <>
       <PageHeader
         eyebrow="Alumnos"
-        title={usuario.rol === "jefe_psicologia" ? "Alumnos del colegio" : "Alumnos de mi nivel"}
+        title={usuario.rol === "jefe_psicologia" ? "Alumnos del colegio" : "Mis estudiantes"}
         description="Consulta la ficha de cualquier alumno, tenga o no un caso abierto contigo. Filtra por nivel, grado y sección."
       />
       {filas.length === 0 ? (

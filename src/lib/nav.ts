@@ -41,7 +41,7 @@ export function navFor(rol: Rol): NavGroup[] {
         { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
         { href: "/casos", label: "Mis casos e incidencias", icon: FolderOpen },
         { href: "/reuniones", label: "Reuniones con padres", icon: CalendarClock },
-        { href: "/alumnos", label: "Alumnos de mi nivel", icon: Users },
+        { href: "/alumnos", label: "Mis estudiantes", icon: Users },
         { href: "/notificaciones", label: "Notificaciones", icon: Bell },
         { href: "/mi-firma", label: "Mi firma", icon: PenLine },
       ],

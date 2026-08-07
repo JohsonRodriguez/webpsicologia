@@ -1,20 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  FolderOpen,
-  TriangleAlert,
-  FileCheck2,
-  GraduationCap,
-  UserRound,
-  FileText,
-  ListChecks,
-} from "lucide-react";
+import { ArrowLeft, FolderOpen, FileCheck2, GraduationCap, UserRound, FileText } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getAnios, getAnioActivo, nombreAlumno } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
-import { PillEstadoIncidencia, PillEstadoCaso, PillPrioridad } from "@/components/status-pills";
+import { PillEstadoCaso } from "@/components/status-pills";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ClickableRow } from "@/components/clickable-row";
 import { Button } from "@/components/ui/button";
@@ -99,14 +90,6 @@ export default async function FichaAlumnoPage({
 
   const yearStr = String(anioSeleccionado?.anio ?? "");
 
-  const { data: incidencias } = await supabase
-    .from("incidencias")
-    .select("id, motivo_id, motivo_otro, prioridad, estado, fecha_hora, catalogo_motivos(nombre)")
-    .eq("alumno_id", id)
-    .gte("fecha_hora", `${yearStr}-01-01`)
-    .lt("fecha_hora", `${Number(yearStr) + 1}-01-01`)
-    .order("fecha_hora", { ascending: false });
-
   const { data: casos } = await supabase
     .from("casos")
     .select("id, tipo, estado, fecha_apertura, usuarios!casos_psicologo_id_fkey(nombre)")
@@ -175,46 +158,10 @@ export default async function FichaAlumnoPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
-        <StatTile label={`Incidencias ${anioSeleccionado?.anio ?? ""}`} value={incidencias?.length ?? 0} icon={TriangleAlert} tono="warn" />
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <StatTile label={`Casos ${anioSeleccionado?.anio ?? ""}`} value={casos?.length ?? 0} icon={FolderOpen} tono="primary" />
         <StatTile label="Actas firmadas" value={actasFirmadas} icon={FileCheck2} tono="good" />
       </div>
-
-      <SeccionCard icon={ListChecks} titulo="Incidencias">
-        {incidencias && incidencias.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Motivo</TableHead>
-                <TableHead>Prioridad</TableHead>
-                <TableHead>Estado</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {incidencias.map((i) => (
-                <ClickableRow key={i.id} href={`/incidencias/${i.id}`}>
-                  <TableCell className="tabular-nums">
-                    {new Date(i.fecha_hora).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
-                  </TableCell>
-                  <TableCell>
-                    {i.motivo_otro || (i.catalogo_motivos as unknown as { nombre: string } | null)?.nombre}
-                  </TableCell>
-                  <TableCell>
-                    <PillPrioridad prioridad={i.prioridad} />
-                  </TableCell>
-                  <TableCell>
-                    <PillEstadoIncidencia estado={i.estado} />
-                  </TableCell>
-                </ClickableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <p className="px-4 py-10 text-center text-sm text-muted-foreground">Sin incidencias en este año lectivo.</p>
-        )}
-      </SeccionCard>
 
       <SeccionCard icon={FolderOpen} titulo="Casos">
         {casos && casos.length > 0 ? (
