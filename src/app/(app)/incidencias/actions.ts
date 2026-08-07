@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { getAnioActivo } from "@/lib/queries";
+import { enviarCorreoIncidenciaAsignada } from "@/lib/email";
 
 export type EstadoAccion = { error?: string };
 
@@ -33,7 +35,7 @@ export async function crearIncidencia(_prev: EstadoAccion, formData: FormData): 
       acciones_tomadas: acciones,
       involucrados: involucrados || null,
     })
-    .select("id")
+    .select("id, alumnos(nombres, apellidos), catalogo_motivos(nombre)")
     .single();
 
   if (error || !incidencia) {
@@ -48,7 +50,49 @@ export async function crearIncidencia(_prev: EstadoAccion, formData: FormData): 
     }
   }
 
+  await notificarPsicologoPorCorreo(supabase, {
+    alumnoId,
+    alumno: incidencia.alumnos as unknown as { nombres: string; apellidos: string } | null,
+    motivo: incidencia.catalogo_motivos as unknown as { nombre: string } | null,
+    prioridad,
+  });
+
   redirect(`/incidencias/${incidencia.id}`);
+}
+
+async function notificarPsicologoPorCorreo(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  params: {
+    alumnoId: string;
+    alumno: { nombres: string; apellidos: string } | null;
+    motivo: { nombre: string } | null;
+    prioridad: string;
+  },
+) {
+  const anioActivo = await getAnioActivo(supabase);
+  const { data: matricula } = await supabase
+    .from("matriculas")
+    .select("grado_id")
+    .eq("alumno_id", params.alumnoId)
+    .eq("anio_academico_id", anioActivo?.id ?? "")
+    .maybeSingle();
+  if (!matricula) return;
+
+  const { data: asignacion } = await supabase
+    .from("psicologo_grado")
+    .select("usuarios(nombre, email)")
+    .eq("grado_id", matricula.grado_id)
+    .maybeSingle();
+  const psicologo = asignacion?.usuarios as unknown as { nombre: string; email: string } | null;
+  if (!psicologo || !params.alumno) return;
+
+  await enviarCorreoIncidenciaAsignada({
+    psicologoEmail: psicologo.email,
+    psicologoNombre: psicologo.nombre,
+    alumnoNombre: `${params.alumno.nombres} ${params.alumno.apellidos}`,
+    motivo: params.motivo?.nombre ?? "—",
+    prioridad: params.prioridad,
+  });
 }
 
 export async function marcarNotificacionLeida(id: string) {

@@ -3,15 +3,30 @@
 import { revalidatePath } from "next/cache";
 import { requireUsuario } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Rol } from "@/lib/roles";
+import { rolLabel, type Rol } from "@/lib/roles";
+import { enviarCorreoRolAsignado } from "@/lib/email";
 
 export type EstadoAccion = { error?: string; ok?: boolean };
 
 export async function actualizarUsuario(id: string, cambios: { rol?: Rol | null; activo?: boolean }) {
   await requireUsuario(["administrador"]);
   const admin = createAdminClient();
-  const { error } = await admin.from("usuarios").update(cambios).eq("id", id);
+  const { data: usuario, error } = await admin
+    .from("usuarios")
+    .update(cambios)
+    .eq("id", id)
+    .select("nombre, email")
+    .single();
   if (error) return { error: "No se pudo actualizar el usuario." };
+
+  if (cambios.rol && usuario) {
+    await enviarCorreoRolAsignado({
+      usuarioEmail: usuario.email,
+      usuarioNombre: usuario.nombre,
+      rolLabel: rolLabel(cambios.rol),
+    });
+  }
+
   revalidatePath("/admin/usuarios");
   return { ok: true };
 }
