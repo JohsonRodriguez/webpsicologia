@@ -1,12 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getAnioActivo } from "@/lib/queries";
 import { enviarCorreoIncidenciaAsignada } from "@/lib/email";
 
-export type EstadoAccion = { error?: string };
+export type EstadoAccion = { error?: string; ok?: boolean };
 
 export async function crearIncidencia(_prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
   const usuario = await requireUsuario(["profesor"]);
@@ -71,6 +72,83 @@ export async function crearIncidencia(_prev: EstadoAccion, formData: FormData): 
   });
 
   redirect(`/incidencias/${incidencia.id}`);
+}
+
+export async function actualizarIncidencia(
+  incidenciaId: string,
+  _prev: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
+  const usuario = await requireUsuario(["profesor"]);
+  const supabase = await createClient();
+
+  const { data: inc } = await supabase
+    .from("incidencias")
+    .select("id, profesor_id")
+    .eq("id", incidenciaId)
+    .maybeSingle();
+
+  if (!inc || inc.profesor_id !== usuario.id) {
+    return { error: "No tienes permiso para editar esta incidencia." };
+  }
+
+  const { count } = await supabase
+    .from("casos")
+    .select("id", { count: "exact", head: true })
+    .eq("incidencia_id", incidenciaId);
+
+  if (count && count > 0) {
+    return { error: "El psicólogo ya tomó este caso: la incidencia ya no se puede editar." };
+  }
+
+  const motivoId = String(formData.get("motivo") ?? "");
+  const motivoOtro = String(formData.get("motivo_otro") ?? "").trim();
+  const prioridad = String(formData.get("prioridad") ?? "");
+  const descripcion = String(formData.get("descripcion") ?? "").trim();
+  const acciones = String(formData.get("acciones") ?? "").trim();
+  const involucrados = String(formData.get("involucrados") ?? "").trim();
+  const evidencia = formData.get("evidencia");
+
+  if (!motivoId || !prioridad || !descripcion || !acciones) {
+    return { error: "Completa todos los campos obligatorios." };
+  }
+
+  const { data: motivoSeleccionado } = await supabase
+    .from("catalogo_motivos")
+    .select("nombre")
+    .eq("id", motivoId)
+    .maybeSingle();
+
+  if (motivoSeleccionado?.nombre === "Otro" && !motivoOtro) {
+    return { error: "Especifica el motivo." };
+  }
+
+  const { error } = await supabase
+    .from("incidencias")
+    .update({
+      motivo_id: motivoId,
+      motivo_otro: motivoSeleccionado?.nombre === "Otro" ? motivoOtro : null,
+      prioridad,
+      descripcion,
+      acciones_tomadas: acciones,
+      involucrados: involucrados || null,
+    })
+    .eq("id", incidenciaId);
+
+  if (error) {
+    return { error: "No se pudo actualizar la incidencia. Intenta nuevamente." };
+  }
+
+  if (evidencia instanceof File && evidencia.size > 0) {
+    const path = `${incidenciaId}/${Date.now()}-${evidencia.name}`;
+    const { error: uploadError } = await supabase.storage.from("evidencias").upload(path, evidencia);
+    if (!uploadError) {
+      await supabase.from("evidencias").insert({ incidencia_id: incidenciaId, archivo_url: path });
+    }
+  }
+
+  revalidatePath(`/incidencias/${incidenciaId}`);
+  return { ok: true };
 }
 
 async function notificarPsicologoPorCorreo(

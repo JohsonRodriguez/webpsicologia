@@ -19,10 +19,11 @@ import {
 } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getMatriculasPorAlumno, nombreAlumno } from "@/lib/queries";
+import { getCatalogoMotivos, getMatriculasPorAlumno, nombreAlumno } from "@/lib/queries";
 import { PillEstadoIncidencia, PillEstadoCaso, PillPrioridad } from "@/components/status-pills";
 import { Button } from "@/components/ui/button";
 import { AbrirCasoButton } from "./abrir-caso-button";
+import { EditarIncidenciaDialog } from "./editar-incidencia-dialog";
 
 const PRIORIDAD_BORDE: Record<string, string> = {
   baja: "border-l-good",
@@ -141,20 +142,38 @@ export default async function IncidenciaDetallePage({
   );
 
   const puedeGestionar = usuario.rol === "psicologo" || usuario.rol === "jefe_psicologia";
+  const puedeEditar = usuario.rol === "profesor" && inc.profesor_id === usuario.id && !caso;
+  const motivos = puedeEditar ? await getCatalogoMotivos(supabase) : [];
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="self-start"
-        render={
-          <Link href={usuario.rol === "profesor" ? "/incidencias" : "/casos"}>
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        }
-      />
+      <div className="flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="self-start"
+          render={
+            <Link href={usuario.rol === "profesor" ? "/incidencias" : "/casos"}>
+              <ArrowLeft className="size-4" />
+              Volver
+            </Link>
+          }
+        />
+        {puedeEditar && (
+          <EditarIncidenciaDialog
+            incidenciaId={inc.id}
+            motivos={motivos}
+            valoresIniciales={{
+              motivoId: inc.motivo_id,
+              motivoOtro: inc.motivo_otro ?? "",
+              prioridad: inc.prioridad,
+              descripcion: inc.descripcion,
+              acciones: inc.acciones_tomadas,
+              involucrados: inc.involucrados ?? "",
+            }}
+          />
+        )}
+      </div>
 
       <div
         className={`flex flex-col gap-4 rounded-2xl border border-l-4 border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between ${
@@ -287,7 +306,11 @@ export default async function IncidenciaDetallePage({
           {usuario.rol === "profesor" && (
             <div className="flex items-start gap-2.5 rounded-lg bg-info-soft px-3.5 py-2.5 text-sm text-info">
               <Info className="mt-0.5 size-4 flex-none" />
-              <span>Esta incidencia quedó fija al enviarse: no puedes editarla ni comentarla.</span>
+              <span>
+                {puedeEditar
+                  ? "Puedes editar esta incidencia mientras el psicólogo no abra un caso de seguimiento."
+                  : "Esta incidencia ya no se puede editar: el psicólogo abrió un caso de seguimiento a partir de ella."}
+              </span>
             </div>
           )}
         </div>
