@@ -52,7 +52,7 @@ export default async function AdminGradosPage() {
                   variant="row"
                   placeholder="Nombre del grado"
                   triggerLabel="Agregar grado"
-                  onCreate={(nombre) => crearGrado(nivel.id, nombre)}
+                  onCreate={crearGrado.bind(null, nivel.id)}
                 />
               </div>
               <div className="flex flex-col divide-y divide-border">
@@ -70,11 +70,11 @@ export default async function AdminGradosPage() {
                         <div className="flex items-center gap-2">
                           <EditableName
                             value={g.nombre}
-                            onSave={(nombre) => renombrarGrado(g.id, nombre)}
+                            onSave={renombrarGrado.bind(null, g.id)}
                             textClassName="font-semibold"
                           />
                           <EliminarButton
-                            onDelete={() => eliminarGrado(g.id)}
+                            onDelete={eliminarGrado.bind(null, g.id)}
                             confirmMessage={`¿Eliminar el grado "${g.nombre}"? Esta acción no se puede deshacer.`}
                           />
                         </div>
@@ -88,10 +88,10 @@ export default async function AdminGradosPage() {
                             key={s.id}
                             className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/50 px-2.5 py-1 text-xs"
                           >
-                            <EditableName value={s.nombre} onSave={(nombre) => renombrarSeccion(s.id, nombre)} />
+                            <EditableName value={s.nombre} onSave={renombrarSeccion.bind(null, s.id)} />
                             <span className="text-muted-foreground">({alumnosPorSeccion.get(s.id) ?? 0})</span>
                             <EliminarButton
-                              onDelete={() => eliminarSeccion(s.id)}
+                              onDelete={eliminarSeccion.bind(null, s.id)}
                               confirmMessage={`¿Eliminar la sección "${s.nombre}"?`}
                             />
                           </div>
@@ -100,7 +100,7 @@ export default async function AdminGradosPage() {
                           variant="chip"
                           placeholder="Sección"
                           triggerLabel="Sección"
-                          onCreate={(nombre) => crearSeccion(g.id, nombre)}
+                          onCreate={crearSeccion.bind(null, g.id)}
                         />
                       </div>
                     </div>
