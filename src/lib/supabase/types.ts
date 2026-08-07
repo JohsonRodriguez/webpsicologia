@@ -22,7 +22,7 @@ export type Database = {
           firma_fecha_hora: string | null
           hora: string
           id: string
-          observaciones: string
+          observaciones: string | null
           psicologo_id: string
         }
         Insert: {
@@ -37,7 +37,7 @@ export type Database = {
           firma_fecha_hora?: string | null
           hora: string
           id?: string
-          observaciones: string
+          observaciones?: string | null
           psicologo_id: string
         }
         Update: {
@@ -52,7 +52,7 @@ export type Database = {
           firma_fecha_hora?: string | null
           hora?: string
           id?: string
-          observaciones?: string
+          observaciones?: string | null
           psicologo_id?: string
         }
         Relationships: [

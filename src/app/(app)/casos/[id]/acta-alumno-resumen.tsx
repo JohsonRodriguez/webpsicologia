@@ -2,6 +2,7 @@ import { PenLine } from "lucide-react";
 import { PdfDownloadLink } from "@/components/pdf-download-link";
 import { TextoConEnfasis } from "@/components/texto-con-enfasis";
 import { CompletarActaAlumnoDialog } from "./completar-acta-alumno-dialog";
+import { ObservacionesActaAlumno } from "./observaciones-acta-alumno";
 
 type ActaAlumno = {
   id: string;
@@ -10,6 +11,7 @@ type ActaAlumno = {
   detalle: string;
   declaracion_alumno: string | null;
   acuerdos: string | null;
+  observaciones: string | null;
   firma_alumno_nombre: string | null;
   firma_fecha_hora: string | null;
 };
@@ -53,11 +55,14 @@ export function ActaAlumnoResumen({ acta, alumnoNombre }: { acta: ActaAlumno; al
         </p>
       )}
       {firmada && (
-        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <PenLine className="size-3" />
-          {acta.firma_alumno_nombre} (alumno) —{" "}
-          {new Date(acta.firma_fecha_hora!).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" })}
-        </span>
+        <>
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <PenLine className="size-3" />
+            {acta.firma_alumno_nombre} (alumno) —{" "}
+            {new Date(acta.firma_fecha_hora!).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" })}
+          </span>
+          <ObservacionesActaAlumno actaId={acta.id} observacionesIniciales={acta.observaciones} />
+        </>
       )}
     </div>
   );

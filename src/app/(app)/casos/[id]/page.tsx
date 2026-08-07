@@ -61,7 +61,7 @@ export default async function CasoDetallePage({ params }: { params: Promise<{ id
     supabase.from("citas_padres").select("id, fecha, hora, detalle, firmas(id, firmante_tipo, firmante_nombre, fecha_hora)").eq("caso_id", caso.id),
     supabase
       .from("actas_alumno")
-      .select("id, fecha, hora, detalle, declaracion_alumno, acuerdos, firma_alumno_nombre, firma_fecha_hora")
+      .select("id, fecha, hora, detalle, declaracion_alumno, acuerdos, observaciones, firma_alumno_nombre, firma_fecha_hora")
       .eq("caso_id", caso.id)
       .order("fecha", { ascending: false }),
     usuario.rol === "jefe_psicologia"

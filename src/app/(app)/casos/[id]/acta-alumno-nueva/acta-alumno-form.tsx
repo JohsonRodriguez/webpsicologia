@@ -65,14 +65,10 @@ export function ActaAlumnoForm({
             </p>
           )}
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Label>Observaciones del psicólogo</Label>
-          <Textarea name="observaciones" required />
-        </div>
-
         <p className="rounded-md bg-info-soft px-3 py-2.5 text-sm text-info">
           Después de guardar, podrás pedirle al alumno que complete su declaración, su compromiso y su firma desde
-          una ventana aparte, sin ver este contenido.
+          una ventana aparte, sin ver este contenido. Tus observaciones se agregan después, una vez que el alumno
+          firme.
         </p>
 
         {state.error && (

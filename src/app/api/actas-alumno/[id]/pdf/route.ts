@@ -40,7 +40,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     hora: acta.hora,
     psicologoNombre: psicologo?.nombre ?? "—",
     detalle: acta.detalle,
-    observaciones: acta.observaciones,
+    observaciones: acta.observaciones || "Sin observaciones registradas.",
     declaracionAlumno: acta.declaracion_alumno ?? "—",
     acuerdos: acta.acuerdos ?? "—",
     firmaAlumnoNombre: acta.firma_alumno_nombre,

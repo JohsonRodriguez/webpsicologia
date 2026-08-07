@@ -174,9 +174,8 @@ export async function crearActaAlumno(_prev: EstadoAccion, formData: FormData): 
   const fecha = String(formData.get("fecha") ?? "");
   const hora = String(formData.get("hora") ?? "");
   const detalle = String(formData.get("detalle") ?? "").trim();
-  const observaciones = String(formData.get("observaciones") ?? "").trim();
 
-  if (!fecha || !hora || !detalle || !observaciones) {
+  if (!fecha || !hora || !detalle) {
     return { error: "Completa todos los campos del acta." };
   }
 
@@ -186,12 +185,37 @@ export async function crearActaAlumno(_prev: EstadoAccion, formData: FormData): 
     fecha,
     hora,
     detalle,
-    observaciones,
   });
 
   if (error) return { error: "No se pudo guardar el acta." };
 
   redirect(`/casos/${casoId}`);
+}
+
+export async function guardarObservacionesActaAlumno(actaId: string, observaciones: string) {
+  await requireUsuario(["psicologo", "jefe_psicologia"]);
+  const supabase = await createClient();
+
+  const { data: acta } = await supabase
+    .from("actas_alumno")
+    .select("caso_id, firma_alumno_data")
+    .eq("id", actaId)
+    .maybeSingle();
+
+  if (!acta) return { error: "Acta no encontrada." };
+  if (!acta.firma_alumno_data) {
+    return { error: "Debes esperar a que el alumno firme antes de agregar tus observaciones." };
+  }
+
+  const { error } = await supabase
+    .from("actas_alumno")
+    .update({ observaciones: observaciones.trim() || null })
+    .eq("id", actaId);
+
+  if (error) return { error: "No se pudo guardar." };
+
+  revalidatePath(`/casos/${acta.caso_id}`);
+  return { ok: true };
 }
 
 export async function guardarActaAlumnoAlumno(
