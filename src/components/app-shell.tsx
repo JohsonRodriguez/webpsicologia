@@ -50,7 +50,7 @@ export function AppShell({
         )}
       >
         <div className="flex items-center gap-2.5 px-2 pb-4 pt-1">
-          <Image src="/insignia.png" alt="" width={68} height={70} className="h-8.5 w-[37px] flex-none object-contain" />
+          <Image src="/insignia.png" alt="" width={68} height={70} className="h-8.5 w-[50px] flex-none object-contain" />
 
           <div className="leading-tight">
             <p className="font-heading text-sm font-semibold text-sidebar-foreground">Departamento Psicopedagógico</p>
