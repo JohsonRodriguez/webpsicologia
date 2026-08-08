@@ -63,6 +63,26 @@ export async function enviarCorreoIncidenciaAsignada(params: {
   });
 }
 
+export async function enviarCorreoIncidenciaEnProceso(params: {
+  profesorEmail: string;
+  profesorNombre: string;
+  alumnoNombre: string;
+  psicologoNombre: string;
+}) {
+  await sendEmail({
+    to: params.profesorEmail,
+    subject: `Tu incidencia sobre ${params.alumnoNombre} ya está en proceso`,
+    html: wrapper(
+      "Tu incidencia pasó a seguimiento",
+      `<p style="font-size:14px; line-height:1.5;">Hola ${params.profesorNombre},</p>
+       <p style="font-size:14px; line-height:1.5;">
+         El psicólogo <strong>${params.psicologoNombre}</strong> abrió un caso de seguimiento a partir de la
+         incidencia que reportaste sobre <strong>${params.alumnoNombre}</strong>. Ya está siendo atendida.
+       </p>`,
+    ),
+  });
+}
+
 export async function enviarCorreoRolAsignado(params: {
   usuarioEmail: string;
   usuarioNombre: string;

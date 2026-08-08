@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getAnioActivo } from "@/lib/queries";
+import { getAnioActivo, nombreAlumno } from "@/lib/queries";
+import { enviarCorreoIncidenciaEnProceso } from "@/lib/email";
 
 export type EstadoAccion = { error?: string; ok?: boolean };
 
@@ -42,7 +43,7 @@ export async function abrirCasoDesdeIncidencia(incidenciaId: string) {
 
   const { data: inc } = await supabase
     .from("incidencias")
-    .select("id, alumno_id")
+    .select("id, alumno_id, alumnos(nombres, apellidos), usuarios!incidencias_profesor_id_fkey(nombre, email)")
     .eq("id", incidenciaId)
     .maybeSingle();
   if (!inc) return { error: "Incidencia no encontrada." };
@@ -82,6 +83,18 @@ export async function abrirCasoDesdeIncidencia(incidenciaId: string) {
   if (error || !caso) return { error: "No se pudo abrir el caso." };
 
   await supabase.from("incidencias").update({ estado: "derivada" }).eq("id", inc.id);
+
+  const { data: psicologo } = await supabase.from("usuarios").select("nombre").eq("id", psicologoId).maybeSingle();
+  const alumno = inc.alumnos as unknown as { nombres: string; apellidos: string } | null;
+  const profesor = inc.usuarios as unknown as { nombre: string; email: string } | null;
+  if (alumno && profesor) {
+    await enviarCorreoIncidenciaEnProceso({
+      profesorEmail: profesor.email,
+      profesorNombre: profesor.nombre,
+      alumnoNombre: nombreAlumno(alumno),
+      psicologoNombre: psicologo?.nombre ?? "—",
+    });
+  }
 
   redirect(`/casos/${caso.id}`);
 }
