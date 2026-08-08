@@ -1,8 +1,10 @@
 import "server-only";
 import { Resend } from "resend";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://psicologia.myliteracyhub.com";
 const FROM = process.env.EMAIL_FROM ?? "Psicología Lord Byron <notificaciones@myliteracyhub.com>";
+const LIMITE_DIARIO = 100;
 
 let client: Resend | null = null;
 function getClient() {
@@ -11,19 +13,86 @@ function getClient() {
   return client;
 }
 
+function inicioDeHoyLima() {
+  const fechaLima = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Lima",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  return new Date(`${fechaLima}T00:00:00-05:00`).toISOString();
+}
+
 // El envío nunca debe tumbar la acción que lo dispara (crear incidencia, asignar
-// rol, etc.): si Resend no está configurado o falla, solo se registra el error.
+// rol, etc.): encolar y procesar siempre atrapan sus propios errores.
 async function sendEmail(params: { to: string; subject: string; html: string }) {
-  const resend = getClient();
-  if (!resend) {
-    console.warn("RESEND_API_KEY no configurado; se omite el envío de correo:", params.subject);
+  try {
+    const supabase = createAdminClient();
+    await supabase.from("correos_cola").insert({
+      destinatario_email: params.to,
+      asunto: params.subject,
+      html: params.html,
+    });
+  } catch (err) {
+    console.error("No se pudo encolar el correo", err);
     return;
   }
-  try {
-    const { error } = await resend.emails.send({ from: FROM, ...params });
-    if (error) console.error("Resend error", error);
-  } catch (err) {
-    console.error("No se pudo enviar el correo", err);
+  await procesarColaCorreos();
+}
+
+/**
+ * Envía los correos pendientes respetando un límite de 100 envíos por día
+ * (calendario de Lima). Lo que exceda el límite queda "pendiente" y se
+ * reintenta en la siguiente llamada (otro correo del mismo día una vez que
+ * haya cupo mañana, o el cron diario que barre la cola).
+ */
+export async function procesarColaCorreos() {
+  const resend = getClient();
+  if (!resend) {
+    console.warn("RESEND_API_KEY no configurado; se omite el procesamiento de la cola de correos.");
+    return;
+  }
+
+  const supabase = createAdminClient();
+  const inicioHoy = inicioDeHoyLima();
+
+  const { count: enviadosHoy } = await supabase
+    .from("correos_cola")
+    .select("id", { count: "exact", head: true })
+    .eq("estado", "enviado")
+    .gte("enviado_en", inicioHoy);
+
+  const disponibles = LIMITE_DIARIO - (enviadosHoy ?? 0);
+  if (disponibles <= 0) return;
+
+  const { data: pendientes } = await supabase
+    .from("correos_cola")
+    .select("id, destinatario_email, asunto, html")
+    .eq("estado", "pendiente")
+    .order("creado_en", { ascending: true })
+    .limit(disponibles);
+
+  for (const correo of pendientes ?? []) {
+    try {
+      const { error } = await resend.emails.send({
+        from: FROM,
+        to: correo.destinatario_email,
+        subject: correo.asunto,
+        html: correo.html,
+      });
+      if (error) {
+        console.error("Resend error", error);
+        await supabase.from("correos_cola").update({ estado: "error" }).eq("id", correo.id);
+      } else {
+        await supabase
+          .from("correos_cola")
+          .update({ estado: "enviado", enviado_en: new Date().toISOString() })
+          .eq("id", correo.id);
+      }
+    } catch (err) {
+      console.error("No se pudo enviar el correo", err);
+      await supabase.from("correos_cola").update({ estado: "error" }).eq("id", correo.id);
+    }
   }
 }
 

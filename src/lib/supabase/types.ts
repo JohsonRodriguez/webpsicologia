@@ -252,6 +252,36 @@ export type Database = {
           },
         ]
       }
+      correos_cola: {
+        Row: {
+          asunto: string
+          creado_en: string
+          destinatario_email: string
+          enviado_en: string | null
+          estado: string
+          html: string
+          id: string
+        }
+        Insert: {
+          asunto: string
+          creado_en?: string
+          destinatario_email: string
+          enviado_en?: string | null
+          estado?: string
+          html: string
+          id?: string
+        }
+        Update: {
+          asunto?: string
+          creado_en?: string
+          destinatario_email?: string
+          enviado_en?: string | null
+          estado?: string
+          html?: string
+          id?: string
+        }
+        Relationships: []
+      }
       evidencias: {
         Row: {
           archivo_url: string
