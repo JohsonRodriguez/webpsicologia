@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getUsuarioActual } from "@/lib/auth";
-import { rutaInicioPara } from "@/lib/roles";
+import { rutaInicioPara, type Rol } from "@/lib/roles";
 
 const ALLOWED_DOMAIN = (process.env.ALLOWED_EMAIL_DOMAIN ?? "byron.edu.pe").toLowerCase();
 
@@ -27,9 +26,24 @@ export async function GET(request: Request) {
         // en vez de rebotar por "/" — esa página solo existía para hacer
         // exactamente esta consulta y redirigir de nuevo, un salto completo
         // de ida y vuelta al navegador que esta ruta ya puede evitarse.
+        //
+        // Importante: se reutiliza el mismo cliente `supabase` de arriba (ya
+        // trae la sesión recién creada por exchangeCodeForSession en
+        // memoria) en vez de crear uno nuevo con getUsuarioActual(), que
+        // internamente arma OTRO cliente y hace su propio getUser() de red
+        // dependiendo de releer las cookies que este mismo request recién
+        // escribió. Esa relectura es frágil en un Route Handler: si fallaba,
+        // el destino siempre caía a "/" de todos modos, pero pagando el
+        // costo extra de esa llamada desperdiciada — quedaba más lento que
+        // antes de este atajo, no más rápido.
         if (next === "/") {
-          const usuario = await getUsuarioActual();
-          return NextResponse.redirect(`${origin}${usuario ? rutaInicioPara(usuario.rol) : "/"}`);
+          const { data: perfil } = await supabase
+            .from("usuarios")
+            .select("rol, activo")
+            .eq("id", data.user.id)
+            .maybeSingle();
+          const destino = perfil?.activo && perfil.rol ? rutaInicioPara(perfil.rol as Rol) : "/";
+          return NextResponse.redirect(`${origin}${destino}`);
         }
 
         return NextResponse.redirect(`${origin}${next}`);
