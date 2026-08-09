@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { rolLabel, type Rol } from "@/lib/roles";
 import { enviarCorreoRolAsignado } from "@/lib/email";
 import { parseAlumnosSheet, ordenDesdeNombreGrado, type FilaAlumnoImport } from "@/lib/import-alumnos";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export type EstadoAccion = { error?: string; ok?: boolean };
 
@@ -18,7 +19,7 @@ function normalizar(s: string) {
 }
 
 export async function actualizarUsuario(id: string, cambios: { rol?: Rol | null; activo?: boolean }) {
-  await requireUsuario(["administrador"]);
+  const actor = await requireUsuario(["administrador"]);
   const admin = createAdminClient();
   const { data: usuario, error } = await admin
     .from("usuarios")
@@ -27,6 +28,14 @@ export async function actualizarUsuario(id: string, cambios: { rol?: Rol | null;
     .select("nombre, email")
     .single();
   if (error) return { error: "No se pudo actualizar el usuario." };
+
+  await registrarAuditoria(admin, {
+    usuarioId: actor.id,
+    accion: "usuario.rol_actualizado",
+    entidad: "usuario",
+    entidadId: id,
+    detalle: { cambios, afectado: usuario ? { nombre: usuario.nombre, email: usuario.email } : undefined },
+  });
 
   if (cambios.rol && usuario) {
     await enviarCorreoRolAsignado({
@@ -374,7 +383,7 @@ export async function renombrarGrado(id: string, nombre: string) {
 }
 
 export async function eliminarGrado(id: string) {
-  await requireUsuario(["administrador"]);
+  const actor = await requireUsuario(["administrador"]);
   const admin = createAdminClient();
 
   const { count } = await admin.from("matriculas").select("id", { count: "exact", head: true }).eq("grado_id", id);
@@ -382,8 +391,18 @@ export async function eliminarGrado(id: string) {
     return { error: `No se puede eliminar: hay ${count} alumno(s) matriculados en este grado.` };
   }
 
+  const { data: grado } = await admin.from("grados").select("nombre").eq("id", id).maybeSingle();
   const { error } = await admin.from("grados").delete().eq("id", id);
   if (error) return { error: "No se pudo eliminar el grado." };
+
+  await registrarAuditoria(admin, {
+    usuarioId: actor.id,
+    accion: "grado.eliminado",
+    entidad: "grado",
+    entidadId: id,
+    detalle: { nombre: grado?.nombre },
+  });
+
   revalidatePath("/admin/grados");
   return { ok: true };
 }
@@ -409,7 +428,7 @@ export async function renombrarSeccion(id: string, nombre: string) {
 }
 
 export async function eliminarSeccion(id: string) {
-  await requireUsuario(["administrador"]);
+  const actor = await requireUsuario(["administrador"]);
   const admin = createAdminClient();
 
   const { count } = await admin.from("matriculas").select("id", { count: "exact", head: true }).eq("seccion_id", id);
@@ -417,8 +436,18 @@ export async function eliminarSeccion(id: string) {
     return { error: `No se puede eliminar: hay ${count} alumno(s) matriculados en esta sección.` };
   }
 
+  const { data: seccion } = await admin.from("secciones").select("nombre").eq("id", id).maybeSingle();
   const { error } = await admin.from("secciones").delete().eq("id", id);
   if (error) return { error: "No se pudo eliminar la sección." };
+
+  await registrarAuditoria(admin, {
+    usuarioId: actor.id,
+    accion: "seccion.eliminada",
+    entidad: "seccion",
+    entidadId: id,
+    detalle: { nombre: seccion?.nombre },
+  });
+
   revalidatePath("/admin/grados");
   return { ok: true };
 }
