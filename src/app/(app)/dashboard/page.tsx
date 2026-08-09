@@ -29,7 +29,7 @@ function StatTile({
   tono: keyof typeof TONO;
 }) {
   return (
-    <div className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 shadow-sm">
+    <div className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow duration-150 ease-(--ease-out) hover:shadow-md">
       <div className={`flex size-11 flex-none items-center justify-center rounded-lg ${TONO[tono]}`}>
         <Icon className="size-5" />
       </div>
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
                   <Link
                     key={c.id}
                     href={`/casos/${c.id}`}
-                    className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0 hover:text-primary"
+                    className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0 transition-colors duration-150 ease-(--ease-out) hover:text-primary"
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
                       <div className="flex size-8 flex-none items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -193,7 +193,7 @@ export default async function DashboardPage() {
           <h3 className="font-heading text-base font-semibold">Últimos casos</h3>
           <Link
             href={esJefe ? "/todas" : "/casos"}
-            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            className="flex items-center gap-1 text-sm font-medium text-primary transition-colors duration-150 ease-(--ease-out) hover:underline"
           >
             Ver todas
             <ArrowRight className="size-3.5" />

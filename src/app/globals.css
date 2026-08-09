@@ -121,3 +121,46 @@
     @apply font-sans;
   }
 }
+
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes chart-grow-y {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes chart-grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes chart-draw {
+  from { stroke-dashoffset: 1px; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes chart-donut-draw {
+  from { stroke-dashoffset: var(--chart-circ); }
+  to { stroke-dashoffset: var(--chart-offset); }
+}
+
+@keyframes chart-fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chart-pop {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-chart-anim] {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}

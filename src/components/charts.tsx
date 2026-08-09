@@ -24,17 +24,34 @@ export function BarChart({
         const y = height - 26 - barHeight;
         return (
           <g key={d.label}>
-            <rect x={x} y={y} width={barWidth} height={Math.max(barHeight, 2)} rx={4} fill={d.color} />
-            <text x={x + barWidth / 2} y={y - 6} textAnchor="middle" fontWeight={700} fontSize={10} fill={d.color}>
+            <rect
+              data-chart-anim
+              x={x}
+              y={y}
+              width={barWidth}
+              height={Math.max(barHeight, 2)}
+              rx={4}
+              fill={d.color}
+              style={{
+                transformBox: "fill-box",
+                transformOrigin: "bottom",
+                animation: `chart-grow-y 480ms var(--ease-out) both`,
+                animationDelay: `${i * 55}ms`,
+              }}
+            />
+            <text
+              data-chart-anim
+              x={x + barWidth / 2}
+              y={y - 6}
+              textAnchor="middle"
+              fontWeight={700}
+              fontSize={10}
+              fill={d.color}
+              style={{ animation: `chart-fade-up 320ms var(--ease-out) both`, animationDelay: `${i * 55 + 300}ms` }}
+            >
               {d.value}
             </text>
-            <text
-              x={x + barWidth / 2}
-              y={height - 8}
-              textAnchor="middle"
-              fontSize={10}
-              fill="var(--muted-foreground)"
-            >
+            <text x={x + barWidth / 2} y={height - 8} textAnchor="middle" fontSize={10} fill="var(--muted-foreground)">
               {d.label}
             </text>
           </g>
@@ -56,11 +73,13 @@ export function DonutChart({ data, size = 150 }: { data: DonutDatum[]; size?: nu
 
   return (
     <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
-      {data.map((d) => {
+      {data.map((d, i) => {
         const frac = d.value / total;
         const dash = frac * circ;
+        const finalOffset = -offset;
         const el = (
           <circle
+            data-chart-anim
             key={d.label}
             cx={cx}
             cy={cy}
@@ -69,14 +88,31 @@ export function DonutChart({ data, size = 150 }: { data: DonutDatum[]; size?: nu
             stroke={d.color}
             strokeWidth={16}
             strokeDasharray={`${dash} ${circ - dash}`}
-            strokeDashoffset={-offset}
+            strokeDashoffset={finalOffset}
             transform={`rotate(-90 ${cx} ${cy})`}
+            style={
+              {
+                "--chart-circ": `${circ}px`,
+                "--chart-offset": `${finalOffset}px`,
+                animation: `chart-donut-draw 700ms var(--ease-in-out) both`,
+                animationDelay: `${i * 90}ms`,
+              } as React.CSSProperties
+            }
           />
         );
         offset += dash;
         return el;
       })}
-      <text x={cx} y={cy - 3} textAnchor="middle" fontSize={20} fontWeight={700} fill="var(--foreground)">
+      <text
+        data-chart-anim
+        x={cx}
+        y={cy - 3}
+        textAnchor="middle"
+        fontSize={20}
+        fontWeight={700}
+        fill="var(--foreground)"
+        style={{ animation: `chart-fade-up 320ms var(--ease-out) both`, animationDelay: "500ms" }}
+      >
         {total}
       </text>
       <text x={cx} y={cy + 14} textAnchor="middle" fontSize={10} fill="var(--muted-foreground)">
@@ -106,12 +142,54 @@ export function LineChart({ data, height = 170 }: { data: LineDatum[]; height?: 
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} className="overflow-visible">
-      {pathArea && <path d={pathArea} fill="var(--primary)" fillOpacity={0.12} />}
-      <path d={pathLine} fill="none" stroke="var(--primary)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-      {points.map((p) => (
+      {pathArea && (
+        <path
+          data-chart-anim
+          d={pathArea}
+          fill="var(--primary)"
+          fillOpacity={0.12}
+          style={{ animation: "chart-fade-up 500ms var(--ease-out) both", animationDelay: "300ms" }}
+        />
+      )}
+      <path
+        data-chart-anim
+        d={pathLine}
+        fill="none"
+        stroke="var(--primary)"
+        strokeWidth={2.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        pathLength={1}
+        style={{
+          strokeDasharray: 1,
+          animation: "chart-draw 700ms var(--ease-in-out) both",
+        }}
+      />
+      {points.map((p, i) => (
         <g key={p.label}>
-          <circle cx={p.x} cy={p.y} r={3.5} fill="var(--primary)" />
-          <text x={p.x} y={p.y - 8} textAnchor="middle" fontSize={10} fontWeight={700} fill="var(--primary)">
+          <circle
+            data-chart-anim
+            cx={p.x}
+            cy={p.y}
+            r={3.5}
+            fill="var(--primary)"
+            style={{
+              transformBox: "fill-box",
+              transformOrigin: "center",
+              animation: "chart-pop 320ms var(--ease-out) both",
+              animationDelay: `${700 + i * 40}ms`,
+            }}
+          />
+          <text
+            data-chart-anim
+            x={p.x}
+            y={p.y - 8}
+            textAnchor="middle"
+            fontSize={10}
+            fontWeight={700}
+            fill="var(--primary)"
+            style={{ animation: "chart-fade-up 320ms var(--ease-out) both", animationDelay: `${700 + i * 40}ms` }}
+          >
             {p.value}
           </text>
           <text x={p.x} y={height - 8} textAnchor="middle" fontSize={10} fill="var(--muted-foreground)">
@@ -129,13 +207,20 @@ export function HorizontalBarList({ data }: { data: HorizontalBarDatum[] }) {
   const max = Math.max(...data.map((d) => d.value), 1);
   return (
     <div className="flex flex-col gap-3.5">
-      {data.map((d) => (
+      {data.map((d, i) => (
         <div key={d.label} className="flex items-center gap-3">
           <span className="w-20 flex-none truncate text-sm text-muted-foreground">{d.label}</span>
           <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary">
             <div
+              data-chart-anim
               className="h-full rounded-full"
-              style={{ width: `${(d.value / max) * 100}%`, background: d.color ?? "var(--primary)" }}
+              style={{
+                width: `${(d.value / max) * 100}%`,
+                background: d.color ?? "var(--primary)",
+                transformOrigin: "left",
+                animation: "chart-grow-x 480ms var(--ease-out) both",
+                animationDelay: `${i * 55}ms`,
+              }}
             />
           </div>
           <span className="w-6 flex-none text-right text-sm font-bold tabular-nums">{d.value}</span>

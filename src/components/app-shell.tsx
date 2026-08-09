@@ -36,16 +36,17 @@ export function AppShell({
 
   return (
     <div className="grid min-h-screen md:grid-cols-[232px_1fr]">
-      {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/35 md:hidden"
-          onClick={() => setOpen(false)}
-        />
-      )}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/35 opacity-0 transition-opacity duration-200 ease-(--ease-out) md:hidden",
+          open ? "opacity-100" : "pointer-events-none",
+        )}
+        onClick={() => setOpen(false)}
+      />
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[232px] -translate-x-full flex-col gap-1 overflow-y-auto border-r border-sidebar-border bg-sidebar p-3.5 transition-transform md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[232px] -translate-x-full flex-col gap-1 overflow-y-auto border-r border-sidebar-border bg-sidebar p-3.5 transition-transform duration-200 ease-(--ease-drawer) md:static md:translate-x-0",
           open && "translate-x-0",
         )}
       >
@@ -71,7 +72,7 @@ export function AppShell({
                   href={item.href}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                    "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors duration-150 ease-(--ease-out) hover:bg-sidebar-accent hover:text-sidebar-foreground",
                     active && "bg-sidebar-accent text-sidebar-foreground",
                   )}
                 >
@@ -104,7 +105,7 @@ export function AppShell({
         <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-border bg-background/90 px-6 py-3 backdrop-blur">
           <div className="flex items-center gap-2.5">
             <button
-              className="flex size-9 items-center justify-center rounded-lg border border-border bg-card md:hidden"
+              className="flex size-9 items-center justify-center rounded-lg border border-border bg-card transition-colors duration-150 ease-(--ease-out) hover:bg-muted active:scale-[0.97] md:hidden"
               onClick={() => setOpen((v) => !v)}
               aria-label="Abrir menú"
             >
@@ -116,11 +117,15 @@ export function AppShell({
           </div>
           <Link
             href="/notificaciones"
-            className="relative flex size-9 items-center justify-center rounded-lg border border-border bg-card"
+            className="relative flex size-9 items-center justify-center rounded-lg border border-border bg-card transition-colors duration-150 ease-(--ease-out) hover:bg-muted active:scale-[0.97]"
           >
             <Bell className="size-4.25" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex min-w-4 items-center justify-center rounded-full border-2 border-background bg-critical px-1 text-[10px] font-bold text-white">
+              <span
+                data-chart-anim
+                className="absolute -top-1 -right-1 flex min-w-4 items-center justify-center rounded-full border-2 border-background bg-critical px-1 text-[10px] font-bold text-white"
+                style={{ animation: "chart-pop 280ms var(--ease-out) both" }}
+              >
                 {unreadCount}
               </span>
             )}
