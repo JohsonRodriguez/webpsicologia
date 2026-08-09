@@ -87,31 +87,50 @@ export default async function DashboardPage() {
   const esJefe = usuario.rol === "jefe_psicologia";
   const supabase = await createClient();
 
-  let casosQuery = supabase
+  const camposCaso = "id, estado, alumno_id, fecha_apertura, alumnos(nombres, apellidos)";
+
+  // Conteos por estado: solo se trae la columna `estado` (sin joins) en vez de
+  // filas completas, y las listas de "recientes"/"pendientes" se acotan a 5
+  // filas en la propia consulta en vez de traer todos los casos y recortar en JS.
+  let estadosQuery = supabase.from("casos").select("estado");
+  let recientesQuery = supabase.from("casos").select(camposCaso).order("fecha_apertura", { ascending: false }).limit(5);
+  let pendientesQuery = supabase
     .from("casos")
-    .select("id, estado, alumno_id, fecha_apertura, alumnos(nombres, apellidos)")
-    .order("fecha_apertura", { ascending: false });
-  let incQuery = supabase.from("incidencias").select("id, estado");
+    .select(camposCaso)
+    .neq("estado", "cerrado")
+    .order("fecha_apertura", { ascending: false })
+    .limit(5);
 
   if (!esJefe) {
-    casosQuery = casosQuery.eq("psicologo_id", usuario.id);
+    estadosQuery = estadosQuery.eq("psicologo_id", usuario.id);
+    recientesQuery = recientesQuery.eq("psicologo_id", usuario.id);
+    pendientesQuery = pendientesQuery.eq("psicologo_id", usuario.id);
   }
 
-  const [{ data: casos }, { data: incidencias }] = await Promise.all([casosQuery, incQuery]);
+  const [{ data: estados }, { data: recientesData }, { data: pendientesData }, { count: countInc }] =
+    await Promise.all([
+      estadosQuery,
+      recientesQuery,
+      pendientesQuery,
+      supabase
+        .from("incidencias")
+        .select("id", { count: "exact", head: true })
+        .in("estado", ["nueva", "en_revision"]),
+    ]);
 
-  const casosList = casos ?? [];
-  const casosRecientes = casosList.slice(0, 5);
-  const casosPendientes = casosList.filter((c) => c.estado !== "cerrado").slice(0, 5);
-
+  const estadosList = estados ?? [];
+  const casosRecientes = recientesData ?? [];
+  const casosPendientes = pendientesData ?? [];
+  const pendientesInc = countInc ?? 0;
   const porEstado = {
-    abierto: casosList.filter((c) => c.estado === "abierto").length,
-    en_atencion: casosList.filter((c) => c.estado === "en_atencion").length,
-    derivado: casosList.filter((c) => c.estado === "derivado").length,
-    cerrado: casosList.filter((c) => c.estado === "cerrado").length,
+    abierto: estadosList.filter((c) => c.estado === "abierto").length,
+    en_atencion: estadosList.filter((c) => c.estado === "en_atencion").length,
+    derivado: estadosList.filter((c) => c.estado === "derivado").length,
+    cerrado: estadosList.filter((c) => c.estado === "cerrado").length,
   };
-  const pendientesInc = (incidencias ?? []).filter((i) => i.estado === "nueva" || i.estado === "en_revision").length;
 
-  const matriculas = await getMatriculasPorAlumno(supabase);
+  const alumnoIds = [...new Set([...casosRecientes, ...casosPendientes].map((c) => c.alumno_id))];
+  const matriculas = await getMatriculasPorAlumno(supabase, undefined, alumnoIds);
   const primerNombre = usuario.nombre.split(" ")[0];
 
   return (
@@ -140,7 +159,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
         <StatTile
           label="Casos totales"
-          value={casosList.length}
+          value={estadosList.length}
           icon={FolderOpen}
           tono="primary"
           href={esJefe ? "/todas?tab=casos" : "/casos"}

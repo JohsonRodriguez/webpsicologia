@@ -1,9 +1,11 @@
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getMatriculasPorAlumno } from "@/lib/queries";
+import { getMatriculasPorAlumno, rangoPagina, totalPaginas, filtroNombreAlumno } from "@/lib/queries";
+import { construirQuery } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { FiltrosLista } from "@/components/filtros-lista";
 import { UrlTabs } from "@/components/url-tabs";
+import { Paginacion } from "@/components/paginacion";
 import { TablaIncidencias, type IncidenciaFila } from "@/components/tabla-incidencias";
 import { TablaCasos, type CasoFila } from "@/components/tabla-casos";
 
@@ -23,10 +25,11 @@ const ESTADOS_INC = [
 export default async function TodasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; q?: string; estado?: string; docente?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string; estado?: string; docente?: string; page?: string }>;
 }) {
   await requireUsuario(["jefe_psicologia"]);
-  const { tab = "incidencias", q, estado, docente } = await searchParams;
+  const { tab = "incidencias", q, estado, docente, page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
   const supabase = await createClient();
   const matriculas = await getMatriculasPorAlumno(supabase);
 
@@ -39,49 +42,51 @@ export default async function TodasPage({
 
   let incidencias: IncidenciaFila[] = [];
   let casos: CasoFila[] = [];
+  let totalPages = 1;
+
+  const { from, to } = rangoPagina(page);
 
   if (tab === "casos") {
     const camposBase =
-      "id, alumno_id, tipo, estado, fecha_apertura, psicologo_id, psicologo_original_id, alumnos(nombres, apellidos), usuarios!casos_psicologo_id_fkey(nombre)";
+      "id, alumno_id, tipo, estado, fecha_apertura, psicologo_id, psicologo_original_id, alumnos!inner(nombres, apellidos), usuarios!casos_psicologo_id_fkey(nombre)";
 
     let query = docente
       ? supabase
           .from("casos")
-          .select(`${camposBase}, incidencias!inner(profesor_id, usuarios!incidencias_profesor_id_fkey(nombre))`)
+          .select(`${camposBase}, incidencias!inner(profesor_id, usuarios!incidencias_profesor_id_fkey(nombre))`, {
+            count: "exact",
+          })
           .eq("incidencias.profesor_id", docente)
       : supabase
           .from("casos")
-          .select(`${camposBase}, incidencias(profesor_id, usuarios!incidencias_profesor_id_fkey(nombre))`);
+          .select(`${camposBase}, incidencias(profesor_id, usuarios!incidencias_profesor_id_fkey(nombre))`, {
+            count: "exact",
+          });
 
     query = query.order("fecha_apertura", { ascending: false });
     if (estado) query = query.eq("estado", estado);
-    const { data } = await query;
+    if (q) query = query.or(filtroNombreAlumno(q), { foreignTable: "alumnos" });
+    const { data, count } = await query.range(from, to);
 
     casos = (data ?? []).map((c) => {
       const inc = c.incidencias as unknown as { usuarios: { nombre: string } | null } | null;
       return { ...c, docenteNombre: inc?.usuarios?.nombre ?? null } as CasoFila;
     });
-    if (q) {
-      const needle = q.toLowerCase();
-      casos = casos.filter((c) => `${c.alumnos?.nombres ?? ""} ${c.alumnos?.apellidos ?? ""}`.toLowerCase().includes(needle));
-    }
+    totalPages = totalPaginas(count);
   } else {
     let query = supabase
       .from("incidencias")
       .select(
-        "id, alumno_id, prioridad, estado, fecha_hora, motivo_otro, alumnos(nombres, apellidos), catalogo_motivos(nombre), usuarios!incidencias_profesor_id_fkey(nombre)",
+        "id, alumno_id, prioridad, estado, fecha_hora, motivo_otro, alumnos!inner(nombres, apellidos), catalogo_motivos(nombre), usuarios!incidencias_profesor_id_fkey(nombre)",
+        { count: "exact" },
       )
       .order("fecha_hora", { ascending: false });
     if (estado) query = query.eq("estado", estado);
     if (docente) query = query.eq("profesor_id", docente);
-    const { data } = await query;
+    if (q) query = query.or(filtroNombreAlumno(q), { foreignTable: "alumnos" });
+    const { data, count } = await query.range(from, to);
     incidencias = (data ?? []) as unknown as IncidenciaFila[];
-    if (q) {
-      const needle = q.toLowerCase();
-      incidencias = incidencias.filter((i) =>
-        `${i.alumnos?.nombres ?? ""} ${i.alumnos?.apellidos ?? ""}`.toLowerCase().includes(needle),
-      );
-    }
+    totalPages = totalPaginas(count);
   }
 
   return (
@@ -125,6 +130,11 @@ export default async function TodasPage({
         ) : (
           <TablaIncidencias incidencias={incidencias} matriculas={matriculas} mostrarProfesor baseHref="/incidencias" />
         )}
+        <Paginacion
+          page={Math.min(page, totalPages)}
+          totalPages={totalPages}
+          hrefPagina={(p) => `/todas${construirQuery({ tab, q, estado, docente, page: p })}`}
+        />
       </div>
     </>
   );
