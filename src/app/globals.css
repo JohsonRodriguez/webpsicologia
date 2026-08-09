@@ -108,6 +108,15 @@
   --info-soft: #dcedf5;
   --purple: #a25ddc;
   --purple-soft: #f2e6fa;
+
+  /* Login: panel editorial cálido (crema + verde institucional), distinto
+     a propósito del resto de la app, tokenizado para no dispersar hex. */
+  --login-panel-bg: #fffdfa;
+  --login-panel-hover: #f7f4ee;
+  --login-hero-from: var(--primary);
+  --login-hero-to: color-mix(in oklch, var(--primary), black 45%);
+  --login-hero-foreground: #f7ead4;
+  --login-hero-quote-border: color-mix(in oklch, var(--login-hero-foreground), transparent 45%);
 }
 
 @layer base {
@@ -160,6 +169,18 @@
 
 @media (prefers-reduced-motion: reduce) {
   [data-chart-anim] {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+@keyframes login-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-login-anim] {
     animation-duration: 1ms !important;
     animation-delay: 0ms !important;
   }

@@ -26,8 +26,8 @@ function LoginScreen() {
 function HeroPanel() {
   return (
     <section
-      className="relative hidden flex-col justify-between overflow-hidden px-16 py-16 text-[#f7ead4] lg:flex"
-      style={{ background: "radial-gradient(circle at 70% 45%, #06624d, #003f32 65%)" }}
+      className="relative hidden flex-col justify-between overflow-hidden px-16 py-16 text-[color:var(--login-hero-foreground)] lg:flex"
+      style={{ background: "radial-gradient(circle at 70% 45%, var(--login-hero-from), var(--login-hero-to) 65%)" }}
     >
       <Image
         src="/logo.png"
@@ -35,36 +35,74 @@ function HeroPanel() {
         width={220}
         height={128}
         className="h-[123px] w-[150px] flex-none"
+        style={{ animation: "login-rise 500ms var(--ease-out) both" }}
+        data-login-anim
         priority
       />
 
       <div className="my-auto max-w-[500px]">
-        <h1 className="text-[46px] leading-[1.1] font-semibold text-balance">
+        <h1
+          className="font-heading text-[46px] leading-[1.1] font-semibold text-balance"
+          style={{ animation: "login-rise 500ms var(--ease-out) both", animationDelay: "80ms" }}
+          data-login-anim
+        >
           Departamento
           <br />
           Psicopedagógico
         </h1>
-        <p className="mt-4 text-[22px] text-[#f7ead4]">
+        <p
+          className="mt-4 text-[22px] text-[color:var(--login-hero-foreground)]"
+          style={{ animation: "login-rise 500ms var(--ease-out) both", animationDelay: "160ms" }}
+          data-login-anim
+        >
           Un espacio seguro para acompañar, orientar y fortalecer a nuestra comunidad educativa.
         </p>
-        <ul className="mt-5 flex list-none flex-col gap-[18px] p-0">
-          <Feature icon={Lock}>Información protegida</Feature>
-          <Feature icon={Users}>Acceso según tu función</Feature>
-          <Feature icon={HeartHandshake}>Acompañamiento conectado</Feature>
+        <ul className="mt-5 flex list-none flex-col gap-4.5 p-0">
+          <Feature icon={Lock} delay={240}>
+            Información protegida
+          </Feature>
+          <Feature icon={Users} delay={300}>
+            Acceso según tu función
+          </Feature>
+          <Feature icon={HeartHandshake} delay={360}>
+            Acompañamiento conectado
+          </Feature>
         </ul>
-        <blockquote className="mt-[30px] w-full border-t border-[#d8c99e] pt-7 text-[22px] font-medium whitespace-nowrap italic">
+        <blockquote
+          className="mt-7.5 w-full border-t pt-7 text-[22px] font-medium whitespace-nowrap italic"
+          style={{
+            borderColor: "var(--login-hero-quote-border)",
+            animation: "login-rise 500ms var(--ease-out) both",
+            animationDelay: "440ms",
+          }}
+          data-login-anim
+        >
           &ldquo;El bienestar también forma parte del aprendizaje.&rdquo;
         </blockquote>
       </div>
 
-      <small className="text-xs text-[#f7ead4]/75">Lord Byron School · Área de Psicología</small>
+      <small className="text-xs text-[color:var(--login-hero-foreground)]/75">
+        Lord Byron School · Área de Psicología
+      </small>
     </section>
   );
 }
 
-function Feature({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
+function Feature({
+  icon: Icon,
+  delay,
+  children,
+}: {
+  icon: React.ElementType;
+  delay: number;
+  children: React.ReactNode;
+}) {
   return (
-    <li className="flex items-center gap-[15px] text-lg">
+    <li
+      className="flex items-center gap-4 text-lg"
+      style={{ animation: "login-rise 500ms var(--ease-out) both", animationDelay: `${delay}ms` }}
+      data-login-anim
+    >
       <span className="flex size-9 flex-none items-center justify-center rounded-full bg-white/12">
         <Icon className="size-4.5" strokeWidth={1.8} />
       </span>
@@ -95,14 +133,16 @@ function FormPanel() {
   }
 
   return (
-    <section className="flex flex-col bg-[#fffdfa] px-8 py-10 sm:px-[12%]">
-      <div className="mx-auto flex w-full max-w-[520px] flex-1 flex-col justify-center gap-8 py-10">
+    <section className="flex flex-col bg-[color:var(--login-panel-bg)] px-8 py-10 sm:px-[12%]">
+      <div
+        className="mx-auto flex w-full max-w-[520px] flex-1 flex-col justify-center gap-8 py-10"
+        style={{ animation: "login-rise 400ms var(--ease-out) both" }}
+        data-login-anim
+      >
         <div>
-          <p className="text-lg font-semibold" style={{ color: "#087d4f" }}>
-            Bienvenido
-          </p>
-          <h2 className="mt-1 text-[38px] leading-tight font-semibold">Ingresa a tu cuenta</h2>
-          <p className="mt-3 text-lg text-[#68736f]">
+          <p className="text-lg font-semibold text-primary">Bienvenido</p>
+          <h2 className="font-heading mt-1 text-[38px] leading-tight font-semibold">Ingresa a tu cuenta</h2>
+          <p className="mt-3 text-lg text-muted-foreground">
             Psicólogos, docentes, jefatura y administración ingresan con su cuenta institucional de Google.
           </p>
         </div>
@@ -111,24 +151,24 @@ function FormPanel() {
           <button
             onClick={iniciarSesion}
             disabled={loading}
-            className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-[#789589] bg-white py-4 text-lg font-medium text-[#0b3027] transition hover:bg-[#f7f4ee] disabled:cursor-wait disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-muted-foreground/40 bg-white py-4 text-lg font-medium text-foreground transition-colors duration-150 ease-(--ease-out) hover:bg-[color:var(--login-panel-hover)] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
           >
             {loading ? <Loader2 className="size-5 animate-spin" /> : <GoogleIcon className="size-5" />}
             Continuar con Google
           </button>
 
           {error === "auth" && (
-            <div className="rounded-md bg-[#fff1ef] px-4 py-3 text-sm text-[#8d2922]">
+            <div className="rounded-md bg-critical-soft px-4 py-3 text-sm text-critical">
               <p>No se pudo iniciar sesión. Intenta nuevamente.</p>
               {detail && <p className="mt-1 font-mono text-xs break-words">{detail}</p>}
             </div>
           )}
 
-          <div className="mt-2 flex items-start gap-3 rounded-lg border border-[#bed0b9] bg-[#eff6ed] p-4">
-            <ShieldCheck className="mt-0.5 size-5 flex-none" style={{ color: "#087d4f" }} strokeWidth={1.8} />
+          <div className="mt-2 flex items-start gap-3 rounded-lg border border-primary/20 bg-accent p-4">
+            <ShieldCheck className="mt-0.5 size-5 flex-none text-primary" strokeWidth={1.8} />
             <div>
-              <p className="font-semibold text-[#0b3027]">Acceso seguro y confidencial</p>
-              <p className="mt-0.5 text-sm text-[#68736f]">
+              <p className="font-semibold text-foreground">Acceso seguro y confidencial</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 Solo cuentas <span className="font-mono">@byron.edu.pe</span> con un rol asignado por el
                 administrador pueden ingresar.
               </p>
@@ -136,7 +176,7 @@ function FormPanel() {
           </div>
         </div>
 
-        <div className="flex justify-between border-t border-[#dedfd8] pt-6">
+        <div className="grid grid-cols-3 gap-3 border-t border-border pt-6 sm:flex sm:items-center sm:justify-between sm:gap-0">
           <BottomFeature icon={ShieldCheck} title="Seguridad" subtitle="Tus datos protegidos" />
           <BottomFeature icon={HeartHandshake} title="Acompañamiento" subtitle="al estudiante" />
           <BottomFeature icon={Users} title="Trazabilidad" subtitle="Acceso por rol" />
@@ -156,16 +196,16 @@ function BottomFeature({
   subtitle: string;
 }) {
   return (
-    <div className="flex items-center gap-2.5">
+    <div className="flex min-w-0 items-center gap-2.5">
       <span
         className="flex size-9 flex-none items-center justify-center rounded-full"
-        style={{ background: "#003f32", color: "#f7ead4" }}
+        style={{ background: "var(--login-hero-to)", color: "var(--login-hero-foreground)" }}
       >
         <Icon className="size-4" strokeWidth={1.8} />
       </span>
-      <div className="leading-tight">
-        <p className="text-sm font-semibold text-[#0b3027]">{title}</p>
-        <p className="text-xs text-[#68736f]">{subtitle}</p>
+      <div className="min-w-0 leading-tight">
+        <p className="truncate text-sm font-semibold text-foreground">{title}</p>
+        <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
       </div>
     </div>
   );
