@@ -34,7 +34,7 @@ function HeroPanel() {
         alt="Colegio Lord Byron"
         width={258}
         height={150}
-        className="h-auto w-[180px] flex-none"
+        className="h-auto w-[180px] flex-none self-center"
         style={{ animation: "login-rise 500ms var(--ease-out) both" }}
         data-login-anim
         priority
