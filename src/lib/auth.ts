@@ -20,10 +20,14 @@ export type UsuarioActual = {
  * request.
  */
 export const getUsuarioActual = cache(async (): Promise<UsuarioActual | null> => {
+  // TEMPORAL: instrumentación de tiempos para diagnosticar la demora del
+  // login. Quitar una vez que tengamos números claros de dónde se va el tiempo.
+  const t0 = Date.now();
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  console.log(`[perf][getUsuarioActual] getUser(): ${Date.now() - t0}ms`);
   if (!user) return null;
 
   const { data } = await supabase
@@ -31,6 +35,7 @@ export const getUsuarioActual = cache(async (): Promise<UsuarioActual | null> =>
     .select("id, nombre, email, rol, activo")
     .eq("id", user.id)
     .maybeSingle();
+  console.log(`[perf][getUsuarioActual] total (getUser + consulta usuarios): ${Date.now() - t0}ms`);
 
   if (!data || !data.activo || !data.rol) return null;
 

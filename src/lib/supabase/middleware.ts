@@ -18,6 +18,10 @@ function isPublicPath(pathname: string) {
 }
 
 export async function updateSession(request: NextRequest) {
+  // TEMPORAL: instrumentación de tiempos para diagnosticar la demora del
+  // login. Quitar una vez que tengamos números claros de dónde se va el tiempo.
+  const t0 = Date.now();
+
   if (matchesAny(request.nextUrl.pathname, SKIP_AUTH_CHECK)) {
     return NextResponse.next({ request });
   }
@@ -50,6 +54,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+  console.log(`[perf][middleware] getUser() en ${pathname}: ${Date.now() - t0}ms`);
 
   if (!user && !isPublicPath(pathname)) {
     const url = request.nextUrl.clone();
