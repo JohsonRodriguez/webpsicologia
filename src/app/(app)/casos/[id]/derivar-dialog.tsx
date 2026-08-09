@@ -6,6 +6,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { SimpleSelect } from "@/components/simple-select";
 import {
   Dialog,
   DialogContent,
@@ -67,18 +68,12 @@ export function DerivarDialog({
         >
           <div className="flex flex-col gap-1.5">
             <Label>Nuevo psicólogo responsable</Label>
-            <select
+            <SimpleSelect
               required
               name="nuevo_psicologo"
-              className="h-9 rounded-md border border-input bg-card px-3 text-sm"
-            >
-              <option value="">Selecciona…</option>
-              {psicologos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
+              placeholder="Selecciona…"
+              options={psicologos.map((p) => ({ value: p.id, label: p.nombre }))}
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label>Motivo de la derivación</Label>

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { SimpleSelect } from "@/components/simple-select";
 import { rolLabel, type Rol } from "@/lib/roles";
 import { actualizarUsuario } from "../actions";
 
@@ -47,19 +48,13 @@ export function UsuarioRow({ usuario }: { usuario: Usuario }) {
         <div className="text-xs text-muted-foreground">{usuario.email}</div>
       </TableCell>
       <TableCell>
-        <select
+        <SimpleSelect
           defaultValue={usuario.rol ?? ""}
           disabled={pending}
-          onChange={(e) => cambiarRol(e.target.value)}
-          className="h-8 rounded-md border border-input bg-card px-2 text-sm"
-        >
-          <option value="">Sin asignar</option>
-          {ROLES.map((r) => (
-            <option key={r} value={r}>
-              {rolLabel(r)}
-            </option>
-          ))}
-        </select>
+          onValueChange={cambiarRol}
+          placeholder="Sin asignar"
+          options={[{ value: "", label: "Sin asignar" }, ...ROLES.map((r) => ({ value: r, label: rolLabel(r) }))]}
+        />
       </TableCell>
       <TableCell>
         {!usuario.rol ? (

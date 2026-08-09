@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { toast } from "sonner";
+import { SimpleSelect } from "@/components/simple-select";
 import { asignarPsicologoGrado } from "../actions";
 
 export function AsignacionSelect({
@@ -16,24 +17,18 @@ export function AsignacionSelect({
   const [pending, startTransition] = useTransition();
 
   return (
-    <select
+    <SimpleSelect
       defaultValue={actual}
       disabled={pending}
-      onChange={(e) =>
+      onValueChange={(value) =>
         startTransition(async () => {
-          const result = await asignarPsicologoGrado(gradoId, e.target.value);
+          const result = await asignarPsicologoGrado(gradoId, value);
           if (result?.error) toast.error(result.error);
           else toast.success("Asignación actualizada");
         })
       }
-      className="h-8 rounded-md border border-input bg-card px-2 text-sm disabled:opacity-50"
-    >
-      <option value="">Sin asignar</option>
-      {psicologos.map((p) => (
-        <option key={p.id} value={p.id}>
-          {p.nombre}
-        </option>
-      ))}
-    </select>
+      placeholder="Sin asignar"
+      options={[{ value: "", label: "Sin asignar" }, ...psicologos.map((p) => ({ value: p.id, label: p.nombre }))]}
+    />
   );
 }

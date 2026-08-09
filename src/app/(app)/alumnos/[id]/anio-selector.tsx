@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
+import { SimpleSelect } from "@/components/simple-select";
 
 export function AnioSelector({
   anios,
@@ -13,17 +14,12 @@ export function AnioSelector({
   const pathname = usePathname();
 
   return (
-    <select
+    <SimpleSelect
       defaultValue={seleccionado}
-      onChange={(e) => router.push(`${pathname}?anio=${e.target.value}`)}
-      className="h-9 rounded-md border border-input bg-card px-3 text-sm"
-    >
-      {anios.map((a) => (
-        <option key={a.id} value={a.id}>
-          Año {a.anio}
-          {a.activo ? " (activo)" : ""}
-        </option>
-      ))}
-    </select>
+      onValueChange={(value) => router.push(`${pathname}?anio=${value}`)}
+      placeholder="Selecciona un año…"
+      className="w-auto"
+      options={anios.map((a) => ({ value: a.id, label: `Año ${a.anio}${a.activo ? " (activo)" : ""}` }))}
+    />
   );
 }
