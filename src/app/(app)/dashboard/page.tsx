@@ -22,14 +22,19 @@ function StatTile({
   value,
   icon: Icon,
   tono,
+  href,
 }: {
   label: string;
   value: number;
   icon: React.ComponentType<{ className?: string }>;
   tono: keyof typeof TONO;
+  href: string;
 }) {
   return (
-    <div className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow duration-150 ease-(--ease-out) hover:shadow-md">
+    <Link
+      href={href}
+      className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow duration-150 ease-(--ease-out) hover:shadow-md focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-[0.98]"
+    >
       <div className={`flex size-11 flex-none items-center justify-center rounded-lg ${TONO[tono]}`}>
         <Icon className="size-5" />
       </div>
@@ -37,7 +42,7 @@ function StatTile({
         <p className="font-heading text-2xl leading-none font-bold">{value}</p>
         <p className="mt-1 text-xs font-medium text-muted-foreground">{label}</p>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -52,7 +57,7 @@ function CardChart({
 }) {
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm">
-      <div className="flex items-center gap-2 border-b border-border p-4 text-primary">
+      <div className="flex items-center gap-1.5 border-b border-border p-4 text-primary">
         <Icon className="size-4" />
         <h3 className="font-heading text-base font-semibold text-foreground">{titulo}</h3>
       </div>
@@ -133,10 +138,34 @@ export default async function DashboardPage() {
       />
 
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-        <StatTile label="Casos totales" value={casosList.length} icon={FolderOpen} tono="primary" />
-        <StatTile label="En atención" value={porEstado.en_atencion} icon={Clock} tono="warn" />
-        <StatTile label="Cerrados" value={porEstado.cerrado} icon={CheckCircle2} tono="good" />
-        <StatTile label="Incidencias pendientes" value={pendientesInc} icon={TriangleAlert} tono="critical" />
+        <StatTile
+          label="Casos totales"
+          value={casosList.length}
+          icon={FolderOpen}
+          tono="primary"
+          href={esJefe ? "/todas?tab=casos" : "/casos"}
+        />
+        <StatTile
+          label="En atención"
+          value={porEstado.en_atencion}
+          icon={Clock}
+          tono="warn"
+          href={esJefe ? "/todas?tab=casos&estado=en_atencion" : "/casos?estado=en_atencion"}
+        />
+        <StatTile
+          label="Cerrados"
+          value={porEstado.cerrado}
+          icon={CheckCircle2}
+          tono="good"
+          href={esJefe ? "/todas?tab=casos&estado=cerrado" : "/casos?estado=cerrado"}
+        />
+        <StatTile
+          label="Incidencias pendientes"
+          value={pendientesInc}
+          icon={TriangleAlert}
+          tono="critical"
+          href={esJefe ? "/todas?tab=incidencias" : "/casos?tab=incidencias"}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
@@ -171,7 +200,7 @@ export default async function DashboardPage() {
                   <Link
                     key={c.id}
                     href={`/casos/${c.id}`}
-                    className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0 transition-colors duration-150 ease-(--ease-out) hover:text-primary"
+                    className="flex items-center justify-between gap-3.5 py-2.5 first:pt-0 last:pb-0 transition-colors duration-150 ease-(--ease-out) hover:text-primary"
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
                       <div className="flex size-8 flex-none items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -193,21 +222,23 @@ export default async function DashboardPage() {
           <h3 className="font-heading text-base font-semibold">Últimos casos</h3>
           <Link
             href={esJefe ? "/todas" : "/casos"}
-            className="flex items-center gap-1 text-sm font-medium text-primary transition-colors duration-150 ease-(--ease-out) hover:underline"
+            className="flex items-center gap-1.5 text-sm font-medium text-primary transition-colors duration-150 ease-(--ease-out) hover:underline"
           >
             Ver todas
             <ArrowRight className="size-3.5" />
           </Link>
         </div>
         {casosRecientes.length === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-muted-foreground">Sin casos recientes.</p>
+          <div className="p-4">
+            <p className="text-sm text-muted-foreground">Sin casos recientes.</p>
+          </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Alumno</TableHead>
+                <TableHead className="pl-4">Alumno</TableHead>
                 <TableHead>Fecha de apertura</TableHead>
-                <TableHead>Estado</TableHead>
+                <TableHead className="pr-4">Estado</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -216,7 +247,7 @@ export default async function DashboardPage() {
                 const alumno = c.alumnos as unknown as { nombres: string; apellidos: string } | null;
                 return (
                   <ClickableRow key={c.id} href={`/casos/${c.id}`}>
-                    <TableCell>
+                    <TableCell className="pl-4">
                       <div className="flex items-center gap-2.5">
                         <div className="flex size-8 flex-none items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                           {alumno ? iniciales(nombreAlumno(alumno)) : "—"}
@@ -230,7 +261,7 @@ export default async function DashboardPage() {
                     <TableCell className="tabular-nums text-muted-foreground">
                       {new Date(c.fecha_apertura).toLocaleDateString("es-PE", { day: "numeric", month: "short" })}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="pr-4">
                       <PillEstadoCaso estado={c.estado} />
                     </TableCell>
                   </ClickableRow>

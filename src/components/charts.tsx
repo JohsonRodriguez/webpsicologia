@@ -234,7 +234,7 @@ export function Legend({ items }: { items: { label: string; value: number; color
   return (
     <div className="flex flex-col gap-2 text-sm text-muted-foreground">
       {items.map((it) => (
-        <span key={it.label} className="flex items-center gap-2">
+        <span key={it.label} className="flex items-center gap-1.5">
           <span className="size-2 rounded-full" style={{ background: it.color }} />
           {it.label} — <strong className="tabular-nums text-foreground">{it.value}</strong>
         </span>
