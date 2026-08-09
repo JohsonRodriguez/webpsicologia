@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-09T00:00:00Z",
+  "title": "Design System: Departamento Psicopedagógico — Colegio Lord Byron",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Institutional Green",
+        "canonical": "oklch(47.5% 0.089 167.5)",
+        "tonalRamp": ["oklch(15% 0.089 167.5)", "oklch(28% 0.089 167.5)", "oklch(40% 0.089 167.5)", "oklch(52% 0.089 167.5)", "oklch(65% 0.089 167.5)", "oklch(78% 0.089 167.5)", "oklch(88% 0.089 167.5)", "oklch(95% 0.089 167.5)"]
+      },
+      "badge-stock": {
+        "role": "neutral",
+        "displayName": "Card Stock",
+        "canonical": "oklch(0.99 0.006 100)",
+        "tonalRamp": ["oklch(15% 0.006 100)", "oklch(28% 0.006 100)", "oklch(40% 0.006 100)", "oklch(52% 0.006 100)", "oklch(65% 0.006 100)", "oklch(78% 0.006 100)", "oklch(90% 0.006 100)", "oklch(99% 0.006 100)"]
+      },
+      "good": {
+        "role": "status",
+        "displayName": "Good",
+        "canonical": "oklch(51.0% 0.124 154.3)",
+        "tonalRamp": ["oklch(15% 0.124 154.3)", "oklch(28% 0.124 154.3)", "oklch(40% 0.124 154.3)", "oklch(52% 0.124 154.3)", "oklch(65% 0.124 154.3)", "oklch(78% 0.124 154.3)", "oklch(88% 0.124 154.3)", "oklch(95% 0.124 154.3)"]
+      },
+      "warn": {
+        "role": "status",
+        "displayName": "Warn",
+        "canonical": "oklch(56.2% 0.121 59.2)",
+        "tonalRamp": ["oklch(15% 0.121 59.2)", "oklch(28% 0.121 59.2)", "oklch(40% 0.121 59.2)", "oklch(52% 0.121 59.2)", "oklch(65% 0.121 59.2)", "oklch(78% 0.121 59.2)", "oklch(88% 0.121 59.2)", "oklch(95% 0.121 59.2)"]
+      },
+      "critical": {
+        "role": "status",
+        "displayName": "Critical",
+        "canonical": "oklch(54.8% 0.187 17.7)",
+        "tonalRamp": ["oklch(15% 0.187 17.7)", "oklch(28% 0.187 17.7)", "oklch(40% 0.187 17.7)", "oklch(52% 0.187 17.7)", "oklch(65% 0.187 17.7)", "oklch(78% 0.187 17.7)", "oklch(88% 0.187 17.7)", "oklch(95% 0.187 17.7)"]
+      },
+      "info": {
+        "role": "status",
+        "displayName": "Info",
+        "canonical": "oklch(46.1% 0.102 237.9)",
+        "tonalRamp": ["oklch(15% 0.102 237.9)", "oklch(28% 0.102 237.9)", "oklch(40% 0.102 237.9)", "oklch(52% 0.102 237.9)", "oklch(65% 0.102 237.9)", "oklch(78% 0.102 237.9)", "oklch(88% 0.102 237.9)", "oklch(95% 0.102 237.9)"]
+      },
+      "purple": {
+        "role": "status",
+        "displayName": "Purple",
+        "canonical": "oklch(49.2% 0.180 305.4)",
+        "tonalRamp": ["oklch(15% 0.180 305.4)", "oklch(28% 0.180 305.4)", "oklch(40% 0.180 305.4)", "oklch(52% 0.180 305.4)", "oklch(65% 0.180 305.4)", "oklch(78% 0.180 305.4)", "oklch(88% 0.180 305.4)", "oklch(95% 0.180 305.4)"]
+      }
+    },
+    "typographyMeta": {
+      "heading": { "displayName": "Heading", "purpose": "Badge card title only; same family as body, distinguished by weight/case/tracking, not typeface." },
+      "body": { "displayName": "Body", "purpose": "Captions, fine print, general copy." },
+      "label": { "displayName": "Verbatim Mono", "purpose": "Copied institutional strings only: domain suffix, error detail." }
+    },
+    "shadows": [
+      { "name": "badge-lift", "value": "inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(22,108,82,0.08), 0 24px 48px -16px rgba(22,108,82,0.28)", "purpose": "The badge card's only shadow; tinted with --primary, not black, so the object reads as institutional." },
+      { "name": "grommet-inset", "value": "inset 0 1px 2px rgba(0,0,0,0.1)", "purpose": "Small neutral inset shadow for the flat grommet ring hardware detail." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Card entrance rise and button hover-sweep; the system's primary easing." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.77, 0, 0.175, 1)", "purpose": "App-wide secondary easing (predates this build; not exercised on the login page)." },
+      { "name": "ease-drawer", "value": "cubic-bezier(0.32, 0.72, 0, 1)", "purpose": "App-wide drawer/sheet easing (predates this build; not exercised on the login page)." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Badge Card",
+      "kind": "card",
+      "refersTo": "badge-card",
+      "description": "The login gate's single hero object: an institutional ID badge / access-terminal card holding crest, title, caption, perforation divider, primary action, and fine print.",
+      "html": "<div class=\"ds-badge-wrap\"><div class=\"ds-grommet\"></div><div class=\"ds-badge-card\"><div class=\"ds-badge-title\">Departamento Psicopedagógico</div><p class=\"ds-badge-caption\">Colegio Lord Byron</p><div class=\"ds-perforation\"></div><button class=\"ds-btn-primary\">Continuar con Google</button><p class=\"ds-badge-fineprint\">Acceso exclusivo para personal con cuenta institucional <span class=\"ds-mono\">@byron.edu.pe</span>.</p></div></div>",
+      "css": ".ds-badge-wrap { position: relative; width: 100%; max-width: 380px; } .ds-grommet { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; border-radius: 9999px; border: 3px solid #e1e3ea; background: #f5f6fa; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); } .ds-badge-card { border-radius: 1.95rem; border: 1px solid #e1e3ea; background: oklch(0.99 0.006 100); padding: 40px 20px 32px; text-align: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(22,108,82,0.08), 0 24px 48px -16px rgba(22,108,82,0.28); } .ds-badge-title { margin-top: 16px; font-family: Poppins, ui-sans-serif, system-ui; font-weight: 600; font-size: 1.125rem; letter-spacing: 0.025em; text-transform: uppercase; color: #166c52; } .ds-badge-caption { margin-top: 4px; font-size: 0.875rem; color: rgba(22,108,82,0.9); } .ds-perforation { margin-top: 24px; height: 4px; background-image: radial-gradient(circle, #e1e3ea 1px, transparent 1.3px); background-size: 8px 4px; background-repeat: repeat-x; background-position: center; } .ds-badge-fineprint { margin-top: 16px; font-size: 0.75rem; color: #5e6c72; } .ds-mono { font-family: 'Geist Mono', ui-monospace, monospace; }"
+    },
+    {
+      "name": "Primary Button (Holographic Sweep)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The gate's single verification action. Ornamented with a one-off skewed holographic sweep on hover — reserved for this action, not a general button pattern.",
+      "html": "<button class=\"ds-btn-primary\"><span class=\"ds-sweep\"></span>Continuar con Google</button>",
+      "css": ".ds-btn-primary { position: relative; overflow: hidden; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 16px; border-radius: 1.05rem; border: 1px solid transparent; background: #166c52; color: #ffffff; font-size: 1rem; font-weight: 500; transition: background-color 150ms cubic-bezier(0.23,1,0.32,1), border-color 150ms cubic-bezier(0.23,1,0.32,1), box-shadow 150ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-primary:hover { background-color: rgba(22,108,82,0.9); } .ds-btn-primary:focus-visible { outline: none; border-color: #166c52; box-shadow: 0 0 0 3px rgba(22,108,82,0.5); } .ds-btn-primary:active { transform: scale(0.98); } .ds-sweep { position: absolute; inset: 0 auto 0 -33%; width: 33%; transform: skewX(-12deg); transition: transform 700ms cubic-bezier(0.23,1,0.32,1); background-image: linear-gradient(100deg, transparent, rgba(125,211,252,0.4), rgba(216,180,254,0.4), rgba(253,224,130,0.35), transparent); pointer-events: none; } .ds-btn-primary:hover .ds-sweep { transform: skewX(-12deg) translateX(400%); }"
+    },
+    {
+      "name": "Status Alert",
+      "kind": "custom",
+      "refersTo": "alert-critical",
+      "description": "Inline solid/soft status message, e.g. the login's auth-failure alert. Same solid/soft pairing convention used for warn icon wells elsewhere in the app.",
+      "html": "<div class=\"ds-alert-critical\"><p>No se pudo iniciar sesión. Intenta nuevamente.</p></div>",
+      "css": ".ds-alert-critical { border-radius: 0.6rem; background: #fce1e5; color: #c62e46; padding: 12px 16px; text-align: left; font-size: 0.875rem; }"
+    },
+    {
+      "name": "Status Icon Well",
+      "kind": "custom",
+      "refersTo": "status-icon-well",
+      "description": "Centered icon in a soft status color well, from the sin-acceso gate screen; corroborates the solid/soft status pattern as app-wide, not login-only.",
+      "html": "<div class=\"ds-icon-well\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 8v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z\"/></svg></div>",
+      "css": ".ds-icon-well { width: 48px; height: 48px; border-radius: 1.05rem; background: #fbeadb; color: #a8611c; display: flex; align-items: center; justify-content: center; margin: 0 auto; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Institutional ID Badge",
+    "overview": "This system has two layers, and they should not be confused with each other. Underneath everything is a quiet, utilitarian app-wide token set — institutional green, cool near-white surfaces, a monday.com-style solid-fill status-color family — that predates this pass and already runs through the dashboards, forms, and the sin-acceso gate screen. On top of that, the login gate is the project's first surface built from an actual direction contract, and it commits to a single object metaphor: the page is not a marketing split-screen and not a bare button on a void, it is one physical thing — an institutional ID badge / access-terminal card, centered on a quiet secured backdrop, that a staff member already knows they're allowed to hold.\n\nThe badge world earns its materiality honestly. Where the build's own finish review caught an invented device — a chrome/metal gradient standing in for a badge grommet — it was corrected to a flat ring built only from --border and --background; where a \"dashed divider\" read as a literal CSS dashed border, it shipped instead as a true row of perforation dots. Nothing in this system should look photoreal or use a fake-material gradient to sell a physical object; flat tone-on-tone shapes carry the metaphor instead.",
+    "keyCharacteristics": [
+      "One hero object per gate screen, not a hero-image-plus-form split.",
+      "Institutional green (--primary) as ink and accent, never as a large background fill.",
+      "Card-stock white (--badge-stock) reserved for the one surface meant to read as a held physical object; every other surface uses plain --card or --background.",
+      "Elevation on that one object is tinted with the primary hue, not neutral black.",
+      "Security/texture backdrops stay near-invisible (5% opacity) — texture, never pattern.",
+      "State color communicates via a solid/soft pair (--critical/--critical-soft, etc.) reused identically across the gate and the rest of the app."
+    ],
+    "rules": [
+      { "name": "The Tinted Shadow Rule", "body": "Elevation on a \"physical object\" surface (the badge card) is tinted with --primary, not neutral black (rgba(22,108,82,…), not rgba(0,0,0,…)). Ordinary UI surfaces elsewhere do not carry this treatment.", "section": "colors" },
+      { "name": "The One Accent Rule", "body": "--primary is ink and action color, never a fill. If a screen needs a large green surface, that is a sidebar-scoped exception (--sidebar), not this rule.", "section": "colors" },
+      { "name": "The Verbatim-Mono Rule", "body": "Any string that is copied data rather than authored copy (a domain suffix, an error code, a technical detail) renders in Geist Mono. Authored sentences around it stay in Poppins.", "section": "typography" },
+      { "name": "The Flat-Elsewhere Rule", "body": "Outside the badge card, the system stays flat. Depth for ordinary state (warnings, pending states, errors) comes from the solid/soft color pair, not from a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do tint the badge card's shadow with --primary, not black — elevation on the one \"physical\" surface should read as belonging to the institution.",
+      "Do build perforation/ticket-edge effects as a dotted radial-gradient, never border-style: dashed.",
+      "Do render small hardware details (rings, grommets) as flat shapes using only --border/--background — never a fabricated chrome or bevel gradient standing in for a real material.",
+      "Do keep security/texture backdrops at ~5% opacity so they read as paper texture, not as a visible motif.",
+      "Do give a hero \"object\" component a larger radius (rounded-4xl) than the controls inside it (rounded-xl) — containers and controls should not share a radius tier.",
+      "Do reuse the solid/soft status color pair for any state communication (warn, critical, good, info, purple) rather than inventing a new state palette per screen."
+    ],
+    "donts": [
+      "Don't fabricate a metal/glass/chrome gradient to represent a real-world material — the build's own finish review rejected exactly this on the grommet ring, and it shipped flat instead.",
+      "Don't apply the holographic hover-sweep to ordinary buttons app-wide. It is reserved for this one high-stakes verification action; putting it on every primary button would turn a signature moment into decoration.",
+      "Don't reuse --badge-stock as a general card background. It exists to make one surface read as held card stock; using it elsewhere erases that distinction.",
+      "Don't raise the security-hairline backdrop's opacity, or apply it to ordinary app screens (dashboards, forms) — it belongs to the gate's \"secured terminal\" story, not to the rest of the product."
+    ]
+  }
+}

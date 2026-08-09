@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Loader2, Lock, ShieldCheck, HeartHandshake, Users } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -15,103 +15,6 @@ export default function LoginPage() {
 }
 
 function LoginScreen() {
-  return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1fr_1.08fr]">
-      <HeroPanel />
-      <FormPanel />
-    </div>
-  );
-}
-
-function HeroPanel() {
-  return (
-    <section
-      className="relative hidden flex-col justify-between overflow-hidden px-16 py-16 text-[color:var(--login-hero-foreground)] lg:flex"
-      style={{ background: "radial-gradient(circle at 70% 45%, var(--login-hero-from), var(--login-hero-to) 65%)" }}
-    >
-      <Image
-        src="/logo.png"
-        alt="Colegio Lord Byron"
-        width={301}
-        height={175}
-        className="h-auto w-[210px] flex-none self-center"
-        style={{ animation: "login-rise 500ms var(--ease-out) both" }}
-        data-login-anim
-        priority
-      />
-
-      <div className="my-auto max-w-[500px]">
-        <h1
-          className="font-heading text-[46px] leading-[1.1] font-semibold text-balance"
-          style={{ animation: "login-rise 500ms var(--ease-out) both", animationDelay: "80ms" }}
-          data-login-anim
-        >
-          Departamento
-          <br />
-          Psicopedagógico
-        </h1>
-        <p
-          className="mt-4 text-[22px] text-[color:var(--login-hero-foreground)]"
-          style={{ animation: "login-rise 500ms var(--ease-out) both", animationDelay: "160ms" }}
-          data-login-anim
-        >
-          Un espacio seguro para acompañar, orientar y fortalecer a nuestra comunidad educativa.
-        </p>
-        <ul className="mt-5 flex list-none flex-col gap-4.5 p-0">
-          <Feature icon={Lock} delay={240}>
-            Información protegida
-          </Feature>
-          <Feature icon={Users} delay={300}>
-            Acceso según tu función
-          </Feature>
-          <Feature icon={HeartHandshake} delay={360}>
-            Acompañamiento conectado
-          </Feature>
-        </ul>
-        <blockquote
-          className="mt-7.5 w-full border-t pt-7 text-[22px] font-medium text-balance italic"
-          style={{
-            borderColor: "var(--login-hero-quote-border)",
-            animation: "login-rise 500ms var(--ease-out) both",
-            animationDelay: "440ms",
-          }}
-          data-login-anim
-        >
-          &ldquo;El bienestar también forma parte del aprendizaje.&rdquo;
-        </blockquote>
-      </div>
-
-      <small className="text-xs text-[color:var(--login-hero-foreground)]/75">
-        Lord Byron School · Área de Psicología
-      </small>
-    </section>
-  );
-}
-
-function Feature({
-  icon: Icon,
-  delay,
-  children,
-}: {
-  icon: React.ElementType;
-  delay: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <li
-      className="flex items-center gap-4 text-lg"
-      style={{ animation: "login-rise 500ms var(--ease-out) both", animationDelay: `${delay}ms` }}
-      data-login-anim
-    >
-      <span className="flex size-9 flex-none items-center justify-center rounded-full bg-white/12">
-        <Icon className="size-4.5" strokeWidth={1.8} />
-      </span>
-      {children}
-    </li>
-  );
-}
-
-function FormPanel() {
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/";
@@ -133,79 +36,110 @@ function FormPanel() {
   }
 
   return (
-    <section className="flex flex-col bg-[color:var(--login-panel-bg)] px-8 py-10 sm:px-[12%]">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12">
+      <span
+        style={{ display: "none" }}
+        dangerouslySetInnerHTML={{
+          __html: `<!--
+THESIS: The login owns one idea, this gate verifies real institutional
+credentials before granting access; it refuses the two-panel marketing-hero
+convention this category always ships (and its opposite, a bare centered
+button on a void).
+OWN-WORLD: A single ID-badge object, portrait card proportions, rounded-4xl,
+grommet ring, institutional green ink on card-stock white, dashed perforation
+divider, holographic hover-sweep on the primary action, quiet diagonal-
+hairline security backdrop.
+STORY: Staff arrive already knowing they work here; the badge confirms this
+is the real Lord Byron Psychopedagogical Department system, then verifies
+them via Google.
+FIRST VIEWPORT: Centered badge card on a quiet patterned ground: crest,
+title, org caption, dashed divider, verify button, restricted-access fine
+print. Nothing else.
+FORM: Institutional ID badge / access terminal, candidate 3 of 7 grounded
+directions, seed key 516dec8b (degraded roll, no network catalog).
+FINISH: unreviewed and undocumented is unfinished; this build ends with the
+finish review, the verdict, and DESIGN.md.
+-->`,
+        }}
+      />
+
       <div
-        className="mx-auto flex w-full max-w-[520px] flex-1 flex-col justify-center gap-8 py-10"
-        style={{ animation: "login-rise 400ms var(--ease-out) both" }}
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(135deg, var(--primary) 0px, var(--primary) 1px, transparent 1px, transparent 16px)",
+          opacity: 0.05,
+        }}
+      />
+
+      <div
+        className="relative w-full max-w-[380px]"
+        style={{ animation: "login-rise 500ms var(--ease-out) both" }}
         data-login-anim
       >
-        <div>
-          <p className="text-lg font-semibold text-primary">Bienvenido</p>
-          <h2 className="font-heading mt-1 text-[38px] leading-tight font-semibold">Ingresa a tu cuenta</h2>
-          <p className="mt-3 text-lg text-muted-foreground">
-            Psicólogos, docentes, jefatura y administración ingresan con su cuenta institucional de Google.
-          </p>
-        </div>
+        <div
+          aria-hidden
+          className="absolute top-0 left-1/2 z-10 size-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-border bg-background shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]"
+        />
 
-        <div className="flex flex-col gap-4">
-          <button
-            onClick={iniciarSesion}
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-muted-foreground/40 bg-white py-4 text-lg font-medium text-foreground transition-colors duration-150 ease-(--ease-out) hover:bg-[color:var(--login-panel-hover)] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
-          >
-            {loading ? <Loader2 className="size-5 animate-spin" /> : <GoogleIcon className="size-5" />}
-            Continuar con Google
-          </button>
+        <div className="rounded-4xl border border-border bg-[color:var(--badge-stock)] px-5 pt-10 pb-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_4px_rgba(22,108,82,0.08),0_24px_48px_-16px_rgba(22,108,82,0.28)] sm:px-8">
+          <Image
+            src="/insignia.png"
+            alt="Colegio Lord Byron"
+            width={302}
+            height={312}
+            className="mx-auto h-auto w-14"
+            priority
+          />
 
-          {error === "auth" && (
-            <div className="rounded-md bg-critical-soft px-4 py-3 text-sm text-critical">
-              <p>No se pudo iniciar sesión. Intenta nuevamente.</p>
-              {detail && <p className="mt-1 font-mono text-xs break-words">{detail}</p>}
-            </div>
-          )}
+          <h1 className="mt-4 font-heading text-lg font-semibold text-balance text-primary uppercase tracking-wide">
+            Departamento Psicopedagógico
+          </h1>
+          <p className="mt-1 text-sm text-primary/90">Colegio Lord Byron</p>
 
-          <div className="mt-2 flex items-start gap-3 rounded-lg border border-primary/20 bg-accent p-4">
-            <ShieldCheck className="mt-0.5 size-5 flex-none text-primary" strokeWidth={1.8} />
-            <div>
-              <p className="font-semibold text-foreground">Acceso seguro y confidencial</p>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                Solo cuentas <span className="font-mono">@byron.edu.pe</span> con un rol asignado por el
-                administrador pueden ingresar.
-              </p>
-            </div>
+          <div
+            aria-hidden
+            className="mt-6 h-1"
+            style={{
+              backgroundImage: "radial-gradient(circle, var(--border) 1px, transparent 1.3px)",
+              backgroundSize: "8px 4px",
+              backgroundRepeat: "repeat-x",
+              backgroundPosition: "center",
+            }}
+          />
+
+          <div className="flex flex-col gap-4 pt-6">
+            <button
+              onClick={iniciarSesion}
+              disabled={loading}
+              className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border border-transparent bg-primary py-3.5 text-base font-medium text-primary-foreground transition-[color,background-color,border-color,box-shadow] duration-150 ease-(--ease-out) hover:bg-primary/90 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
+            >
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 transition-transform duration-700 ease-(--ease-out) motion-reduce:transition-none group-hover:translate-x-[400%]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(100deg, transparent, rgba(125,211,252,0.4), rgba(216,180,254,0.4), rgba(253,224,130,0.35), transparent)",
+                }}
+              />
+              {loading ? <Loader2 className="size-5 animate-spin" /> : <GoogleIcon className="size-5" />}
+              Continuar con Google
+            </button>
+
+            {error === "auth" && (
+              <div className="rounded-md bg-critical-soft px-4 py-3 text-left text-sm text-critical">
+                <p>No se pudo iniciar sesión. Intenta nuevamente.</p>
+                {detail && <p className="mt-1 font-mono text-xs break-words">{detail}</p>}
+              </div>
+            )}
+
+            <p className="text-xs text-muted-foreground">
+              Acceso exclusivo para personal con cuenta institucional{" "}
+              <span className="font-mono">@byron.edu.pe</span>.
+            </p>
           </div>
         </div>
-
-        <div className="grid grid-cols-3 gap-3 border-t border-border pt-6 sm:flex sm:items-center sm:justify-between sm:gap-0">
-          <BottomFeature icon={ShieldCheck} title="Seguridad" subtitle="Tus datos protegidos" />
-          <BottomFeature icon={HeartHandshake} title="Acompañamiento" subtitle="al estudiante" />
-          <BottomFeature icon={Users} title="Trazabilidad" subtitle="Acceso por rol" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function BottomFeature({
-  icon: Icon,
-  title,
-  subtitle,
-}: {
-  icon: React.ElementType;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <div className="flex min-w-0 items-center gap-2.5">
-      <span
-        className="flex size-9 flex-none items-center justify-center rounded-full"
-        style={{ background: "var(--login-hero-to)", color: "var(--login-hero-foreground)" }}
-      >
-        <Icon className="size-4" strokeWidth={1.8} />
-      </span>
-      <div className="min-w-0 leading-tight">
-        <p className="truncate text-sm font-semibold text-foreground">{title}</p>
-        <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
       </div>
     </div>
   );
