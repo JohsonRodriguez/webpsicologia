@@ -4,14 +4,7 @@ import { rutaInicioPara, type Rol } from "@/lib/roles";
 
 const ALLOWED_DOMAIN = (process.env.ALLOWED_EMAIL_DOMAIN ?? "byron.edu.pe").toLowerCase();
 
-// TEMPORAL: instrumentación de tiempos para diagnosticar la demora del login.
-// Quitar una vez que tengamos números claros de dónde se va el tiempo.
-function marca(t0: number, paso: string) {
-  console.log(`[perf][auth/callback] ${paso}: ${Date.now() - t0}ms`);
-}
-
 export async function GET(request: Request) {
-  const t0 = Date.now();
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
@@ -19,16 +12,12 @@ export async function GET(request: Request) {
   try {
     if (code) {
       const supabase = await createClient();
-      marca(t0, "createClient");
-
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-      marca(t0, "exchangeCodeForSession");
 
       if (!error && data.user) {
         const email = data.user.email?.toLowerCase() ?? "";
         if (!email.endsWith(`@${ALLOWED_DOMAIN}`)) {
           await supabase.auth.signOut();
-          marca(t0, "signOut (dominio inválido) — total");
           return NextResponse.redirect(`${origin}/sin-acceso?motivo=dominio`);
         }
 
@@ -53,25 +42,20 @@ export async function GET(request: Request) {
             .select("rol, activo")
             .eq("id", data.user.id)
             .maybeSingle();
-          marca(t0, "consulta rol/activo");
           const destino = perfil?.activo && perfil.rol ? rutaInicioPara(perfil.rol as Rol) : "/";
-          marca(t0, `total (destino=${destino})`);
           return NextResponse.redirect(`${origin}${destino}`);
         }
 
-        marca(t0, `total (destino=${next}, next explícito)`);
         return NextResponse.redirect(`${origin}${next}`);
       }
 
       console.error("exchangeCodeForSession error", error);
       const detail = encodeURIComponent(error?.message ?? "sin sesión tras exchangeCodeForSession");
-      marca(t0, "total (error en exchangeCodeForSession)");
       return NextResponse.redirect(`${origin}/login?error=auth&detail=${detail}`);
     }
   } catch (err) {
     console.error("auth callback crashed", err);
     const message = err instanceof Error ? err.message : String(err);
-    marca(t0, "total (excepción)");
     return NextResponse.redirect(`${origin}/login?error=auth&detail=${encodeURIComponent(message)}`);
   }
 
