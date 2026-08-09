@@ -69,7 +69,7 @@ function HeroPanel() {
           </Feature>
         </ul>
         <blockquote
-          className="mt-7.5 w-full border-t pt-7 text-[22px] font-medium whitespace-nowrap italic"
+          className="mt-7.5 w-full border-t pt-7 text-[22px] font-medium text-balance italic"
           style={{
             borderColor: "var(--login-hero-quote-border)",
             animation: "login-rise 500ms var(--ease-out) both",
