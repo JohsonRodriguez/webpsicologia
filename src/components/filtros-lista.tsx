@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { SimpleSelect } from "@/components/simple-select";
 
 export function FiltrosLista({
   action,
@@ -23,19 +24,14 @@ export function FiltrosLista({
         <Input type="search" name="q" defaultValue={q} placeholder={qPlaceholder} className="pl-8" />
       </div>
       {selects.map((s) => (
-        <select
+        <SimpleSelect
           key={s.name}
+          className="w-auto"
           name={s.name}
           defaultValue={s.value ?? ""}
-          className="h-9 rounded-md border border-input bg-card px-3 text-sm"
-        >
-          <option value="">{s.placeholder}</option>
-          {s.options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+          placeholder={s.placeholder}
+          options={[{ value: "", label: s.placeholder }, ...s.options.map((o) => ({ value: o.value, label: o.label }))]}
+        />
       ))}
       <button
         type="submit"

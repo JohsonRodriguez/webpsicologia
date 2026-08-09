@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SimpleSelect } from "@/components/simple-select";
 
 type ConNivelGradoSeccion = {
   nivelId: string;
@@ -57,49 +58,34 @@ export function FiltroAcademico<T extends ConNivelGradoSeccion>({
   return (
     <>
       <div className="flex flex-wrap items-center gap-2.5 border-b border-border p-4">
-        <select
+        <SimpleSelect
+          className="w-auto"
           value={nivelId}
-          onChange={(e) => {
-            setNivelId(e.target.value);
+          onValueChange={(v) => {
+            setNivelId(v);
             setGradoId("");
             setSeccionId("");
           }}
-          className="h-9 rounded-md border border-input bg-card px-3 text-sm"
-        >
-          <option value="">Todos los niveles</option>
-          {niveles.map((n) => (
-            <option key={n.id} value={n.id}>
-              {n.nombre}
-            </option>
-          ))}
-        </select>
-        <select
+          placeholder="Todos los niveles"
+          options={niveles.map((n) => ({ value: n.id, label: n.nombre }))}
+        />
+        <SimpleSelect
+          className="w-auto"
           value={gradoId}
-          onChange={(e) => {
-            setGradoId(e.target.value);
+          onValueChange={(v) => {
+            setGradoId(v);
             setSeccionId("");
           }}
-          className="h-9 rounded-md border border-input bg-card px-3 text-sm"
-        >
-          <option value="">Todos los grados</option>
-          {grados.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.nombre}
-            </option>
-          ))}
-        </select>
-        <select
+          placeholder="Todos los grados"
+          options={grados.map((g) => ({ value: g.id, label: g.nombre }))}
+        />
+        <SimpleSelect
+          className="w-auto"
           value={seccionId}
-          onChange={(e) => setSeccionId(e.target.value)}
-          className="h-9 rounded-md border border-input bg-card px-3 text-sm"
-        >
-          <option value="">Todas las secciones</option>
-          {secciones.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.nombre}
-            </option>
-          ))}
-        </select>
+          onValueChange={setSeccionId}
+          placeholder="Todas las secciones"
+          options={secciones.map((s) => ({ value: s.id, label: s.nombre }))}
+        />
         {(nivelId || gradoId || seccionId) && (
           <button
             type="button"

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { SimpleSelect } from "@/components/simple-select";
 import {
   Dialog,
   DialogContent,
@@ -75,20 +76,14 @@ export function EditarIncidenciaDialog({
         <form action={formAction} className="flex max-h-[65vh] flex-col gap-3.5 overflow-y-auto pr-1">
           <div className="flex flex-col gap-1.5">
             <Label>Motivo</Label>
-            <select
+            <SimpleSelect
               required
               name="motivo"
               value={motivoId}
-              onChange={(e) => setMotivoId(e.target.value)}
-              className="h-9 w-full rounded-md border border-input bg-card px-3 text-sm"
-            >
-              <option value="">Selecciona…</option>
-              {motivos.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nombre}
-                </option>
-              ))}
-            </select>
+              onValueChange={setMotivoId}
+              placeholder="Selecciona…"
+              options={motivos.map((m) => ({ value: m.id, label: m.nombre }))}
+            />
             {motivoEsOtro && (
               <Input
                 required

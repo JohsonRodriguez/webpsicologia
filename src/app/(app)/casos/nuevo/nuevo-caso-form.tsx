@@ -6,6 +6,7 @@ import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { SimpleSelect } from "@/components/simple-select";
 import type { EstructuraAcademica } from "@/lib/queries";
 import { crearCasoDirecto, type EstadoAccion } from "../actions";
 
@@ -48,76 +49,53 @@ export function NuevoCasoForm({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="flex flex-col gap-1.5">
               <Label>Nivel</Label>
-              <select
+              <SimpleSelect
                 required
                 value={nivelId}
-                onChange={(e) => {
-                  setNivelId(e.target.value);
+                onValueChange={(v) => {
+                  setNivelId(v);
                   setGradoId("");
                   setSeccionId("");
                 }}
-                className="h-9 rounded-md border border-input bg-card px-3 text-sm"
-              >
-                <option value="">Selecciona…</option>
-                {estructura.niveles.map((n) => (
-                  <option key={n.id} value={n.id}>
-                    {n.nombre}
-                  </option>
-                ))}
-              </select>
+                placeholder="Selecciona…"
+                options={estructura.niveles.map((n) => ({ value: n.id, label: n.nombre }))}
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label>Grado</Label>
-              <select
+              <SimpleSelect
                 required
                 disabled={!nivelId}
                 value={gradoId}
-                onChange={(e) => {
-                  setGradoId(e.target.value);
+                onValueChange={(v) => {
+                  setGradoId(v);
                   setSeccionId("");
                 }}
-                className="h-9 rounded-md border border-input bg-card px-3 text-sm disabled:opacity-50"
-              >
-                <option value="">{nivelId ? "Selecciona…" : "Primero elige nivel"}</option>
-                {grados.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.nombre}
-                  </option>
-                ))}
-              </select>
+                placeholder={nivelId ? "Selecciona…" : "Primero elige nivel"}
+                options={grados.map((g) => ({ value: g.id, label: g.nombre }))}
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label>Sección</Label>
-              <select
+              <SimpleSelect
                 required
                 disabled={!gradoId}
                 value={seccionId}
-                onChange={(e) => setSeccionId(e.target.value)}
-                className="h-9 rounded-md border border-input bg-card px-3 text-sm disabled:opacity-50"
-              >
-                <option value="">{gradoId ? "Selecciona…" : "Primero elige grado"}</option>
-                {secciones.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.nombre}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setSeccionId}
+                placeholder={gradoId ? "Selecciona…" : "Primero elige grado"}
+                options={secciones.map((s) => ({ value: s.id, label: s.nombre }))}
+              />
             </div>
             <div className="flex flex-col gap-1.5 sm:col-span-3">
               <Label>Alumno</Label>
-              <select
+              <SimpleSelect
+                key={seccionId}
                 required
                 disabled={!seccionId}
                 name="alumno"
-                className="h-9 rounded-md border border-input bg-card px-3 text-sm disabled:opacity-50"
-              >
-                <option value="">{seccionId ? "Selecciona…" : "Primero elige sección"}</option>
-                {alumnos.map((a) => (
-                  <option key={a.alumnoId} value={a.alumnoId}>
-                    {a.nombre} — {a.codigo}
-                  </option>
-                ))}
-              </select>
+                placeholder={seccionId ? "Selecciona…" : "Primero elige sección"}
+                options={alumnos.map((a) => ({ value: a.alumnoId, label: `${a.nombre} — ${a.codigo}` }))}
+              />
             </div>
           </div>
         </fieldset>

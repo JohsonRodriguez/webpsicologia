@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { RefreshCw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { SimpleSelect } from "@/components/simple-select";
 import { ejecutarMigracion } from "../actions";
 
 export function MigracionForm({ destinos }: { destinos: { id: string; anio: number }[] }) {
@@ -29,22 +30,14 @@ export function MigracionForm({ destinos }: { destinos: { id: string; anio: numb
     >
       <div className="flex flex-col gap-1.5">
         <Label>Año destino</Label>
-        <select
+        <SimpleSelect
           name="destino"
           disabled={!destinos.length}
           required
-          className="h-9 rounded-md border border-input bg-card px-3 text-sm disabled:opacity-50"
-        >
-          {destinos.length ? (
-            destinos.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.anio}
-              </option>
-            ))
-          ) : (
-            <option value="">Crea primero un año nuevo</option>
-          )}
-        </select>
+          defaultValue={destinos[0]?.id ?? ""}
+          placeholder="Crea primero un año nuevo"
+          options={destinos.map((a) => ({ value: a.id, label: String(a.anio) }))}
+        />
       </div>
       <Button type="submit" disabled={pending || !destinos.length}>
         {pending ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}

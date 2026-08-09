@@ -5,6 +5,7 @@ import { Plus, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SimpleSelect } from "@/components/simple-select";
 import {
   Dialog,
   DialogContent,
@@ -70,56 +71,39 @@ export function NuevoAlumnoDialog({
           <div className="grid grid-cols-3 gap-3">
             <div className="flex flex-col gap-1.5">
               <Label>Nivel</Label>
-              <select
+              <SimpleSelect
                 required
                 value={nivelId}
-                onChange={(e) => {
-                  setNivelId(e.target.value);
+                onValueChange={(v) => {
+                  setNivelId(v);
                   setGradoId("");
                 }}
-                className="h-9 rounded-md border border-input bg-card px-2 text-sm"
-              >
-                <option value="">—</option>
-                {estructura.niveles.map((n) => (
-                  <option key={n.id} value={n.id}>
-                    {n.nombre}
-                  </option>
-                ))}
-              </select>
+                placeholder="—"
+                options={estructura.niveles.map((n) => ({ value: n.id, label: n.nombre }))}
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label>Grado</Label>
-              <select
+              <SimpleSelect
                 required
                 disabled={!nivelId}
                 value={gradoId}
                 name="grado"
-                onChange={(e) => setGradoId(e.target.value)}
-                className="h-9 rounded-md border border-input bg-card px-2 text-sm disabled:opacity-50"
-              >
-                <option value="">—</option>
-                {grados.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.nombre}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setGradoId}
+                placeholder="—"
+                options={grados.map((g) => ({ value: g.id, label: g.nombre }))}
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label>Sección</Label>
-              <select
+              <SimpleSelect
+                key={gradoId}
                 required
                 disabled={!gradoId}
                 name="seccion"
-                className="h-9 rounded-md border border-input bg-card px-2 text-sm disabled:opacity-50"
-              >
-                <option value="">—</option>
-                {secciones.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.nombre}
-                  </option>
-                ))}
-              </select>
+                placeholder="—"
+                options={secciones.map((s) => ({ value: s.id, label: s.nombre }))}
+              />
             </div>
           </div>
           {state.error && <p className="rounded-md bg-critical-soft px-3 py-2 text-sm text-critical">{state.error}</p>}
