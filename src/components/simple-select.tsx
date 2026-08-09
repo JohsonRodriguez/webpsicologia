@@ -26,6 +26,7 @@ export function SimpleSelect({
 }) {
   return (
     <Select
+      items={options}
       value={value}
       defaultValue={defaultValue}
       onValueChange={(v) => onValueChange?.((v as string) ?? "")}
