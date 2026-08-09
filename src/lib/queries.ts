@@ -31,21 +31,28 @@ export type MatriculaInfo = {
   nivelNombre: string;
 };
 
-/** Matrícula de cada alumno para un año dado (por defecto el año activo), indexada por alumno_id. */
-export async function getMatriculasPorAlumno(supabase: DB, anioAcademicoId?: string) {
+/**
+ * Matrícula de cada alumno para un año dado (por defecto el año activo), indexada por alumno_id.
+ * Si se pasa `alumnoIds`, acota la consulta a esos alumnos en vez de traer la matrícula
+ * de todo el colegio (útil en pantallas que solo muestran un puñado de alumnos, como el dashboard).
+ */
+export async function getMatriculasPorAlumno(supabase: DB, anioAcademicoId?: string, alumnoIds?: string[]) {
   let anioId = anioAcademicoId;
   if (!anioId) {
     const activo = await getAnioActivo(supabase);
     anioId = activo?.id;
   }
   if (!anioId) return new Map<string, MatriculaInfo>();
+  if (alumnoIds && alumnoIds.length === 0) return new Map<string, MatriculaInfo>();
 
-  const { data } = await supabase
+  let query = supabase
     .from("matriculas")
     .select(
       "alumno_id, grado_id, seccion_id, grados(nombre, nivel_id, niveles(nombre)), secciones(nombre)",
     )
     .eq("anio_academico_id", anioId);
+  if (alumnoIds) query = query.in("alumno_id", alumnoIds);
+  const { data } = await query;
 
   const map = new Map<string, MatriculaInfo>();
   for (const row of data ?? []) {
