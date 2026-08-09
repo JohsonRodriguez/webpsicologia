@@ -99,3 +99,33 @@ export async function getEstructuraAcademica(supabase: DB): Promise<EstructuraAc
 export function nombreAlumno(a: { nombres: string; apellidos: string }) {
   return `${a.nombres} ${a.apellidos}`;
 }
+
+/** Tamaño de página para las listas paginadas de casos/incidencias. */
+export const TAMANO_PAGINA_LISTA = 20;
+
+/** Convierte un número de página (1-indexado) en el rango [from, to] para `.range()`. */
+export function rangoPagina(page: number) {
+  const from = (page - 1) * TAMANO_PAGINA_LISTA;
+  const to = from + TAMANO_PAGINA_LISTA - 1;
+  return { from, to };
+}
+
+export function totalPaginas(count: number | null) {
+  return Math.max(1, Math.ceil((count ?? 0) / TAMANO_PAGINA_LISTA));
+}
+
+/** Escapa los comodines de ILIKE (%, _) para que el texto del usuario se busque de forma literal. */
+function escaparLike(valor: string) {
+  return valor.replace(/[\\%_]/g, (m) => `\\${m}`);
+}
+
+/**
+ * Filtro OR (para `.or(..., { foreignTable: "alumnos" })`) que busca `q` en nombres o apellidos
+ * del alumno embebido. El valor va entre comillas dobles porque la sintaxis de `.or()` de
+ * PostgREST usa comas y paréntesis como separadores; sin comillas, un texto de búsqueda que
+ * contenga esos caracteres rompería el filtro.
+ */
+export function filtroNombreAlumno(q: string) {
+  const needle = escaparLike(q).replace(/"/g, '\\"');
+  return `nombres.ilike."%${needle}%",apellidos.ilike."%${needle}%"`;
+}
