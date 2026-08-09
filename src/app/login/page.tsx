@@ -32,9 +32,9 @@ function HeroPanel() {
       <Image
         src="/logo.png"
         alt="Colegio Lord Byron"
-        width={220}
-        height={128}
-        className="h-[123px] w-[150px] flex-none"
+        width={258}
+        height={150}
+        className="h-auto w-[180px] flex-none"
         style={{ animation: "login-rise 500ms var(--ease-out) both" }}
         data-login-anim
         priority
