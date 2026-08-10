@@ -20,7 +20,7 @@ export default async function AuditoriaPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
-  await requireUsuario(["jefe_psicologia", "administrador"]);
+  await requireUsuario(["administrador"]);
   const { page: pageParam } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
   const supabase = await createClient();

@@ -57,7 +57,6 @@ export function navFor(rol: Rol): NavGroup[] {
         { href: "/todas", label: "Todas las incidencias y casos", icon: ShieldCheck },
         { href: "/carga-psicologos", label: "Carga por psicólogo", icon: Scale },
         { href: "/reportes", label: "Reportes y estadísticas", icon: BarChart3 },
-        { href: "/auditoria", label: "Auditoría", icon: History },
       ],
     });
   }
