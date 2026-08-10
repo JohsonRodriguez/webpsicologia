@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { FileUp, Check, Loader2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,15 +22,16 @@ export function ImportarAlumnosDialog() {
   const [state, formAction, pending] = useActionState(importarAlumnosExcel, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
-  useEffect(() => {
-    if (!open) {
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (!next) {
       formRef.current?.reset();
       setFileName("");
     }
-  }, [open]);
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
           <Button variant="outline">

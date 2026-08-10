@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { Plus, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,9 +34,11 @@ export function NuevoAlumnoDialog({
   const grados = useMemo(() => estructura.grados.filter((g) => g.nivel_id === nivelId), [estructura.grados, nivelId]);
   const secciones = useMemo(() => estructura.secciones.filter((s) => s.grado_id === gradoId), [estructura.secciones, gradoId]);
 
-  useEffect(() => {
+  const [prevState, setPrevState] = useState(state);
+  if (state !== prevState) {
+    setPrevState(state);
     if (state.ok) setOpen(false);
-  }, [state.ok]);
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

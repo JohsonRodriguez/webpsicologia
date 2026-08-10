@@ -69,15 +69,19 @@ export function DonutChart({ data, size = 150 }: { data: DonutDatum[]; size?: nu
   const cy = size / 2;
   const circ = 2 * Math.PI * r;
   const total = data.reduce((s, d) => s + d.value, 0) || 1;
-  let offset = 0;
+  const offsets: number[] = [];
+  data.reduce((acc, d) => {
+    offsets.push(acc);
+    return acc + (d.value / total) * circ;
+  }, 0);
 
   return (
     <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
       {data.map((d, i) => {
         const frac = d.value / total;
         const dash = frac * circ;
-        const finalOffset = -offset;
-        const el = (
+        const finalOffset = -offsets[i];
+        return (
           <circle
             data-chart-anim
             key={d.label}
@@ -100,8 +104,6 @@ export function DonutChart({ data, size = 150 }: { data: DonutDatum[]; size?: nu
             }
           />
         );
-        offset += dash;
-        return el;
       })}
       <text
         data-chart-anim

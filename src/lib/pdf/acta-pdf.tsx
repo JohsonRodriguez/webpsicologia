@@ -80,6 +80,7 @@ export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
               {data.alumnoNombre} · {data.alumnoCodigo}
             </Text>
           </View>
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de @react-pdf/renderer, no soporta alt */}
           <Image src={logoDataUrl} style={styles.logo} />
         </View>
 
@@ -127,6 +128,7 @@ export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
 
         <View style={styles.signaturesRow}>
           <View style={styles.signatureBox}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de @react-pdf/renderer, no soporta alt */}
             {firmaPsicologo && <Image src={firmaPsicologo.firmaData} style={styles.signatureImg} />}
             <Text style={styles.signatureName}>{data.psicologoNombre}</Text>
             <Text style={styles.signatureMeta}>
@@ -134,6 +136,7 @@ export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
             </Text>
           </View>
           <View style={styles.signatureBox}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de @react-pdf/renderer, no soporta alt */}
             {firmaPadre && <Image src={firmaPadre.firmaData} style={styles.signatureImg} />}
             <Text style={styles.signatureName}>{firmaPadre?.firmanteNombre ?? "—"}</Text>
             <Text style={styles.signatureMeta}>

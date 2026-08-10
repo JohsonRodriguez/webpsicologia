@@ -47,13 +47,17 @@ export function EditarIncidenciaDialog({
 
   const motivoEsOtro = motivos.find((m) => m.id === motivoId)?.nombre === "Otro";
 
+  const [prevState, setPrevState] = useState(state);
+  if (state !== prevState) {
+    setPrevState(state);
+    if (state.ok) setOpen(false);
+  }
+
   useEffect(() => {
-    if (state.ok) {
-      toast.success("Incidencia actualizada.");
-      setOpen(false);
-      router.refresh();
-    }
-  }, [state.ok, router]);
+    if (!state.ok) return;
+    toast.success("Incidencia actualizada.");
+    router.refresh();
+  }, [state, router]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

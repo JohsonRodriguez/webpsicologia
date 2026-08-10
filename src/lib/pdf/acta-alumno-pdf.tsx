@@ -84,6 +84,7 @@ export function ActaAlumnoPdfDocument({ data }: { data: ActaAlumnoPdfData }) {
               {data.alumnoNombre} · {data.alumnoCodigo}
             </Text>
           </View>
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de @react-pdf/renderer, no soporta alt */}
           <Image src={logoDataUrl} style={styles.logo} />
         </View>
 
@@ -130,6 +131,7 @@ export function ActaAlumnoPdfDocument({ data }: { data: ActaAlumnoPdfData }) {
         </View>
 
         <View style={styles.signatureBox}>
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de @react-pdf/renderer, no soporta alt */}
           <Image src={data.firmaAlumnoData} style={styles.signatureImg} />
           <Text style={styles.signatureName}>{data.firmaAlumnoNombre}</Text>
           <Text style={styles.signatureMeta}>
