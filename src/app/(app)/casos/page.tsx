@@ -31,7 +31,7 @@ export default async function CasosPage({
   searchParams: Promise<{ tab?: string; q?: string; estado?: string; page?: string }>;
 }) {
   const usuario = await requireUsuario(["psicologo", "jefe_psicologia"]);
-  const { tab = "casos", q, estado, page: pageParam } = await searchParams;
+  const { tab = "incidencias", q, estado, page: pageParam } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
   const supabase = await createClient();
   const matriculas = await getMatriculasPorAlumno(supabase);
@@ -57,8 +57,8 @@ export default async function CasosPage({
       <UrlTabs
         active={tab}
         tabs={[
-          { key: "casos", label: "Casos", href: "/casos?tab=casos" },
           { key: "incidencias", label: "Incidencias", href: "/casos?tab=incidencias" },
+          { key: "casos", label: "Casos", href: "/casos?tab=casos" },
         ]}
       />
 

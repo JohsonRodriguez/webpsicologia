@@ -9,6 +9,7 @@ import { PillEstadoCaso } from "@/components/status-pills";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ClickableRow } from "@/components/clickable-row";
+import { NuevasIncidenciasToast } from "./nuevas-incidencias-toast";
 
 const TONO: Record<string, string> = {
   primary: "bg-primary/10 text-primary",
@@ -107,7 +108,7 @@ export default async function DashboardPage() {
     pendientesQuery = pendientesQuery.eq("psicologo_id", usuario.id);
   }
 
-  const [{ data: estados }, { data: recientesData }, { data: pendientesData }, { count: countInc }] =
+  const [{ data: estados }, { data: recientesData }, { data: pendientesData }, { count: countInc }, { count: countNuevas }] =
     await Promise.all([
       estadosQuery,
       recientesQuery,
@@ -116,12 +117,14 @@ export default async function DashboardPage() {
         .from("incidencias")
         .select("id", { count: "exact", head: true })
         .in("estado", ["nueva", "en_revision"]),
+      supabase.from("incidencias").select("id", { count: "exact", head: true }).eq("estado", "nueva"),
     ]);
 
   const estadosList = estados ?? [];
   const casosRecientes = recientesData ?? [];
   const casosPendientes = pendientesData ?? [];
   const pendientesInc = countInc ?? 0;
+  const nuevasInc = countNuevas ?? 0;
   const porEstado = {
     abierto: estadosList.filter((c) => c.estado === "abierto").length,
     en_atencion: estadosList.filter((c) => c.estado === "en_atencion").length,
@@ -135,6 +138,7 @@ export default async function DashboardPage() {
 
   return (
     <>
+      <NuevasIncidenciasToast cantidad={nuevasInc} href={esJefe ? "/todas?tab=incidencias&estado=nueva" : "/casos?tab=incidencias&estado=nueva"} />
       <PageHeader
         eyebrow={esJefe ? "Jefatura de psicología" : saludo()}
         title={esJefe ? "Dashboard general del colegio" : `${saludo()}, ${primerNombre}`}

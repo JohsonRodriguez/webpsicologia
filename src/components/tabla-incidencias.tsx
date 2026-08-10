@@ -57,8 +57,13 @@ export function TablaIncidencias({
         <TableBody>
           {incidencias.map((inc) => {
             const mat = matriculas.get(inc.alumno_id);
+            const esNueva = inc.estado === "nueva";
             return (
-              <ClickableRow key={inc.id} href={`${baseHref}/${inc.id}`}>
+              <ClickableRow
+                key={inc.id}
+                href={`${baseHref}/${inc.id}`}
+                className={esNueva ? "bg-info-soft hover:bg-info-soft/70" : undefined}
+              >
                 <TableCell>
                   <BarraPrioridad prioridad={inc.prioridad} />
                 </TableCell>
