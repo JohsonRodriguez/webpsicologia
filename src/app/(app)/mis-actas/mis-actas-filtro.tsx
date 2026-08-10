@@ -23,6 +23,12 @@ export type FilaMiActa = {
   seccionNombre: string;
 };
 
+function resumenMotivo(detalle: string) {
+  const palabras = detalle.trim().split(/\s+/);
+  if (palabras.length <= 3) return detalle;
+  return `${palabras.slice(0, 3).join(" ")}…`;
+}
+
 function StatTile({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -59,7 +65,6 @@ export function MisActasFiltro({ filas, tieneFirmaGuardada }: { filas: FilaMiAct
                       <TableHead>Grado y sección</TableHead>
                       <TableHead>Fecha</TableHead>
                       <TableHead>Motivo</TableHead>
-                      <TableHead>Origen</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead></TableHead>
                     </TableRow>
@@ -80,18 +85,7 @@ export function MisActasFiltro({ filas, tieneFirmaGuardada }: { filas: FilaMiAct
                               year: "numeric",
                             })}
                           </TableCell>
-                          <TableCell className="max-w-xs truncate text-muted-foreground">{f.detalle}</TableCell>
-                          <TableCell>
-                            {f.origen === "docente" ? (
-                              <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
-                                Registrada por ti
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 text-xs font-bold text-muted-foreground">
-                                De un caso
-                              </span>
-                            )}
-                          </TableCell>
+                          <TableCell className="text-muted-foreground">{resumenMotivo(f.detalle)}</TableCell>
                           <TableCell>
                             <span
                               className={
