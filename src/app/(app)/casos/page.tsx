@@ -22,7 +22,6 @@ const ESTADOS_INC = [
   { value: "nueva", label: "Nueva" },
   { value: "en_revision", label: "En revisión" },
   { value: "derivada", label: "Derivada a caso" },
-  { value: "cerrada", label: "Cerrada" },
 ];
 
 export default async function CasosPage({
@@ -141,6 +140,7 @@ async function IncidenciasTab({
       "id, alumno_id, prioridad, estado, fecha_hora, motivo_otro, alumnos!inner(nombres, apellidos), catalogo_motivos(nombre)",
       { count: "exact" },
     )
+    .neq("estado", "cerrada")
     .order("fecha_hora", { ascending: false });
 
   if (estado) query = query.eq("estado", estado);
