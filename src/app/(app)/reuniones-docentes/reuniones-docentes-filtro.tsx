@@ -80,16 +80,16 @@ export function ReunionesDocentesFiltro({
   alumnosSinActa: number;
 }) {
   return (
-    <FiltroAcademico items={filas}>
-      {(filtradas) => (
-        <div className="flex flex-col gap-5">
-          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-            <StatTile label="Total de reuniones" value={totalReuniones} />
-            <DocenteTile label="Docente con más reuniones" icon={Trophy} docente={docenteConMas} />
-            <DocenteTile label="Docente con menos reuniones" icon={TrendingDown} docente={docenteConMenos} />
-            <StatTile label="Mis alumnos sin acta de docente" value={alumnosSinActa} />
-          </div>
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+        <StatTile label="Total de reuniones" value={totalReuniones} />
+        <DocenteTile label="Docente con más reuniones" icon={Trophy} docente={docenteConMas} />
+        <DocenteTile label="Docente con menos reuniones" icon={TrendingDown} docente={docenteConMenos} />
+        <StatTile label="Mis alumnos sin acta de docente" value={alumnosSinActa} />
+      </div>
 
+      <FiltroAcademico items={filas}>
+        {(filtradas) => (
           <div className="rounded-xl border border-border bg-card shadow-sm">
             {filtradas.length === 0 ? (
               <p className="px-4 py-14 text-center text-sm text-muted-foreground">
@@ -142,8 +142,8 @@ export function ReunionesDocentesFiltro({
               </Table>
             )}
           </div>
-        </div>
-      )}
-    </FiltroAcademico>
+        )}
+      </FiltroAcademico>
+    </div>
   );
 }
