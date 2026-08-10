@@ -1,7 +1,8 @@
 "use client";
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PdfDownloadLink } from "@/components/pdf-download-link";
 import { FiltroAcademico } from "@/components/filtro-academico";
-import { ActaResumen } from "../casos/[id]/acta-resumen";
 import { FirmarActaButton } from "./firmar-acta-button";
 
 export type FilaMiActa = {
@@ -45,31 +46,76 @@ export function MisActasFiltro({ filas, tieneFirmaGuardada }: { filas: FilaMiAct
               <StatTile label="Pendientes de tu firma" value={pendientesDeFirma} />
             </div>
 
-            {filtradas.length === 0 ? (
-              <div className="rounded-xl border border-border bg-card p-10 text-center shadow-sm">
-                <p className="text-sm text-muted-foreground">No hay actas que coincidan con el filtro.</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {filtradas.map((f) => (
-                  <div key={f.id} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3.5 shadow-sm">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <strong className="text-sm">{f.alumnoNombre}</strong>
-                      <span className="text-xs text-muted-foreground">
-                        {f.gradoNombre} &quot;{f.seccionNombre}&quot;
-                      </span>
-                      {f.origen === "docente" && (
-                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
-                          Registrada por ti
-                        </span>
-                      )}
-                    </div>
-                    <ActaResumen cita={f} pdfHref={f.pdfHref} />
-                    {f.puedeFirmar && <FirmarActaButton citaId={f.id} tieneFirmaGuardada={tieneFirmaGuardada} />}
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="rounded-xl border border-border bg-card shadow-sm">
+              {filtradas.length === 0 ? (
+                <p className="px-4 py-14 text-center text-sm text-muted-foreground">
+                  No hay actas que coincidan con el filtro.
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Alumno</TableHead>
+                      <TableHead>Grado y sección</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Motivo</TableHead>
+                      <TableHead>Origen</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtradas.map((f) => {
+                      const firmada = f.firmas.length >= 1;
+                      return (
+                        <TableRow key={f.id}>
+                          <TableCell className="font-semibold">{f.alumnoNombre}</TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {f.gradoNombre} &quot;{f.seccionNombre}&quot;
+                          </TableCell>
+                          <TableCell className="tabular-nums text-muted-foreground">
+                            {new Date(f.fecha + "T00:00:00").toLocaleDateString("es-PE", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate text-muted-foreground">{f.detalle}</TableCell>
+                          <TableCell>
+                            {f.origen === "docente" ? (
+                              <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+                                Registrada por ti
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 text-xs font-bold text-muted-foreground">
+                                De un caso
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span
+                              className={
+                                firmada
+                                  ? "inline-flex items-center rounded-full bg-good px-2.5 py-1 text-xs font-bold text-white"
+                                  : "inline-flex items-center rounded-full bg-warn px-2.5 py-1 text-xs font-bold text-white"
+                              }
+                            >
+                              {firmada ? "Firmada" : "Pendiente de firma"}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col items-end gap-2">
+                              {firmada && <PdfDownloadLink href={f.pdfHref} />}
+                              {f.puedeFirmar && <FirmarActaButton citaId={f.id} tieneFirmaGuardada={tieneFirmaGuardada} />}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
           </div>
         );
       }}
