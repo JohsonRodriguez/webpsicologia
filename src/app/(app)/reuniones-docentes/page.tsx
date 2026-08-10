@@ -44,7 +44,7 @@ export default async function ReunionesDocentesPage() {
   }
 
   const alumnoIds = [...alumnos.keys()];
-  const { data: actas } = await supabase
+  const { data: actas, error: erroractas } = await supabase
     .from("actas_docente_padres")
     .select(
       "id, fecha, hora, detalle, alumno_id, usuarios!actas_docente_padres_profesor_id_fkey(nombre), firmas_acta_docente(id)",
@@ -89,6 +89,12 @@ export default async function ReunionesDocentesPage() {
         title="Reuniones de Docentes"
         description="Actas de reunión con padres que los docentes registraron directamente para tus estudiantes. Filtra por nivel, grado y sección."
       />
+      {erroractas && (
+        <p className="rounded-md bg-critical-soft px-3 py-2 text-sm text-critical">
+          Error al cargar reuniones: {erroractas.message} (código {erroractas.code}) · {alumnoIds.length} alumnos en
+          tu roster
+        </p>
+      )}
       <ReunionesDocentesFiltro
         filas={filas}
         totalReuniones={filas.length}
