@@ -20,6 +20,7 @@ import {
   History,
   FileText,
   Handshake,
+  School,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -48,6 +49,7 @@ export function navFor(rol: Rol): NavGroup[] {
         { href: "/casos", label: "Mis casos e incidencias", icon: FolderOpen },
         { href: "/reuniones", label: "Reuniones con padres", icon: CalendarClock },
         { href: "/reuniones-docentes", label: "Reuniones de Docentes", icon: Handshake },
+        { href: "/docentes", label: "Docentes", icon: School },
         { href: "/alumnos", label: "Mis estudiantes", icon: Users },
         { href: "/notificaciones", label: "Notificaciones", icon: Bell },
         { href: "/mi-firma", label: "Mi firma", icon: PenLine },
