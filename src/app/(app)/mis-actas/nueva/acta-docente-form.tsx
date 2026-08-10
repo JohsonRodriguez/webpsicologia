@@ -18,6 +18,10 @@ type AlumnoOpcion = { alumnoId: string; seccionId: string; nombre: string; codig
 
 const initialState: EstadoAccion = {};
 const hoy = new Date().toISOString().slice(0, 10);
+const OPCIONES_ASISTENTES = ["Madre de familia", "Padre de familia", "Apoderado", "Padre y madre"].map((v) => ({
+  value: v,
+  label: v,
+}));
 
 export function ActaDocenteForm({
   estructura,
@@ -126,7 +130,7 @@ export function ActaDocenteForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <Label>Asistentes</Label>
-          <Input name="asistentes" required placeholder="Madre / padre / apoderado…" />
+          <SimpleSelect required name="asistentes" placeholder="Selecciona…" options={OPCIONES_ASISTENTES} />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label>Detalle de la reunión</Label>

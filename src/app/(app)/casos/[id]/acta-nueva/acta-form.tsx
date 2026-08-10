@@ -9,11 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { SimpleSelect } from "@/components/simple-select";
 import { SignaturePad, type SignaturePadHandle } from "@/components/signature-pad";
 import { crearActaFirmada, type EstadoAccion } from "../../actions";
 
 const initialState: EstadoAccion = {};
 const hoy = new Date().toISOString().slice(0, 10);
+const OPCIONES_ASISTENTES = ["Madre de familia", "Padre de familia", "Apoderado", "Padre y madre"].map((v) => ({
+  value: v,
+  label: v,
+}));
 
 export function ActaForm({
   casoId,
@@ -72,7 +77,7 @@ export function ActaForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <Label>Asistentes</Label>
-          <Input name="asistentes" required placeholder="Madre / padre / apoderado…" />
+          <SimpleSelect required name="asistentes" placeholder="Selecciona…" options={OPCIONES_ASISTENTES} />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label>Detalle de la reunión</Label>
