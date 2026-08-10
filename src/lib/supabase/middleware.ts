@@ -7,7 +7,13 @@ const PUBLIC_PATHS = ["/login", "/auth", "/sin-acceso"];
 // OAuth por una sesión nueva él mismo. El getUser() de este middleware no le
 // sirve de nada ahí y es la petición más sensible a latencia del login (justo
 // después de volver de Google), así que se salta por completo.
-const SKIP_AUTH_CHECK = ["/auth"];
+//
+// /api también se salta: cada ruta bajo /api ya valida su propio acceso
+// (requireUsuario() en las rutas de PDF, CRON_SECRET en el cron de correos),
+// y un llamador de API (fetch, Vercel Cron, etc.) nunca debe recibir un
+// redirect a la página de login — eso rompía silenciosamente el cron diario
+// de la cola de correos, que caía siempre en /login sin llegar a la ruta.
+const SKIP_AUTH_CHECK = ["/auth", "/api"];
 
 function matchesAny(pathname: string, paths: string[]) {
   return paths.some((p) => pathname === p || pathname.startsWith(p + "/"));
