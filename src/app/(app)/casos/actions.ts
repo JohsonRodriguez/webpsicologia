@@ -6,6 +6,7 @@ import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getAnioActivo, nombreAlumno } from "@/lib/queries";
 import { enviarCorreoIncidenciaEnProceso } from "@/lib/email";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export type EstadoAccion = { error?: string; ok?: boolean };
 
@@ -33,6 +34,13 @@ export async function crearCasoDirecto(_prev: EstadoAccion, formData: FormData):
   if (error || !caso) return { error: "No se pudo abrir el caso." };
 
   await supabase.from("notas_seguimiento").insert({ caso_id: caso.id, autor_id: usuario.id, contenido: motivo });
+  await registrarAuditoria(supabase, {
+    usuarioId: usuario.id,
+    accion: "caso.abierto",
+    entidad: "caso",
+    entidadId: caso.id,
+    detalle: { alumno_id: alumnoId, tipo: "caso_2" },
+  });
 
   redirect(`/casos/${caso.id}`);
 }
@@ -83,6 +91,13 @@ export async function abrirCasoDesdeIncidencia(incidenciaId: string) {
   if (error || !caso) return { error: "No se pudo abrir el caso." };
 
   await supabase.from("incidencias").update({ estado: "derivada" }).eq("id", inc.id);
+  await registrarAuditoria(supabase, {
+    usuarioId: usuario.id,
+    accion: "caso.abierto",
+    entidad: "caso",
+    entidadId: caso.id,
+    detalle: { alumno_id: inc.alumno_id, tipo: "caso_1", incidencia_id: inc.id, psicologo_asignado: psicologoId },
+  });
 
   const { data: psicologo } = await supabase.from("usuarios").select("nombre").eq("id", psicologoId).maybeSingle();
   const alumno = inc.alumnos as unknown as { nombres: string; apellidos: string } | null;
@@ -100,7 +115,7 @@ export async function abrirCasoDesdeIncidencia(incidenciaId: string) {
 }
 
 export async function cerrarCaso(casoId: string) {
-  await requireUsuario(["psicologo", "jefe_psicologia"]);
+  const actor = await requireUsuario(["psicologo", "jefe_psicologia"]);
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -109,6 +124,14 @@ export async function cerrarCaso(casoId: string) {
     .eq("id", casoId);
 
   if (error) return { error: "No se pudo cerrar el caso." };
+
+  await registrarAuditoria(supabase, {
+    usuarioId: actor.id,
+    accion: "caso.cerrado",
+    entidad: "caso",
+    entidadId: casoId,
+  });
+
   revalidatePath(`/casos/${casoId}`);
   return {};
 }
@@ -304,6 +327,13 @@ export async function derivarCaso(casoId: string, nuevoPsicologoId: string, moti
     caso_id: casoId,
     autor_id: usuario.id,
     contenido: `Caso derivado de ${anterior} a ${nuevo?.nombre ?? "un nuevo psicólogo"}. Motivo: ${motivo}`,
+  });
+  await registrarAuditoria(supabase, {
+    usuarioId: usuario.id,
+    accion: "caso.derivado",
+    entidad: "caso",
+    entidadId: casoId,
+    detalle: { psicologo_anterior_id: caso.psicologo_id, psicologo_nuevo_id: nuevoPsicologoId, motivo },
   });
 
   revalidatePath(`/casos/${casoId}`);

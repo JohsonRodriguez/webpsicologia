@@ -112,6 +112,43 @@ export type Database = {
         }
         Relationships: []
       }
+      auditoria: {
+        Row: {
+          accion: string
+          created_at: string
+          detalle: Json | null
+          entidad: string
+          entidad_id: string | null
+          id: string
+          usuario_id: string
+        }
+        Insert: {
+          accion: string
+          created_at?: string
+          detalle?: Json | null
+          entidad: string
+          entidad_id?: string | null
+          id?: string
+          usuario_id: string
+        }
+        Update: {
+          accion?: string
+          created_at?: string
+          detalle?: Json | null
+          entidad?: string
+          entidad_id?: string | null
+          id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auditoria_usuario_id_fkey"
+            columns: ["usuario_id"]
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       casos: {
         Row: {
           alumno_id: string

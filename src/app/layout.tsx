@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins, Geist_Mono } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster richColors position="top-right" />
+        <SpeedInsights />
       </body>
     </html>
   );
