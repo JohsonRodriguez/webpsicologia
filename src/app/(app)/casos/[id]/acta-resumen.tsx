@@ -5,7 +5,7 @@ import { TextoConEnfasis } from "@/components/texto-con-enfasis";
 type Firma = { id: string; firmante_tipo: string; firmante_nombre: string; fecha_hora: string };
 type Cita = { id: string; fecha: string; hora: string; detalle: string; firmas: Firma[] };
 
-export function ActaResumen({ cita }: { cita: Cita }) {
+export function ActaResumen({ cita, pdfHref }: { cita: Cita; pdfHref?: string }) {
   const firmada = cita.firmas.length >= 1;
 
   return (
@@ -24,7 +24,7 @@ export function ActaResumen({ cita }: { cita: Cita }) {
           >
             {firmada ? "Firmada" : "Pendiente de firma"}
           </span>
-          {firmada && <PdfDownloadLink href={`/api/citas/${cita.id}/pdf`} />}
+          {firmada && <PdfDownloadLink href={pdfHref ?? `/api/citas/${cita.id}/pdf`} />}
         </div>
       </div>
       <TextoConEnfasis texto={cita.detalle} className="text-sm text-muted-foreground" />

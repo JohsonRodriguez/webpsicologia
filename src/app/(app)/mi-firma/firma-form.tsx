@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Check, Loader2, Trash2, PenLine, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SignaturePad, type SignaturePadHandle } from "@/components/signature-pad";
-import { guardarFirmaPsicologo, borrarFirmaPsicologo } from "./actions";
+import { guardarFirma, borrarFirma } from "./actions";
 
 export function FirmaForm({ firmaGuardada }: { firmaGuardada: string | null }) {
   const [redibujando, setRedibujando] = useState(!firmaGuardada);
@@ -34,7 +34,7 @@ export function FirmaForm({ firmaGuardada }: { firmaGuardada: string | null }) {
       return;
     }
     startTransition(async () => {
-      const result = await guardarFirmaPsicologo(valor);
+      const result = await guardarFirma(valor);
       if (result?.error) toast.error(result.error);
       else {
         toast.success("Firma guardada.");
@@ -46,7 +46,7 @@ export function FirmaForm({ firmaGuardada }: { firmaGuardada: string | null }) {
 
   function borrar() {
     startTransition(async () => {
-      const result = await borrarFirmaPsicologo();
+      const result = await borrarFirma();
       if (result?.error) toast.error(result.error);
       else {
         toast.success("Firma eliminada.");

@@ -70,6 +70,58 @@ export type Database = {
           },
         ]
       }
+      actas_docente_padres: {
+        Row: {
+          acuerdos_docente: string
+          alumno_id: string
+          asistentes: string
+          compromisos_padre: string
+          created_at: string
+          detalle: string
+          fecha: string
+          hora: string
+          id: string
+          profesor_id: string
+        }
+        Insert: {
+          acuerdos_docente: string
+          alumno_id: string
+          asistentes: string
+          compromisos_padre: string
+          created_at?: string
+          detalle: string
+          fecha: string
+          hora: string
+          id?: string
+          profesor_id: string
+        }
+        Update: {
+          acuerdos_docente?: string
+          alumno_id?: string
+          asistentes?: string
+          compromisos_padre?: string
+          created_at?: string
+          detalle?: string
+          fecha?: string
+          hora?: string
+          id?: string
+          profesor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actas_docente_padres_alumno_id_fkey"
+            columns: ["alumno_id"]
+            referencedRelation: "alumnos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "actas_docente_padres_profesor_id_fkey"
+            columns: ["profesor_id"]
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alumnos: {
         Row: {
           apellidos: string
@@ -377,6 +429,40 @@ export type Database = {
             foreignKeyName: "firmas_cita_id_fkey"
             columns: ["cita_id"]
             referencedRelation: "citas_padres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      firmas_acta_docente: {
+        Row: {
+          acta_id: string
+          fecha_hora: string
+          firma_data: string
+          firmante_nombre: string
+          firmante_tipo: string
+          id: string
+        }
+        Insert: {
+          acta_id: string
+          fecha_hora?: string
+          firma_data: string
+          firmante_nombre: string
+          firmante_tipo: string
+          id?: string
+        }
+        Update: {
+          acta_id?: string
+          fecha_hora?: string
+          firma_data?: string
+          firmante_nombre?: string
+          firmante_tipo?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firmas_acta_docente_acta_id_fkey"
+            columns: ["acta_id"]
+            referencedRelation: "actas_docente_padres"
             referencedColumns: ["id"]
           },
         ]

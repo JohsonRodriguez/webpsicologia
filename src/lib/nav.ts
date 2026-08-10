@@ -18,6 +18,7 @@ import {
   PenLine,
   Scale,
   History,
+  FileText,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -31,7 +32,9 @@ export function navFor(rol: Rol): NavGroup[] {
       label: "Incidencias",
       items: [
         { href: "/incidencias", label: "Mis incidencias", icon: ListChecks },
+        { href: "/mis-actas", label: "Actas con padres", icon: FileText },
         { href: "/notificaciones", label: "Notificaciones", icon: Bell },
+        { href: "/mi-firma", label: "Mi firma", icon: PenLine },
       ],
     });
   }

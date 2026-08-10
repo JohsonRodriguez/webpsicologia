@@ -46,15 +46,15 @@ const styles = StyleSheet.create({
   footer: { position: "absolute", bottom: 28, left: 44, right: 44, fontSize: 7.5, color: "#97a0a8", textAlign: "center" },
 });
 
-export type ActaPdfData = {
+export type ActaDocentePdfData = {
   alumnoNombre: string;
   alumnoCodigo: string;
   fecha: string;
   hora: string;
-  psicologoNombre: string;
+  docenteNombre: string;
   asistentes: string;
   detalle: string;
-  acuerdosPsicologo: string;
+  acuerdosDocente: string;
   compromisosPadre: string;
   firmas: { firmanteTipo: string; firmanteNombre: string; firmaData: string; fechaHora: string }[];
   generadoEl: string;
@@ -65,10 +65,9 @@ function fmtFecha(iso: string) {
   return d.toLocaleDateString("es-PE", { day: "numeric", month: "long", year: "numeric" });
 }
 
-export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
-  const firmaPsicologo = data.firmas.find((f) => f.firmanteTipo === "psicologo");
-  const firmaPadre = data.firmas.find((f) => f.firmanteTipo === "padre");
+export function ActaDocentePdfDocument({ data }: { data: ActaDocentePdfData }) {
   const firmaDocente = data.firmas.find((f) => f.firmanteTipo === "profesor");
+  const firmaPadre = data.firmas.find((f) => f.firmanteTipo === "padre");
 
   return (
     <Document title={`Acta de reunión — ${data.alumnoNombre}`}>
@@ -95,8 +94,8 @@ export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
             <Text style={styles.fieldValue}>{data.hora}</Text>
           </View>
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Psicólogo</Text>
-            <Text style={styles.fieldValue}>{data.psicologoNombre}</Text>
+            <Text style={styles.fieldLabel}>Docente</Text>
+            <Text style={styles.fieldValue}>{data.docenteNombre}</Text>
           </View>
         </View>
         <View style={styles.field}>
@@ -118,8 +117,8 @@ export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
 
         <View style={[styles.section, styles.twoCol]}>
           <View style={styles.col}>
-            <Text style={styles.sectionTitle}>Acuerdos y compromisos del psicólogo</Text>
-            <Text style={styles.paragraph}>{data.acuerdosPsicologo}</Text>
+            <Text style={styles.sectionTitle}>Acuerdos y compromisos del docente</Text>
+            <Text style={styles.paragraph}>{data.acuerdosDocente}</Text>
           </View>
           <View style={styles.col}>
             <Text style={styles.sectionTitle}>Compromisos del padre de familia</Text>
@@ -130,10 +129,11 @@ export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
         <View style={styles.signaturesRow}>
           <View style={styles.signatureBox}>
             {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de @react-pdf/renderer, no soporta alt */}
-            {firmaPsicologo && <Image src={firmaPsicologo.firmaData} style={styles.signatureImg} />}
-            <Text style={styles.signatureName}>{data.psicologoNombre}</Text>
+            {firmaDocente && <Image src={firmaDocente.firmaData} style={styles.signatureImg} />}
+            <Text style={styles.signatureName}>{data.docenteNombre}</Text>
             <Text style={styles.signatureMeta}>
-              Psicólogo · {firmaPsicologo ? new Date(firmaPsicologo.fechaHora).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" }) : "Firma no registrada"}
+              Docente ·{" "}
+              {firmaDocente ? new Date(firmaDocente.fechaHora).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" }) : "Firma no registrada"}
             </Text>
           </View>
           <View style={styles.signatureBox}>
@@ -145,17 +145,6 @@ export function ActaPdfDocument({ data }: { data: ActaPdfData }) {
               {firmaPadre ? new Date(firmaPadre.fechaHora).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" }) : "—"}
             </Text>
           </View>
-          {firmaDocente && (
-            <View style={styles.signatureBox}>
-              {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de @react-pdf/renderer, no soporta alt */}
-              <Image src={firmaDocente.firmaData} style={styles.signatureImg} />
-              <Text style={styles.signatureName}>{firmaDocente.firmanteNombre}</Text>
-              <Text style={styles.signatureMeta}>
-                Docente ·{" "}
-                {new Date(firmaDocente.fechaHora).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" })}
-              </Text>
-            </View>
-          )}
         </View>
 
         <Text style={styles.footer}>

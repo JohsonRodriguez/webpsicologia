@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
-export async function guardarFirmaPsicologo(firmaData: string) {
-  const usuario = await requireUsuario(["psicologo", "jefe_psicologia"]);
+export async function guardarFirma(firmaData: string) {
+  const usuario = await requireUsuario(["psicologo", "jefe_psicologia", "profesor"]);
   if (!firmaData) return { error: "Dibuja tu firma antes de guardar." };
   const supabase = await createClient();
 
@@ -16,8 +16,8 @@ export async function guardarFirmaPsicologo(firmaData: string) {
   return { ok: true };
 }
 
-export async function borrarFirmaPsicologo() {
-  const usuario = await requireUsuario(["psicologo", "jefe_psicologia"]);
+export async function borrarFirma() {
+  const usuario = await requireUsuario(["psicologo", "jefe_psicologia", "profesor"]);
   const supabase = await createClient();
 
   const { error } = await supabase.from("usuarios").update({ firma_guardada: null }).eq("id", usuario.id);

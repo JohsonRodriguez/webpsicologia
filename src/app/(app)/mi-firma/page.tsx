@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { FirmaForm } from "./firma-form";
 
 export default async function MiFirmaPage() {
-  const usuario = await requireUsuario(["psicologo", "jefe_psicologia"]);
+  const usuario = await requireUsuario(["psicologo", "jefe_psicologia", "profesor"]);
   const supabase = await createClient();
 
   const { data } = await supabase.from("usuarios").select("firma_guardada").eq("id", usuario.id).maybeSingle();

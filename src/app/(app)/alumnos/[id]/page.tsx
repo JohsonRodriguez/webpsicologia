@@ -99,7 +99,7 @@ export default async function FichaAlumnoPage({
     .order("fecha_apertura", { ascending: false });
 
   const casoIds = (casos ?? []).map((c) => c.id);
-  const [{ data: citas }, { data: actasAlumno }] = await Promise.all([
+  const [{ data: citas }, { data: actasAlumno }, { data: actasDocente }] = await Promise.all([
     supabase
       .from("citas_padres")
       .select("id, fecha, detalle, firmas(id)")
@@ -110,10 +110,18 @@ export default async function FichaAlumnoPage({
       .select("id, fecha, detalle, firma_alumno_nombre")
       .in("caso_id", casoIds.length ? casoIds : ["00000000-0000-0000-0000-000000000000"])
       .order("fecha", { ascending: false }),
+    supabase
+      .from("actas_docente_padres")
+      .select("id, fecha, detalle, usuarios!actas_docente_padres_profesor_id_fkey(nombre), firmas_acta_docente(id)")
+      .eq("alumno_id", id)
+      .gte("fecha", `${yearStr}-01-01`)
+      .lt("fecha", `${Number(yearStr) + 1}-01-01`)
+      .order("fecha", { ascending: false }),
   ]);
 
   const actasFirmadas = (citas ?? []).filter((c) => (c.firmas?.length ?? 0) >= 1).length +
-    (actasAlumno ?? []).filter((a) => a.firma_alumno_nombre).length;
+    (actasAlumno ?? []).filter((a) => a.firma_alumno_nombre).length +
+    (actasDocente ?? []).filter((a) => (a.firmas_acta_docente?.length ?? 0) >= 1).length;
 
   return (
     <>
@@ -225,6 +233,46 @@ export default async function FichaAlumnoPage({
           </Table>
         ) : (
           <p className="px-4 py-10 text-center text-sm text-muted-foreground">Sin actas registradas en este año lectivo.</p>
+        )}
+      </SeccionCard>
+
+      <SeccionCard icon={FileText} titulo="Actas de reunión registradas por docentes">
+        {actasDocente && actasDocente.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Docente</TableHead>
+                <TableHead>Motivo</TableHead>
+                <TableHead>Firmado</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {actasDocente.map((a) => {
+                const firmada = (a.firmas_acta_docente?.length ?? 0) >= 1;
+                const docente = a.usuarios as unknown as { nombre: string } | null;
+                return (
+                  <TableRow key={a.id}>
+                    <TableCell className="tabular-nums">
+                      {new Date(a.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                    </TableCell>
+                    <TableCell>{docente?.nombre ?? "—"}</TableCell>
+                    <TableCell className="max-w-xs truncate">{a.detalle}</TableCell>
+                    <TableCell>
+                      <PillFirmado firmado={firmada} />
+                    </TableCell>
+                    <TableCell>{firmada && <PdfDownloadLink href={`/api/actas-docente/${a.id}/pdf`} />}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        ) : (
+          <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+            Sin actas registradas por docentes en este año lectivo. No generan un caso ni cuentan en la carga del
+            psicólogo.
+          </p>
         )}
       </SeccionCard>
 
