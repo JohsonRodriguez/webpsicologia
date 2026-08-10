@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FolderOpen, Clock, CheckCircle2, TriangleAlert, ChartPie, ListTodo, Plus, ArrowRight } from "lucide-react";
+import { FolderOpen, Clock, CheckCircle2, TriangleAlert, ChartPie, ListTodo, Plus, ArrowRight, Users } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getMatriculasPorAlumno, nombreAlumno } from "@/lib/queries";
@@ -132,8 +132,42 @@ export default async function DashboardPage() {
     cerrado: estadosList.filter((c) => c.estado === "cerrado").length,
   };
 
-  const alumnoIds = [...new Set([...casosRecientes, ...casosPendientes].map((c) => c.alumno_id))];
+  // Sin .in() por alumno: la policy RLS de incidencias ya limita las filas a
+  // los alumnos del grado del psicólogo (o a todas para jefatura), así que
+  // basta con contar en JS cuántas veces aparece cada alumno_id.
+  const { data: incidenciasPorAlumno } = await supabase.from("incidencias").select("alumno_id");
+  const conteoIncidencias = new Map<string, number>();
+  for (const i of incidenciasPorAlumno ?? []) {
+    conteoIncidencias.set(i.alumno_id, (conteoIncidencias.get(i.alumno_id) ?? 0) + 1);
+  }
+  const top5AlumnoIds = [...conteoIncidencias.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const { data: alumnosTop5 } = top5AlumnoIds.length
+    ? await supabase
+        .from("alumnos")
+        .select("id, nombres, apellidos")
+        .in(
+          "id",
+          top5AlumnoIds.map(([id]) => id),
+        )
+    : { data: [] };
+
+  const alumnoIds = [
+    ...new Set([...casosRecientes, ...casosPendientes].map((c) => c.alumno_id).concat(top5AlumnoIds.map(([id]) => id))),
+  ];
   const matriculas = await getMatriculasPorAlumno(supabase, undefined, alumnoIds);
+
+  const topAlumnosIncidencias = top5AlumnoIds.map(([alumnoId, total]) => {
+    const alumno = (alumnosTop5 ?? []).find((a) => a.id === alumnoId);
+    const mat = matriculas.get(alumnoId);
+    return {
+      alumnoId,
+      nombre: alumno ? nombreAlumno(alumno) : "—",
+      gradoNombre: mat?.gradoNombre ?? "",
+      seccionNombre: mat?.seccionNombre ?? "",
+      total,
+    };
+  });
+
   const primerNombre = usuario.nombre.split(" ")[0];
 
   return (
@@ -239,6 +273,37 @@ export default async function DashboardPage() {
           )}
         </CardChart>
       </div>
+
+      <CardChart icon={Users} titulo={esJefe ? "Alumnos con más incidencias (todo el colegio)" : "Tus alumnos con más incidencias"}>
+        {topAlumnosIncidencias.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Sin incidencias registradas todavía.</p>
+        ) : (
+          <div className="flex flex-col divide-y divide-border">
+            {topAlumnosIncidencias.map((a) => (
+              <Link
+                key={a.alumnoId}
+                href={`/alumnos/${a.alumnoId}`}
+                className="flex items-center justify-between gap-3.5 py-2.5 first:pt-0 last:pb-0 transition-colors duration-150 ease-(--ease-out) hover:text-primary"
+              >
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <div className="flex size-8 flex-none items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                    {iniciales(a.nombre)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium">{a.nombre}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {a.gradoNombre} &quot;{a.seccionNombre}&quot;
+                    </div>
+                  </div>
+                </div>
+                <span className="inline-flex flex-none items-center rounded-full bg-critical-soft px-2.5 py-1 text-xs font-bold text-critical">
+                  {a.total} {a.total === 1 ? "incidencia" : "incidencias"}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </CardChart>
 
       <div className="rounded-xl border border-border bg-card shadow-sm">
         <div className="flex items-center justify-between border-b border-border p-4">
