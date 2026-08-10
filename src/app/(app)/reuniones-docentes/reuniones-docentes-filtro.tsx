@@ -104,7 +104,6 @@ export function ReunionesDocentesFiltro({
                     <TableHead>Docente</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Motivo</TableHead>
-                    <TableHead>Estado</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -124,17 +123,6 @@ export function ReunionesDocentesFiltro({
                         })}
                       </TableCell>
                       <TableCell className="text-muted-foreground">{resumenMotivo(f.detalle)}</TableCell>
-                      <TableCell>
-                        <span
-                          className={
-                            f.firmada
-                              ? "inline-flex items-center rounded-full bg-good px-2.5 py-1 text-xs font-bold text-white"
-                              : "inline-flex items-center rounded-full bg-warn px-2.5 py-1 text-xs font-bold text-white"
-                          }
-                        >
-                          {f.firmada ? "Firmada" : "Pendiente de firma"}
-                        </span>
-                      </TableCell>
                       <TableCell>{f.firmada && <PdfDownloadLink href={f.pdfHref} />}</TableCell>
                     </TableRow>
                   ))}
