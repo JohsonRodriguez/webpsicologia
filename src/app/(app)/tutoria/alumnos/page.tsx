@@ -1,3 +1,4 @@
+import { TriangleAlert } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getAnioActivo, nombreAlumno } from "@/lib/queries";
@@ -47,6 +48,8 @@ export default async function TutoriaAlumnosPage() {
     })
     .sort((a, b) => b.incidencias - a.incidencias || a.nombre.localeCompare(b.nombre));
 
+  const alumnoConMasIncidencias = filas[0]?.incidencias > 0 ? filas[0] : null;
+
   const nombresAulas = (aulas ?? [])
     .map((a) => {
       const s = a.secciones as unknown as { nombre: string; grados: { nombre: string } | null } | null;
@@ -71,6 +74,23 @@ export default async function TutoriaAlumnosPage() {
         <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Total de alumnos</p>
           <p className="font-heading text-3xl">{filas.length}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            <TriangleAlert className="size-3.5" />
+            Alumno con más incidencias
+          </p>
+          {alumnoConMasIncidencias ? (
+            <>
+              <p className="font-heading truncate text-lg leading-tight">{alumnoConMasIncidencias.nombre}</p>
+              <p className="text-xs text-muted-foreground">
+                {alumnoConMasIncidencias.incidencias}{" "}
+                {alumnoConMasIncidencias.incidencias === 1 ? "incidencia" : "incidencias"}
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">Sin incidencias registradas</p>
+          )}
         </div>
       </div>
 
