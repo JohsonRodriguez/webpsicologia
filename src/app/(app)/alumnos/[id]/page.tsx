@@ -1,27 +1,33 @@
 /**
- * IMPECCABLE DIRECTION — Ficha del alumno (surface concept-seed index 3)
- * THESIS: one continuous student record (Product Principle #1), not four
- * identical stacked tables pretending to be silos.
+ * IMPECCABLE DIRECTION — Ficha del alumno (surface concept-seed index 3, user-revised)
+ * THESIS: identity and consolidated status stay in view while a long,
+ * multi-year record scrolls beside it, instead of repeating the header per
+ * section.
  * OWN-WORLD: institutional green/Poppins, solid/soft status pairs, SeccionCard —
  * unchanged. No new color, font, or radius introduced.
- * STORY: a psicólogo scans one student's whole history at a glance and jumps
- * into any past case without hunting across sections.
+ * STORY: a psicólogo always sees who they're looking at and their current
+ * status while scrolling the four record types.
  * FIRST VIEWPORT: fixed identity panel (avatar, matrícula, psicólogo asignado,
- * consolidated status) left; one chronological event thread right.
- * FORM: two-pane record, assigned by concept-seed (surface, key e7b7bfed, index 3).
+ * consolidated status) left; the four original SeccionCard/Table sections,
+ * per the user's explicit request to keep them separated, right.
+ * FORM: two-pane record, assigned by concept-seed (surface, key e7b7bfed, index 3);
+ * right-pane content reverted from a unified timeline to per-type tables at
+ * user request after the timeline round.
  * FINISH: unreviewed and undocumented is unfinished; this build ends with the
  * finish review, the verdict, and DESIGN.md.
  */
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, FolderOpen, FileCheck2, GraduationCap, UserRound, Users2 } from "lucide-react";
+import { ArrowLeft, FolderOpen, FileCheck2, GraduationCap, UserRound, FileText } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getAnios, getAnioActivo, nombreAlumno } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { PillEstadoCaso } from "@/components/status-pills";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ClickableRow } from "@/components/clickable-row";
 import { Button } from "@/components/ui/button";
-import { InfoItem, iniciales } from "@/components/detail-ui";
+import { InfoItem, SeccionCard, iniciales } from "@/components/detail-ui";
 import { PdfDownloadLink } from "@/components/pdf-download-link";
 import { AnioSelector } from "./anio-selector";
 
@@ -36,34 +42,6 @@ function PillFirmado({ firmado }: { firmado: boolean }) {
     </span>
   );
 }
-
-const TIPO_EVENTO: Record<string, { label: string; className: string }> = {
-  caso: { label: "Caso", className: "bg-primary/10 text-primary" },
-  acta_padres: { label: "Acta con padres", className: "bg-info-soft text-info" },
-  acta_docente: { label: "Acta de docente", className: "bg-purple-soft text-purple" },
-  acta_alumno: { label: "Acta de sesión", className: "bg-good-soft text-good" },
-};
-
-function PillTipo({ tipo }: { tipo: keyof typeof TIPO_EVENTO }) {
-  const t = TIPO_EVENTO[tipo];
-  return (
-    <span className={`inline-flex flex-none items-center rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap ${t.className}`}>
-      {t.label}
-    </span>
-  );
-}
-
-type EventoHistorial = {
-  id: string;
-  tipo: keyof typeof TIPO_EVENTO;
-  fecha: string;
-  titulo: string;
-  meta?: string;
-  firmada?: boolean;
-  estadoCaso?: string;
-  href?: string;
-  pdfHref?: string;
-};
 
 export default async function FichaAlumnoPage({
   params,
@@ -136,54 +114,6 @@ export default async function FichaAlumnoPage({
   const totalActas = (citas?.length ?? 0) + (actasAlumno?.length ?? 0) + (actasDocente?.length ?? 0);
   const firmasPendientes = totalActas - actasFirmadas;
   const casosAbiertos = (casos ?? []).filter((c) => c.estado !== "cerrado").length;
-
-  // Un solo hilo cronológico en vez de cuatro tablas idénticas: el registro
-  // continuo es el principio del producto, no solo un dato del modelo.
-  const eventos: EventoHistorial[] = [
-    ...(casos ?? []).map((c): EventoHistorial => ({
-      id: c.id,
-      tipo: "caso",
-      fecha: c.fecha_apertura,
-      titulo: c.tipo === "caso_1" ? "Caso desde incidencia" : "Caso directo",
-      meta: (c.usuarios as unknown as { nombre: string } | null)?.nombre,
-      estadoCaso: c.estado,
-      href: `/casos/${c.id}`,
-    })),
-    ...(citas ?? []).map((c): EventoHistorial => {
-      const firmada = (c.firmas?.length ?? 0) >= 1;
-      return {
-        id: c.id,
-        tipo: "acta_padres",
-        fecha: c.fecha,
-        titulo: c.detalle,
-        firmada,
-        pdfHref: firmada ? `/api/citas/${c.id}/pdf` : undefined,
-      };
-    }),
-    ...(actasDocente ?? []).map((a): EventoHistorial => {
-      const firmada = (a.firmas_acta_docente?.length ?? 0) >= 1;
-      return {
-        id: a.id,
-        tipo: "acta_docente",
-        fecha: a.fecha,
-        titulo: a.detalle,
-        meta: (a.usuarios as unknown as { nombre: string } | null)?.nombre,
-        firmada,
-        pdfHref: firmada ? `/api/actas-docente/${a.id}/pdf` : undefined,
-      };
-    }),
-    ...(actasAlumno ?? []).map((a): EventoHistorial => {
-      const firmada = Boolean(a.firma_alumno_nombre);
-      return {
-        id: a.id,
-        tipo: "acta_alumno",
-        fecha: a.fecha,
-        titulo: a.detalle,
-        firmada,
-        pdfHref: firmada ? `/api/actas-alumno/${a.id}/pdf` : undefined,
-      };
-    }),
-  ].sort((a, b) => b.fecha.localeCompare(a.fecha));
 
   return (
     <>
@@ -258,53 +188,147 @@ export default async function FichaAlumnoPage({
           </div>
         </aside>
 
-        <div className="min-w-0 flex-1 rounded-xl border border-border bg-card shadow-sm">
-          <div className="flex items-center gap-1.5 border-b border-border p-4 text-primary">
-            <Users2 className="size-4" />
-            <h3 className="font-heading text-base font-semibold text-foreground">Historial del año</h3>
-          </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-5">
+          <SeccionCard icon={FolderOpen} titulo="Casos">
+            {casos && casos.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Apertura</TableHead>
+                    <TableHead>Origen</TableHead>
+                    <TableHead>Psicólogo</TableHead>
+                    <TableHead>Estado</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {casos.map((c) => (
+                    <ClickableRow key={c.id} href={`/casos/${c.id}`}>
+                      <TableCell className="tabular-nums">
+                        {new Date(c.fecha_apertura).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                      </TableCell>
+                      <TableCell>{c.tipo === "caso_1" ? "Desde incidencia" : "Directo"}</TableCell>
+                      <TableCell>{(c.usuarios as unknown as { nombre: string } | null)?.nombre}</TableCell>
+                      <TableCell>
+                        <PillEstadoCaso estado={c.estado} />
+                      </TableCell>
+                    </ClickableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="px-4 py-10 text-center text-sm text-muted-foreground">Sin casos en este año lectivo.</p>
+            )}
+          </SeccionCard>
 
-          {eventos.length === 0 ? (
-            <p className="px-4 py-14 text-center text-sm text-muted-foreground">
-              Sin casos ni actas registradas en este año lectivo.
-            </p>
-          ) : (
-            <div className="flex flex-col divide-y divide-border">
-              {eventos.map((e) => {
-                const contenido = (
-                  <>
-                    <span className="flex-none text-xs tabular-nums text-muted-foreground sm:w-24">
-                      {new Date(e.fecha + (e.fecha.length === 10 ? "T00:00:00" : "")).toLocaleDateString("es-PE", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </span>
-                    <PillTipo tipo={e.tipo} />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{e.titulo}</p>
-                      {e.meta && <p className="truncate text-xs text-muted-foreground">{e.meta}</p>}
-                    </div>
-                    <div className="flex flex-none items-center gap-2">
-                      {e.estadoCaso ? <PillEstadoCaso estado={e.estadoCaso} /> : <PillFirmado firmado={Boolean(e.firmada)} />}
-                      {e.pdfHref && <PdfDownloadLink href={e.pdfHref} />}
-                    </div>
-                  </>
-                );
-                const claseFila =
-                  "flex flex-col gap-2.5 px-4 py-3.5 sm:flex-row sm:items-center sm:gap-3.5";
-                return e.href ? (
-                  <Link key={`${e.tipo}-${e.id}`} href={e.href} className={`${claseFila} transition-colors duration-150 ease-(--ease-out) hover:bg-secondary`}>
-                    {contenido}
-                  </Link>
-                ) : (
-                  <div key={`${e.tipo}-${e.id}`} className={claseFila}>
-                    {contenido}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <SeccionCard icon={FileText} titulo="Actas de reunión con padres">
+            {citas && citas.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Motivo</TableHead>
+                    <TableHead>Firmado</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {citas.map((c) => {
+                    const firmada = (c.firmas?.length ?? 0) >= 1;
+                    return (
+                      <TableRow key={c.id}>
+                        <TableCell className="tabular-nums">
+                          {new Date(c.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">{c.detalle}</TableCell>
+                        <TableCell>
+                          <PillFirmado firmado={firmada} />
+                        </TableCell>
+                        <TableCell>{firmada && <PdfDownloadLink href={`/api/citas/${c.id}/pdf`} />}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="px-4 py-10 text-center text-sm text-muted-foreground">Sin actas registradas en este año lectivo.</p>
+            )}
+          </SeccionCard>
+
+          <SeccionCard icon={FileText} titulo="Actas de reunión registradas por docentes">
+            {actasDocente && actasDocente.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Docente</TableHead>
+                    <TableHead>Motivo</TableHead>
+                    <TableHead>Firmado</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {actasDocente.map((a) => {
+                    const firmada = (a.firmas_acta_docente?.length ?? 0) >= 1;
+                    const docente = a.usuarios as unknown as { nombre: string } | null;
+                    return (
+                      <TableRow key={a.id}>
+                        <TableCell className="tabular-nums">
+                          {new Date(a.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                        </TableCell>
+                        <TableCell>{docente?.nombre ?? "—"}</TableCell>
+                        <TableCell className="max-w-xs truncate">{a.detalle}</TableCell>
+                        <TableCell>
+                          <PillFirmado firmado={firmada} />
+                        </TableCell>
+                        <TableCell>{firmada && <PdfDownloadLink href={`/api/actas-docente/${a.id}/pdf`} />}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+                Sin actas registradas por docentes en este año lectivo. No generan un caso ni cuentan en la carga del
+                psicólogo.
+              </p>
+            )}
+          </SeccionCard>
+
+          <SeccionCard icon={FileText} titulo="Actas de sesión con el alumno">
+            {actasAlumno && actasAlumno.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Motivo</TableHead>
+                    <TableHead>Firmado</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {actasAlumno.map((a) => {
+                    const firmada = Boolean(a.firma_alumno_nombre);
+                    return (
+                      <TableRow key={a.id}>
+                        <TableCell className="tabular-nums">
+                          {new Date(a.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">{a.detalle}</TableCell>
+                        <TableCell>
+                          <PillFirmado firmado={firmada} />
+                        </TableCell>
+                        <TableCell>{firmada && <PdfDownloadLink href={`/api/actas-alumno/${a.id}/pdf`} />}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+                Sin actas de sesión individual en este año lectivo.
+              </p>
+            )}
+          </SeccionCard>
         </div>
       </div>
     </>
