@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAnioActivo, nombreAlumno } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ClickableRow } from "@/components/clickable-row";
 
 export default async function TutoriaAlumnosPage() {
   const usuario = await requireUsuario(["profesor"]);
@@ -44,7 +45,7 @@ export default async function TutoriaAlumnosPage() {
         incidencias: conteoPorAlumno.get(m.alumno_id) ?? 0,
       };
     })
-    .sort((a, b) => a.nombre.localeCompare(b.nombre));
+    .sort((a, b) => b.incidencias - a.incidencias || a.nombre.localeCompare(b.nombre));
 
   const nombresAulas = (aulas ?? [])
     .map((a) => {
@@ -91,7 +92,7 @@ export default async function TutoriaAlumnosPage() {
             </TableHeader>
             <TableBody>
               {filas.map((f) => (
-                <TableRow key={f.alumnoId}>
+                <ClickableRow key={f.alumnoId} href={`/tutoria/alumnos/${f.alumnoId}`}>
                   <TableCell className="font-semibold">{f.nombre}</TableCell>
                   <TableCell className="text-muted-foreground">
                     {f.gradoNombre} &quot;{f.seccionNombre}&quot;
@@ -107,7 +108,7 @@ export default async function TutoriaAlumnosPage() {
                       {f.incidencias}
                     </span>
                   </TableCell>
-                </TableRow>
+                </ClickableRow>
               ))}
             </TableBody>
           </Table>
