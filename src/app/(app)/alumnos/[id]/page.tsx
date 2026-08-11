@@ -25,6 +25,7 @@ import { getAnios, getAnioActivo, nombreAlumno } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { PillEstadoCaso } from "@/components/status-pills";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ClickableRow } from "@/components/clickable-row";
 import { Button } from "@/components/ui/button";
 import { InfoItem, SeccionCard, iniciales } from "@/components/detail-ui";
@@ -87,7 +88,7 @@ export default async function FichaAlumnoPage({
     .order("fecha_apertura", { ascending: false });
 
   const casoIds = (casos ?? []).map((c) => c.id);
-  const [{ data: citas }, { data: actasAlumno }, { data: actasDocente }] = await Promise.all([
+  const [{ data: citas }, { data: actasAlumno }, { data: actasDocente }, { data: actasTutoria }] = await Promise.all([
     supabase
       .from("citas_padres")
       .select("id, fecha, detalle, firmas(id)")
@@ -105,13 +106,21 @@ export default async function FichaAlumnoPage({
       .gte("fecha", `${yearStr}-01-01`)
       .lt("fecha", `${Number(yearStr) + 1}-01-01`)
       .order("fecha", { ascending: false }),
+    supabase
+      .from("actas_tutoria")
+      .select("id, fecha, detalle, usuarios!actas_tutoria_tutor_id_fkey(nombre), firmas_tutoria(id)")
+      .eq("alumno_id", id)
+      .gte("fecha", `${yearStr}-01-01`)
+      .lt("fecha", `${Number(yearStr) + 1}-01-01`)
+      .order("fecha", { ascending: false }),
   ]);
 
   const actasFirmadas = (citas ?? []).filter((c) => (c.firmas?.length ?? 0) >= 1).length +
     (actasAlumno ?? []).filter((a) => a.firma_alumno_nombre).length +
-    (actasDocente ?? []).filter((a) => (a.firmas_acta_docente?.length ?? 0) >= 1).length;
+    (actasDocente ?? []).filter((a) => (a.firmas_acta_docente?.length ?? 0) >= 1).length +
+    (actasTutoria ?? []).filter((a) => (a.firmas_tutoria?.length ?? 0) >= 1).length;
 
-  const totalActas = (citas?.length ?? 0) + (actasAlumno?.length ?? 0) + (actasDocente?.length ?? 0);
+  const totalActas = (citas?.length ?? 0) + (actasAlumno?.length ?? 0) + (actasDocente?.length ?? 0) + (actasTutoria?.length ?? 0);
   const firmasPendientes = totalActas - actasFirmadas;
   const casosAbiertos = (casos ?? []).filter((c) => c.estado !== "cerrado").length;
 
@@ -188,147 +197,205 @@ export default async function FichaAlumnoPage({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-5">
-          <SeccionCard icon={FolderOpen} titulo="Casos">
-            {casos && casos.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Apertura</TableHead>
-                    <TableHead>Origen</TableHead>
-                    <TableHead>Psicólogo</TableHead>
-                    <TableHead>Estado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {casos.map((c) => (
-                    <ClickableRow key={c.id} href={`/casos/${c.id}`}>
-                      <TableCell className="tabular-nums">
-                        {new Date(c.fecha_apertura).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
-                      </TableCell>
-                      <TableCell>{c.tipo === "caso_1" ? "Desde incidencia" : "Directo"}</TableCell>
-                      <TableCell>{(c.usuarios as unknown as { nombre: string } | null)?.nombre}</TableCell>
-                      <TableCell>
-                        <PillEstadoCaso estado={c.estado} />
-                      </TableCell>
-                    </ClickableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="px-4 py-10 text-center text-sm text-muted-foreground">Sin casos en este año lectivo.</p>
-            )}
-          </SeccionCard>
+        <div className="min-w-0 flex-1">
+          <Tabs defaultValue="casos">
+            <TabsList>
+              <TabsTrigger value="casos">Casos</TabsTrigger>
+              <TabsTrigger value="tutoria">Tutoría</TabsTrigger>
+              <TabsTrigger value="docente">Docente</TabsTrigger>
+              <TabsTrigger value="padres">Padres</TabsTrigger>
+            </TabsList>
 
-          <SeccionCard icon={FileText} titulo="Actas de reunión con padres">
-            {citas && citas.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Motivo</TableHead>
-                    <TableHead>Firmado</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {citas.map((c) => {
-                    const firmada = (c.firmas?.length ?? 0) >= 1;
-                    return (
-                      <TableRow key={c.id}>
-                        <TableCell className="tabular-nums">
-                          {new Date(c.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">{c.detalle}</TableCell>
-                        <TableCell>
-                          <PillFirmado firmado={firmada} />
-                        </TableCell>
-                        <TableCell>{firmada && <PdfDownloadLink href={`/api/citas/${c.id}/pdf`} />}</TableCell>
+            <TabsContent value="casos" className="mt-4">
+              <SeccionCard icon={FolderOpen} titulo="Casos">
+                {casos && casos.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Apertura</TableHead>
+                        <TableHead>Origen</TableHead>
+                        <TableHead>Psicólogo</TableHead>
+                        <TableHead>Estado</TableHead>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="px-4 py-10 text-center text-sm text-muted-foreground">Sin actas registradas en este año lectivo.</p>
-            )}
-          </SeccionCard>
+                    </TableHeader>
+                    <TableBody>
+                      {casos.map((c) => (
+                        <ClickableRow key={c.id} href={`/casos/${c.id}`}>
+                          <TableCell className="tabular-nums">
+                            {new Date(c.fecha_apertura).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                          </TableCell>
+                          <TableCell>{c.tipo === "caso_1" ? "Desde incidencia" : "Directo"}</TableCell>
+                          <TableCell>{(c.usuarios as unknown as { nombre: string } | null)?.nombre}</TableCell>
+                          <TableCell>
+                            <PillEstadoCaso estado={c.estado} />
+                          </TableCell>
+                        </ClickableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="px-4 py-10 text-center text-sm text-muted-foreground">Sin casos en este año lectivo.</p>
+                )}
+              </SeccionCard>
+            </TabsContent>
 
-          <SeccionCard icon={FileText} titulo="Actas de reunión registradas por docentes">
-            {actasDocente && actasDocente.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Docente</TableHead>
-                    <TableHead>Motivo</TableHead>
-                    <TableHead>Firmado</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {actasDocente.map((a) => {
-                    const firmada = (a.firmas_acta_docente?.length ?? 0) >= 1;
-                    const docente = a.usuarios as unknown as { nombre: string } | null;
-                    return (
-                      <TableRow key={a.id}>
-                        <TableCell className="tabular-nums">
-                          {new Date(a.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
-                        </TableCell>
-                        <TableCell>{docente?.nombre ?? "—"}</TableCell>
-                        <TableCell className="max-w-xs truncate">{a.detalle}</TableCell>
-                        <TableCell>
-                          <PillFirmado firmado={firmada} />
-                        </TableCell>
-                        <TableCell>{firmada && <PdfDownloadLink href={`/api/actas-docente/${a.id}/pdf`} />}</TableCell>
+            <TabsContent value="tutoria" className="mt-4">
+              <SeccionCard icon={FileText} titulo="Actas de reunión de tutoría">
+                {actasTutoria && actasTutoria.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Tutor</TableHead>
+                        <TableHead>Motivo</TableHead>
+                        <TableHead>Firmado</TableHead>
+                        <TableHead></TableHead>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-                Sin actas registradas por docentes en este año lectivo. No generan un caso ni cuentan en la carga del
-                psicólogo.
-              </p>
-            )}
-          </SeccionCard>
+                    </TableHeader>
+                    <TableBody>
+                      {actasTutoria.map((a) => {
+                        const firmada = (a.firmas_tutoria?.length ?? 0) >= 1;
+                        const tutor = a.usuarios as unknown as { nombre: string } | null;
+                        return (
+                          <TableRow key={a.id}>
+                            <TableCell className="tabular-nums">
+                              {new Date(a.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                            </TableCell>
+                            <TableCell>{tutor?.nombre ?? "—"}</TableCell>
+                            <TableCell className="max-w-xs truncate">{a.detalle}</TableCell>
+                            <TableCell>
+                              <PillFirmado firmado={firmada} />
+                            </TableCell>
+                            <TableCell>{firmada && <PdfDownloadLink href={`/api/actas-tutoria/${a.id}/pdf`} />}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+                    Sin actas de tutoría registradas en este año lectivo.
+                  </p>
+                )}
+              </SeccionCard>
+            </TabsContent>
 
-          <SeccionCard icon={FileText} titulo="Actas de sesión con el alumno">
-            {actasAlumno && actasAlumno.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Motivo</TableHead>
-                    <TableHead>Firmado</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {actasAlumno.map((a) => {
-                    const firmada = Boolean(a.firma_alumno_nombre);
-                    return (
-                      <TableRow key={a.id}>
-                        <TableCell className="tabular-nums">
-                          {new Date(a.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">{a.detalle}</TableCell>
-                        <TableCell>
-                          <PillFirmado firmado={firmada} />
-                        </TableCell>
-                        <TableCell>{firmada && <PdfDownloadLink href={`/api/actas-alumno/${a.id}/pdf`} />}</TableCell>
+            <TabsContent value="docente" className="mt-4">
+              <SeccionCard icon={FileText} titulo="Actas de reunión registradas por docentes">
+                {actasDocente && actasDocente.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Docente</TableHead>
+                        <TableHead>Motivo</TableHead>
+                        <TableHead>Firmado</TableHead>
+                        <TableHead></TableHead>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-                Sin actas de sesión individual en este año lectivo.
-              </p>
-            )}
-          </SeccionCard>
+                    </TableHeader>
+                    <TableBody>
+                      {actasDocente.map((a) => {
+                        const firmada = (a.firmas_acta_docente?.length ?? 0) >= 1;
+                        const docente = a.usuarios as unknown as { nombre: string } | null;
+                        return (
+                          <TableRow key={a.id}>
+                            <TableCell className="tabular-nums">
+                              {new Date(a.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                            </TableCell>
+                            <TableCell>{docente?.nombre ?? "—"}</TableCell>
+                            <TableCell className="max-w-xs truncate">{a.detalle}</TableCell>
+                            <TableCell>
+                              <PillFirmado firmado={firmada} />
+                            </TableCell>
+                            <TableCell>{firmada && <PdfDownloadLink href={`/api/actas-docente/${a.id}/pdf`} />}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+                    Sin actas registradas por docentes en este año lectivo. No generan un caso ni cuentan en la carga
+                    del psicólogo.
+                  </p>
+                )}
+              </SeccionCard>
+            </TabsContent>
+
+            <TabsContent value="padres" className="mt-4">
+              <div className="flex flex-col gap-5">
+                <SeccionCard icon={FileText} titulo="Actas de reunión con padres">
+                  {citas && citas.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fecha</TableHead>
+                          <TableHead>Motivo</TableHead>
+                          <TableHead>Firmado</TableHead>
+                          <TableHead></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {citas.map((c) => {
+                          const firmada = (c.firmas?.length ?? 0) >= 1;
+                          return (
+                            <TableRow key={c.id}>
+                              <TableCell className="tabular-nums">
+                                {new Date(c.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                              </TableCell>
+                              <TableCell className="max-w-xs truncate">{c.detalle}</TableCell>
+                              <TableCell>
+                                <PillFirmado firmado={firmada} />
+                              </TableCell>
+                              <TableCell>{firmada && <PdfDownloadLink href={`/api/citas/${c.id}/pdf`} />}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <p className="px-4 py-10 text-center text-sm text-muted-foreground">Sin actas registradas en este año lectivo.</p>
+                  )}
+                </SeccionCard>
+
+                <SeccionCard icon={FileText} titulo="Actas de sesión con el alumno">
+                  {actasAlumno && actasAlumno.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fecha</TableHead>
+                          <TableHead>Motivo</TableHead>
+                          <TableHead>Firmado</TableHead>
+                          <TableHead></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {actasAlumno.map((a) => {
+                          const firmada = Boolean(a.firma_alumno_nombre);
+                          return (
+                            <TableRow key={a.id}>
+                              <TableCell className="tabular-nums">
+                                {new Date(a.fecha + "T00:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" })}
+                              </TableCell>
+                              <TableCell className="max-w-xs truncate">{a.detalle}</TableCell>
+                              <TableCell>
+                                <PillFirmado firmado={firmada} />
+                              </TableCell>
+                              <TableCell>{firmada && <PdfDownloadLink href={`/api/actas-alumno/${a.id}/pdf`} />}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+                      Sin actas de sesión individual en este año lectivo.
+                    </p>
+                  )}
+                </SeccionCard>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </>

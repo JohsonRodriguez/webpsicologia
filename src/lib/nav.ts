@@ -21,6 +21,7 @@ import {
   FileText,
   Handshake,
   School,
+  Users2,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -39,6 +40,13 @@ export function navFor(rol: Rol): NavGroup[] {
         { href: "/mi-firma", label: "Mi firma", icon: PenLine },
       ],
     });
+    groups.push({
+      label: "Tutoría",
+      items: [
+        { href: "/tutoria/alumnos", label: "Alumnos de mi tutoría", icon: Users },
+        { href: "/tutoria/actas", label: "Actas de tutoría", icon: FileText },
+      ],
+    });
   }
 
   if (rol === "psicologo" || rol === "jefe_psicologia") {
@@ -50,6 +58,7 @@ export function navFor(rol: Rol): NavGroup[] {
         { href: "/reuniones", label: "Reuniones con padres", icon: CalendarClock },
         { href: "/reuniones-docentes", label: "Reuniones de Docentes", icon: Handshake },
         { href: "/docentes", label: "Docentes", icon: School },
+        { href: "/tutorias-docentes", label: "Tutorías", icon: Users2 },
         { href: "/alumnos", label: "Mis estudiantes", icon: Users },
         { href: "/notificaciones", label: "Notificaciones", icon: Bell },
         { href: "/mi-firma", label: "Mi firma", icon: PenLine },
@@ -79,6 +88,7 @@ export function navFor(rol: Rol): NavGroup[] {
         { href: "/admin/grados", label: "Grados y secciones", icon: Layers },
         { href: "/admin/migracion", label: "Migración de grado", icon: RefreshCw },
         { href: "/admin/config", label: "Psicólogo por grado y catálogos", icon: Settings },
+        { href: "/admin/tutoria", label: "Tutoría", icon: Users2 },
         { href: "/auditoria", label: "Auditoría", icon: History },
       ],
     });

@@ -50,3 +50,6 @@ next-env.d.ts
 /LordByronSchool_logo_2020_fondo_verde.png
 /logo verde.png
 /PRODUCT.local-backup.md
+
+.vercel
+.env*

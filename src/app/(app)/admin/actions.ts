@@ -115,6 +115,28 @@ export async function asignarPsicologoGrado(gradoId: string, usuarioId: string) 
   return { ok: true };
 }
 
+export async function asignarTutor(seccionId: string, anioId: string, slot: 1 | 2, usuarioId: string) {
+  await requireUsuario(["administrador"]);
+  const admin = createAdminClient();
+
+  await admin
+    .from("tutoria_aula")
+    .update({ fecha_fin: new Date().toISOString().slice(0, 10) })
+    .eq("seccion_id", seccionId)
+    .eq("anio_academico_id", anioId)
+    .eq("slot", slot)
+    .is("fecha_fin", null);
+
+  if (usuarioId) {
+    const { error } = await admin
+      .from("tutoria_aula")
+      .insert({ seccion_id: seccionId, anio_academico_id: anioId, slot, usuario_id: usuarioId });
+    if (error) return { error: "No se pudo asignar el tutor." };
+  }
+  revalidatePath("/admin/tutoria");
+  return { ok: true };
+}
+
 export async function crearMotivo(nombre: string) {
   await requireUsuario(["administrador"]);
   if (!nombre.trim()) return { error: "Escribe un nombre." };

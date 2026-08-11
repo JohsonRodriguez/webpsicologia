@@ -122,6 +122,58 @@ export type Database = {
           },
         ]
       }
+      actas_tutoria: {
+        Row: {
+          acuerdos_tutor: string
+          alumno_id: string
+          asistentes: string
+          compromisos_padre: string
+          created_at: string
+          detalle: string
+          fecha: string
+          hora: string
+          id: string
+          tutor_id: string
+        }
+        Insert: {
+          acuerdos_tutor: string
+          alumno_id: string
+          asistentes: string
+          compromisos_padre: string
+          created_at?: string
+          detalle: string
+          fecha: string
+          hora: string
+          id?: string
+          tutor_id: string
+        }
+        Update: {
+          acuerdos_tutor?: string
+          alumno_id?: string
+          asistentes?: string
+          compromisos_padre?: string
+          created_at?: string
+          detalle?: string
+          fecha?: string
+          hora?: string
+          id?: string
+          tutor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actas_tutoria_alumno_id_fkey"
+            columns: ["alumno_id"]
+            referencedRelation: "alumnos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "actas_tutoria_tutor_id_fkey"
+            columns: ["tutor_id"]
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alumnos: {
         Row: {
           apellidos: string
@@ -467,6 +519,40 @@ export type Database = {
           },
         ]
       }
+      firmas_tutoria: {
+        Row: {
+          acta_id: string
+          fecha_hora: string
+          firma_data: string
+          firmante_nombre: string
+          firmante_tipo: string
+          id: string
+        }
+        Insert: {
+          acta_id: string
+          fecha_hora?: string
+          firma_data: string
+          firmante_nombre: string
+          firmante_tipo: string
+          id?: string
+        }
+        Update: {
+          acta_id?: string
+          fecha_hora?: string
+          firma_data?: string
+          firmante_nombre?: string
+          firmante_tipo?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firmas_tutoria_acta_id_fkey"
+            columns: ["acta_id"]
+            referencedRelation: "actas_tutoria"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grados: {
         Row: {
           id: string
@@ -755,6 +841,58 @@ export type Database = {
             foreignKeyName: "secciones_grado_id_fkey"
             columns: ["grado_id"]
             referencedRelation: "grados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutoria_aula: {
+        Row: {
+          anio_academico_id: string
+          created_at: string
+          fecha_fin: string | null
+          fecha_inicio: string
+          id: string
+          seccion_id: string
+          slot: number
+          usuario_id: string
+        }
+        Insert: {
+          anio_academico_id: string
+          created_at?: string
+          fecha_fin?: string | null
+          fecha_inicio?: string
+          id?: string
+          seccion_id: string
+          slot: number
+          usuario_id: string
+        }
+        Update: {
+          anio_academico_id?: string
+          created_at?: string
+          fecha_fin?: string | null
+          fecha_inicio?: string
+          id?: string
+          seccion_id?: string
+          slot?: number
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutoria_aula_seccion_id_fkey"
+            columns: ["seccion_id"]
+            referencedRelation: "secciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tutoria_aula_usuario_id_fkey"
+            columns: ["usuario_id"]
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tutoria_aula_anio_academico_id_fkey"
+            columns: ["anio_academico_id"]
+            referencedRelation: "anios_academicos"
             referencedColumns: ["id"]
           },
         ]
