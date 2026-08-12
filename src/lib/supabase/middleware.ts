@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/auth", "/sin-acceso"];
+const PUBLIC_PATHS = ["/login", "/auth", "/sin-acceso", "/bienestar-padre"];
 
 // /auth/callback no lee ni depende de la sesión: intercambia el code de
 // OAuth por una sesión nueva él mismo. El getUser() de este middleware no le

@@ -70,7 +70,10 @@ export function navFor(rol: Rol): NavGroup[] {
   if (rol === "coordinador_bienestar") {
     groups.push({
       label: "Bienestar Familiar",
-      items: [{ href: "/bienestar", label: "Dashboard", icon: HeartHandshake }],
+      items: [
+        { href: "/bienestar", label: "Dashboard", icon: HeartHandshake },
+        { href: "/bienestar/actas", label: "Actas padres", icon: FileText },
+      ],
     });
   }
 

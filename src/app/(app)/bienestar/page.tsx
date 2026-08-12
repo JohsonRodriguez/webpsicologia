@@ -5,7 +5,7 @@ import { getAnioActivo, nombreAlumno } from "@/lib/queries";
 import { PERIODOS, PERIODO_ACTUAL } from "@/lib/periodos";
 import { PageHeader } from "@/components/page-header";
 import { SeccionCard } from "@/components/detail-ui";
-import { HorizontalBarList } from "@/components/charts";
+import { BarChart } from "@/components/charts";
 import { PeriodoSelector } from "./periodo-selector";
 import { BienestarFiltro, type FilaBienestar } from "./bienestar-filtro";
 
@@ -50,15 +50,15 @@ export default async function BienestarDashboardPage({
   // reuniones de bienestar" ya limita las filas a las suyas.
   const { data: reuniones } = await supabase
     .from("reuniones_bienestar")
-    .select("id, alumno_id")
+    .select("id, alumno_id, estado")
     .eq("periodo", periodo);
 
-  const reunionPorAlumno = new Map((reuniones ?? []).map((r) => [r.alumno_id, r.id]));
+  const reunionPorAlumno = new Map((reuniones ?? []).map((r) => [r.alumno_id, r]));
 
   const filas: FilaBienestar[] = (matriculas ?? []).map((m) => {
     const alumno = m.alumnos as unknown as { nombres: string; apellidos: string } | null;
     const seccion = m.secciones as unknown as { nombre: string } | null;
-    const reunionId = reunionPorAlumno.get(m.alumno_id);
+    const reunion = reunionPorAlumno.get(m.alumno_id);
     return {
       alumnoId: m.alumno_id,
       nombre: alumno ? nombreAlumno(alumno) : "—",
@@ -66,8 +66,8 @@ export default async function BienestarDashboardPage({
       gradoNombre: gradoPorId.get(m.grado_id) ?? "",
       seccionId: m.seccion_id,
       seccionNombre: seccion?.nombre ?? "",
-      estado: reunionId ? ("concluida" as const) : ("pendiente" as const),
-      reunionId,
+      estado: reunion?.estado === "concluida" ? ("concluida" as const) : ("pendiente" as const),
+      reunionId: reunion?.id,
     };
   });
 
@@ -85,7 +85,11 @@ export default async function BienestarDashboardPage({
     porSeccion.set(key, actual);
   }
   const datosGrafico = [...porSeccion.entries()]
-    .map(([label, v]) => ({ label, value: v.total > 0 ? Math.round((v.concluidas / v.total) * 100) : 0 }))
+    .map(([label, v]) => ({
+      label,
+      value: v.total > 0 ? Math.round((v.concluidas / v.total) * 100) : 0,
+      color: "var(--primary)",
+    }))
     .sort((a, b) => b.value - a.value);
 
   return (
@@ -142,7 +146,7 @@ export default async function BienestarDashboardPage({
 
       <SeccionCard icon={HeartHandshake} titulo={`% de padres atendidos por sección — ${periodo}`}>
         {datosGrafico.length > 0 ? (
-          <HorizontalBarList data={datosGrafico} />
+          <BarChart data={datosGrafico} />
         ) : (
           <p className="text-sm text-muted-foreground">Sin alumnos en tu nivel todavía.</p>
         )}

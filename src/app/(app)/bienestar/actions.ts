@@ -1,10 +1,12 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type EstadoAccion = { error?: string; ok?: boolean };
 
@@ -22,13 +24,45 @@ export async function crearReunionBienestar(_prev: EstadoAccion, formData: FormD
   const alumnoId = String(formData.get("alumno") ?? "");
   const periodo = String(formData.get("periodo") ?? "").trim();
   const modalidad = String(formData.get("modalidad") ?? "");
+  const anioAcademicoId = String(formData.get("anio_academico_id") ?? "");
+
+  if (!alumnoId || !periodo || !modalidad || !anioAcademicoId) {
+    return { error: "Completa todos los campos del acta." };
+  }
+
+  // Virtual: el padre llena su observación y firma más tarde desde un
+  // enlace propio (token de un solo uso); el coordinador recién escribe su
+  // observación de cierre cuando el padre ya respondió. Ver
+  // enviarObservacionPadre y cerrarReunionBienestar.
+  if (modalidad === "virtual") {
+    const { data: reunion, error } = await supabase
+      .from("reuniones_bienestar")
+      .insert({
+        alumno_id: alumnoId,
+        coordinador_id: usuario.id,
+        anio_academico_id: anioAcademicoId,
+        periodo,
+        modalidad,
+        fecha_hora: new Date().toISOString(),
+        estado: "pendiente",
+        token: randomUUID(),
+      })
+      .select("id")
+      .single();
+
+    if (error || !reunion) {
+      return { error: "No se pudo generar el enlace. Verifica que el alumno sea de tu nivel asignado." };
+    }
+    revalidatePath("/bienestar");
+    redirect(`/bienestar/${reunion.id}`);
+  }
+
   const observacionPadre = String(formData.get("observacion_padre") ?? "").trim();
   const observacionCoordinador = String(formData.get("observacion_coordinador") ?? "").trim();
   const firmaPadre = String(formData.get("firma_padre") ?? "");
   const firmaPadreNombre = String(formData.get("firma_padre_nombre") ?? "").trim();
-  const anioAcademicoId = String(formData.get("anio_academico_id") ?? "");
 
-  if (!alumnoId || !periodo || !modalidad || !observacionPadre || !observacionCoordinador || !anioAcademicoId) {
+  if (!observacionPadre || !observacionCoordinador) {
     return { error: "Completa todos los campos del acta." };
   }
   if (!firmaPadre || !firmaPadreNombre) {
@@ -65,4 +99,72 @@ export async function crearReunionBienestar(_prev: EstadoAccion, formData: FormD
 
   revalidatePath("/bienestar");
   redirect(`/bienestar/${reunion.id}`);
+}
+
+// Sin sesión: la llama el padre de familia desde el enlace público
+// /bienestar-padre/[token]. El token (uuid random, un solo uso, se anula al
+// responder) es la única autorización — por eso usa el cliente admin en vez
+// de una policy RLS para el rol anon.
+export async function enviarObservacionPadre(token: string, _prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+  const observacionPadre = String(formData.get("observacion_padre") ?? "").trim();
+  const firmaPadre = String(formData.get("firma_padre") ?? "");
+  const firmaPadreNombre = String(formData.get("firma_padre_nombre") ?? "").trim();
+
+  if (!observacionPadre) return { error: "Escribe tu observación." };
+  if (!firmaPadre || !firmaPadreNombre) return { error: "Falta la firma." };
+
+  const hdrs = await headers();
+  const admin = createAdminClient();
+
+  const { data: reunion } = await admin
+    .from("reuniones_bienestar")
+    .select("id")
+    .eq("token", token)
+    .is("observacion_padre", null)
+    .maybeSingle();
+
+  if (!reunion) return { error: "Este enlace ya no está disponible." };
+
+  const { error } = await admin
+    .from("reuniones_bienestar")
+    .update({ observacion_padre: observacionPadre, token: null })
+    .eq("id", reunion.id);
+  if (error) return { error: "No se pudo guardar tu respuesta. Intenta nuevamente." };
+
+  const { error: errorFirma } = await admin.from("firmas_bienestar").insert({
+    reunion_id: reunion.id,
+    firmante_nombre: firmaPadreNombre,
+    firma_data: firmaPadre,
+    ip: ipDelSolicitante(hdrs),
+  });
+  if (errorFirma) return { error: "Tu respuesta se guardó, pero no se pudo registrar la firma." };
+
+  return { ok: true };
+}
+
+export async function cerrarReunionBienestar(reunionId: string, _prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+  await requireUsuario(["coordinador_bienestar"]);
+  const supabase = await createClient();
+
+  const observacionCoordinador = String(formData.get("observacion_coordinador") ?? "").trim();
+  if (!observacionCoordinador) return { error: "Escribe tu observación de cierre." };
+
+  const { data: reunion } = await supabase
+    .from("reuniones_bienestar")
+    .select("id, observacion_padre")
+    .eq("id", reunionId)
+    .maybeSingle();
+
+  if (!reunion) return { error: "No se encontró la reunión." };
+  if (!reunion.observacion_padre) return { error: "Aún no puedes cerrar el acta: el padre no ha respondido." };
+
+  const { error } = await supabase
+    .from("reuniones_bienestar")
+    .update({ observacion_coordinador: observacionCoordinador, estado: "concluida" })
+    .eq("id", reunionId);
+  if (error) return { error: "No se pudo concluir el acta." };
+
+  revalidatePath("/bienestar");
+  revalidatePath(`/bienestar/${reunionId}`);
+  redirect(`/bienestar/${reunionId}`);
 }

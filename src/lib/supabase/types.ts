@@ -898,9 +898,10 @@ export type Database = {
           fecha_hora: string
           id: string
           modalidad: string
-          observacion_coordinador: string
-          observacion_padre: string
+          observacion_coordinador: string | null
+          observacion_padre: string | null
           periodo: string
+          token: string | null
         }
         Insert: {
           alumno_id: string
@@ -911,9 +912,10 @@ export type Database = {
           fecha_hora: string
           id?: string
           modalidad: string
-          observacion_coordinador: string
-          observacion_padre: string
+          observacion_coordinador?: string | null
+          observacion_padre?: string | null
           periodo: string
+          token?: string | null
         }
         Update: {
           alumno_id?: string
@@ -924,9 +926,10 @@ export type Database = {
           fecha_hora?: string
           id?: string
           modalidad?: string
-          observacion_coordinador?: string
-          observacion_padre?: string
+          observacion_coordinador?: string | null
+          observacion_padre?: string | null
           periodo?: string
+          token?: string | null
         }
         Relationships: [
           {

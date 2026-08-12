@@ -120,9 +120,9 @@ export function BienestarFiltro({ filas, periodo }: { filas: FilaBienestar[]; pe
                   </span>
                 </TableCell>
                 <TableCell>
-                  {f.estado === "concluida" && f.reunionId ? (
+                  {f.reunionId ? (
                     <Link href={`/bienestar/${f.reunionId}`} className="text-sm font-medium text-primary hover:underline">
-                      Ver acta
+                      {f.estado === "concluida" ? "Ver acta" : "Continuar"}
                     </Link>
                   ) : (
                     <Link
