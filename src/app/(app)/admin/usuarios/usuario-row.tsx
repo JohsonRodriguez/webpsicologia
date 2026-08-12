@@ -9,7 +9,7 @@ import { SimpleSelect } from "@/components/simple-select";
 import { rolLabel, type Rol } from "@/lib/roles";
 import { actualizarUsuario } from "../actions";
 
-const ROLES: Rol[] = ["profesor", "psicologo", "jefe_psicologia", "administrador"];
+const ROLES: Rol[] = ["profesor", "psicologo", "jefe_psicologia", "administrador", "coordinador_bienestar"];
 
 type Usuario = {
   id: string;

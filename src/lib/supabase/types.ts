@@ -423,6 +423,40 @@ export type Database = {
         }
         Relationships: []
       }
+      coordinador_nivel: {
+        Row: {
+          created_at: string
+          id: string
+          nivel_id: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nivel_id: string
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nivel_id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coordinador_nivel_nivel_id_fkey"
+            columns: ["nivel_id"]
+            referencedRelation: "niveles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coordinador_nivel_usuario_id_fkey"
+            columns: ["usuario_id"]
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidencias: {
         Row: {
           archivo_url: string
@@ -515,6 +549,37 @@ export type Database = {
             foreignKeyName: "firmas_acta_docente_acta_id_fkey"
             columns: ["acta_id"]
             referencedRelation: "actas_docente_padres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      firmas_bienestar: {
+        Row: {
+          fecha_hora: string
+          firmante_nombre: string
+          id: string
+          ip: string
+          reunion_id: string
+        }
+        Insert: {
+          fecha_hora?: string
+          firmante_nombre: string
+          id?: string
+          ip: string
+          reunion_id: string
+        }
+        Update: {
+          fecha_hora?: string
+          firmante_nombre?: string
+          id?: string
+          ip?: string
+          reunion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firmas_bienestar_reunion_id_fkey"
+            columns: ["reunion_id"]
+            referencedRelation: "reuniones_bienestar"
             referencedColumns: ["id"]
           },
         ]
@@ -816,6 +881,67 @@ export type Database = {
             foreignKeyName: "psicologo_grado_usuario_id_fkey"
             columns: ["usuario_id"]
             referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reuniones_bienestar: {
+        Row: {
+          alumno_id: string
+          anio_academico_id: string
+          coordinador_id: string
+          created_at: string
+          estado: string
+          fecha_hora: string
+          id: string
+          modalidad: string
+          observacion_coordinador: string
+          observacion_padre: string
+          periodo: string
+        }
+        Insert: {
+          alumno_id: string
+          anio_academico_id: string
+          coordinador_id: string
+          created_at?: string
+          estado?: string
+          fecha_hora: string
+          id?: string
+          modalidad: string
+          observacion_coordinador: string
+          observacion_padre: string
+          periodo: string
+        }
+        Update: {
+          alumno_id?: string
+          anio_academico_id?: string
+          coordinador_id?: string
+          created_at?: string
+          estado?: string
+          fecha_hora?: string
+          id?: string
+          modalidad?: string
+          observacion_coordinador?: string
+          observacion_padre?: string
+          periodo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reuniones_bienestar_alumno_id_fkey"
+            columns: ["alumno_id"]
+            referencedRelation: "alumnos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reuniones_bienestar_coordinador_id_fkey"
+            columns: ["coordinador_id"]
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reuniones_bienestar_anio_academico_id_fkey"
+            columns: ["anio_academico_id"]
+            referencedRelation: "anios_academicos"
             referencedColumns: ["id"]
           },
         ]

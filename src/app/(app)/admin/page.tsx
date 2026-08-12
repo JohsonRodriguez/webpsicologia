@@ -74,7 +74,7 @@ export default async function AdminDashboardPage() {
   const totalDocentes = (usuarios ?? []).filter((u) => u.rol === "profesor").length;
   const totalPsicologos = (usuarios ?? []).filter((u) => u.rol === "psicologo" || u.rol === "jefe_psicologia").length;
 
-  const roles: Rol[] = ["profesor", "psicologo", "jefe_psicologia", "administrador"];
+  const roles: Rol[] = ["profesor", "psicologo", "jefe_psicologia", "administrador", "coordinador_bienestar"];
   const porRol = roles.map((r) => ({
     label: rolLabel(r).split(" ")[0],
     value: (usuarios ?? []).filter((u) => u.rol === r).length,

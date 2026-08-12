@@ -7,6 +7,7 @@ describe("rolLabel", () => {
     expect(rolLabel("psicologo")).toBe("Psicólogo");
     expect(rolLabel("jefe_psicologia")).toBe("Jefe de psicólogos");
     expect(rolLabel("administrador")).toBe("Administrador");
+    expect(rolLabel("coordinador_bienestar")).toBe("Coordinador de Bienestar Familiar");
   });
 });
 
@@ -16,5 +17,6 @@ describe("rutaInicioPara", () => {
     expect(rutaInicioPara("administrador")).toBe("/admin");
     expect(rutaInicioPara("psicologo")).toBe("/dashboard");
     expect(rutaInicioPara("jefe_psicologia")).toBe("/dashboard");
+    expect(rutaInicioPara("coordinador_bienestar")).toBe("/bienestar");
   });
 });
