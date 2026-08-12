@@ -22,6 +22,7 @@ import {
   Handshake,
   School,
   Users2,
+  HeartHandshake,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -66,6 +67,13 @@ export function navFor(rol: Rol): NavGroup[] {
     });
   }
 
+  if (rol === "coordinador_bienestar") {
+    groups.push({
+      label: "Bienestar Familiar",
+      items: [{ href: "/bienestar", label: "Dashboard", icon: HeartHandshake }],
+    });
+  }
+
   if (rol === "jefe_psicologia") {
     groups.push({
       label: "Jefatura",
@@ -89,6 +97,7 @@ export function navFor(rol: Rol): NavGroup[] {
         { href: "/admin/migracion", label: "Migración de grado", icon: RefreshCw },
         { href: "/admin/config", label: "Psicólogo por grado y catálogos", icon: Settings },
         { href: "/admin/tutoria", label: "Tutoría", icon: Users2 },
+        { href: "/admin/bienestar", label: "Bienestar Familiar", icon: HeartHandshake },
         { href: "/auditoria", label: "Auditoría", icon: History },
       ],
     });

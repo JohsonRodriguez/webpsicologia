@@ -115,6 +115,19 @@ export async function asignarPsicologoGrado(gradoId: string, usuarioId: string) 
   return { ok: true };
 }
 
+export async function asignarCoordinadorNivel(nivelId: string, usuarioId: string) {
+  await requireUsuario(["administrador"]);
+  const admin = createAdminClient();
+
+  await admin.from("coordinador_nivel").delete().eq("nivel_id", nivelId);
+  if (usuarioId) {
+    const { error } = await admin.from("coordinador_nivel").insert({ nivel_id: nivelId, usuario_id: usuarioId });
+    if (error) return { error: "No se pudo actualizar la asignación." };
+  }
+  revalidatePath("/admin/bienestar");
+  return { ok: true };
+}
+
 export async function asignarTutor(seccionId: string, anioId: string, slot: 1 | 2, usuarioId: string) {
   await requireUsuario(["administrador"]);
   const admin = createAdminClient();

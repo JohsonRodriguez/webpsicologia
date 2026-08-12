@@ -556,6 +556,7 @@ export type Database = {
       firmas_bienestar: {
         Row: {
           fecha_hora: string
+          firma_data: string
           firmante_nombre: string
           id: string
           ip: string
@@ -563,6 +564,7 @@ export type Database = {
         }
         Insert: {
           fecha_hora?: string
+          firma_data: string
           firmante_nombre: string
           id?: string
           ip: string
@@ -570,6 +572,7 @@ export type Database = {
         }
         Update: {
           fecha_hora?: string
+          firma_data?: string
           firmante_nombre?: string
           id?: string
           ip?: string
