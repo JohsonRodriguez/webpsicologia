@@ -76,15 +76,15 @@ export default async function BienestarDashboardPage({
   const pendientes = totalAlumnos - concluidas;
   const avance = totalAlumnos > 0 ? Math.round((concluidas / totalAlumnos) * 100) : 0;
 
-  const porSeccion = new Map<string, { total: number; concluidas: number }>();
+  const porGrado = new Map<string, { total: number; concluidas: number }>();
   for (const f of filas) {
-    const key = `${f.gradoNombre} "${f.seccionNombre}"`;
-    const actual = porSeccion.get(key) ?? { total: 0, concluidas: 0 };
+    const key = f.gradoNombre;
+    const actual = porGrado.get(key) ?? { total: 0, concluidas: 0 };
     actual.total += 1;
     if (f.estado === "concluida") actual.concluidas += 1;
-    porSeccion.set(key, actual);
+    porGrado.set(key, actual);
   }
-  const datosGrafico = [...porSeccion.entries()]
+  const datosGrafico = [...porGrado.entries()]
     .map(([label, v]) => ({
       label,
       value: v.total > 0 ? Math.round((v.concluidas / v.total) * 100) : 0,
@@ -144,7 +144,7 @@ export default async function BienestarDashboardPage({
         </div>
       </div>
 
-      <SeccionCard icon={HeartHandshake} titulo={`% de padres atendidos por sección — ${periodo}`}>
+      <SeccionCard icon={HeartHandshake} titulo={`% de padres atendidos por grado — ${periodo}`}>
         {datosGrafico.length > 0 ? (
           <BarChart data={datosGrafico} />
         ) : (
