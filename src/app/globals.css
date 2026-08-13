@@ -181,3 +181,19 @@
     animation-delay: 0ms !important;
   }
 }
+
+@keyframes nav-pending-fade {
+  from { opacity: 0; }
+  to { opacity: 0.45; }
+}
+
+@keyframes nav-pending-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-nav-anim] {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}

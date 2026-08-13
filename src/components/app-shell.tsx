@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
@@ -10,6 +10,27 @@ import type { UsuarioActual } from "@/lib/auth";
 import { type Rol, rolLabel } from "@/lib/roles";
 import { CerrarSesionButton } from "@/components/cerrar-sesion-button";
 import { cn } from "@/lib/utils";
+
+// Espacio de tamaño fijo siempre presente (evita layout shift); solo se
+// hace visible si la navegación tarda, para no parpadear en clics rápidos.
+function NavLinkPending() {
+  const { pending } = useLinkStatus();
+  return (
+    <span
+      aria-hidden
+      data-nav-anim
+      className="ml-auto size-3 flex-none rounded-full border-[1.5px] border-current border-t-transparent opacity-0"
+      style={
+        pending
+          ? {
+              animation:
+                "nav-pending-fade 150ms var(--ease-out) 150ms forwards, nav-pending-spin 600ms linear 150ms infinite",
+            }
+          : undefined
+      }
+    />
+  );
+}
 
 function initials(nombre: string) {
   return nombre
@@ -78,6 +99,7 @@ export function AppShell({
                 >
                   <item.icon className="size-4.25 flex-none" />
                   {item.label}
+                  <NavLinkPending />
                 </Link>
               );
             })}
