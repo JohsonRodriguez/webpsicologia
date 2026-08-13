@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import { SeccionCard } from "@/components/detail-ui";
 import { BarChart } from "@/components/charts";
 import { PeriodoSelector } from "./periodo-selector";
-import { BienestarFiltro, type FilaBienestar } from "./bienestar-filtro";
+import type { FilaBienestar } from "./bienestar-filtro";
 
 export default async function BienestarDashboardPage({
   searchParams,
@@ -155,8 +155,6 @@ export default async function BienestarDashboardPage({
           <p className="text-sm text-muted-foreground">Sin alumnos en tu nivel todavía.</p>
         )}
       </SeccionCard>
-
-      <BienestarFiltro filas={filas} periodo={periodo} />
     </>
   );
 }

@@ -72,6 +72,7 @@ export function navFor(rol: Rol): NavGroup[] {
       label: "Bienestar Familiar",
       items: [
         { href: "/bienestar", label: "Dashboard", icon: HeartHandshake },
+        { href: "/bienestar/alumnos", label: "Mis alumnos", icon: Users },
         { href: "/bienestar/actas", label: "Actas padres", icon: FileText },
       ],
     });
