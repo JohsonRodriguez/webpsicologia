@@ -70,7 +70,7 @@ export default async function AdminDashboardPage() {
     supabase.from("usuarios").select("id, rol, activo"),
   ]);
 
-  const matriculasPorAlumno = await getMatriculasPorAlumno(supabase);
+  const matriculasPorAlumno = await getMatriculasPorAlumno(supabase, anioActivo?.id);
   const totalDocentes = (usuarios ?? []).filter((u) => u.rol === "profesor").length;
   const totalPsicologos = (usuarios ?? []).filter((u) => u.rol === "psicologo" || u.rol === "jefe_psicologia").length;
 

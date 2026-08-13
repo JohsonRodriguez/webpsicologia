@@ -21,7 +21,7 @@ import Link from "next/link";
 import { ArrowLeft, FolderOpen, FileCheck2, GraduationCap, UserRound, FileText } from "lucide-react";
 import { requireUsuario } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getAnios, getAnioActivo, nombreAlumno } from "@/lib/queries";
+import { getAnios, nombreAlumno } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { PillEstadoCaso } from "@/components/status-pills";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -60,35 +60,36 @@ export default async function FichaAlumnoPage({
   if (!alumno) notFound();
 
   const anios = await getAnios(supabase);
-  const activo = await getAnioActivo(supabase);
+  const activo = anios.find((a) => a.activo) ?? null;
   const anioSeleccionado = anios.find((a) => a.id === anioParam) ?? activo ?? anios[0];
+  const yearStr = String(anioSeleccionado?.anio ?? "");
 
-  const { data: matricula } = await supabase
-    .from("matriculas")
-    .select("grado_id, seccion_id, grados(nombre, nivel_id, niveles(nombre)), secciones(nombre)")
-    .eq("alumno_id", id)
-    .eq("anio_academico_id", anioSeleccionado?.id ?? "")
-    .maybeSingle();
+  // matricula y casos no dependen entre sí: se piden juntos.
+  const [{ data: matricula }, { data: casos }] = await Promise.all([
+    supabase
+      .from("matriculas")
+      .select("grado_id, seccion_id, grados(nombre, nivel_id, niveles(nombre)), secciones(nombre)")
+      .eq("alumno_id", id)
+      .eq("anio_academico_id", anioSeleccionado?.id ?? "")
+      .maybeSingle(),
+    supabase
+      .from("casos")
+      .select("id, tipo, estado, fecha_apertura, usuarios!casos_psicologo_id_fkey(nombre)")
+      .eq("alumno_id", id)
+      .gte("fecha_apertura", `${yearStr}-01-01`)
+      .lt("fecha_apertura", `${Number(yearStr) + 1}-01-01`)
+      .order("fecha_apertura", { ascending: false }),
+  ]);
 
   const grados = matricula?.grados as unknown as { nombre: string; nivel_id: string; niveles: { nombre: string } | null } | null;
   const secciones = matricula?.secciones as unknown as { nombre: string } | null;
 
-  const { data: psicologoAsignado } = matricula
-    ? await supabase.from("psicologo_grado").select("usuarios(nombre)").eq("grado_id", matricula.grado_id).maybeSingle()
-    : { data: null };
-
-  const yearStr = String(anioSeleccionado?.anio ?? "");
-
-  const { data: casos } = await supabase
-    .from("casos")
-    .select("id, tipo, estado, fecha_apertura, usuarios!casos_psicologo_id_fkey(nombre)")
-    .eq("alumno_id", id)
-    .gte("fecha_apertura", `${yearStr}-01-01`)
-    .lt("fecha_apertura", `${Number(yearStr) + 1}-01-01`)
-    .order("fecha_apertura", { ascending: false });
-
+  // psicologoAsignado tampoco depende de las actas/citas: todas van juntas.
   const casoIds = (casos ?? []).map((c) => c.id);
-  const [{ data: citas }, { data: actasAlumno }, { data: actasDocente }, { data: actasTutoria }] = await Promise.all([
+  const [{ data: psicologoAsignado }, { data: citas }, { data: actasAlumno }, { data: actasDocente }, { data: actasTutoria }] = await Promise.all([
+    matricula
+      ? supabase.from("psicologo_grado").select("usuarios(nombre)").eq("grado_id", matricula.grado_id).maybeSingle()
+      : Promise.resolve({ data: null }),
     supabase
       .from("citas_padres")
       .select("id, fecha, detalle, firmas(id)")

@@ -19,12 +19,19 @@ export default async function BienestarDashboardPage({
 
   const usuario = await requireUsuario(["coordinador_bienestar"]);
   const supabase = await createClient();
-  const anioActivo = await getAnioActivo(supabase);
 
-  const { data: asignaciones } = await supabase
-    .from("coordinador_nivel")
-    .select("nivel_id, niveles(nombre)")
-    .eq("usuario_id", usuario.id);
+  // reuniones no depende de anioActivo/asignaciones/grados/matriculas: se
+  // dispara ya mismo y se espera recién al final, para que su viaje de red
+  // corra en paralelo con el resto de la cadena en vez de sumarse a ella.
+  const reunionesPromise = supabase
+    .from("reuniones_bienestar")
+    .select("id, alumno_id, estado")
+    .eq("periodo", periodo);
+
+  const [anioActivo, { data: asignaciones }] = await Promise.all([
+    getAnioActivo(supabase),
+    supabase.from("coordinador_nivel").select("nivel_id, niveles(nombre)").eq("usuario_id", usuario.id),
+  ]);
 
   const nivelIds = (asignaciones ?? []).map((a) => a.nivel_id);
   const nombresNiveles = (asignaciones ?? [])
@@ -48,10 +55,7 @@ export default async function BienestarDashboardPage({
 
   // Sin filtro de coordinador_id: la policy RLS "coordinador ve sus
   // reuniones de bienestar" ya limita las filas a las suyas.
-  const { data: reuniones } = await supabase
-    .from("reuniones_bienestar")
-    .select("id, alumno_id, estado")
-    .eq("periodo", periodo);
+  const { data: reuniones } = await reunionesPromise;
 
   const reunionPorAlumno = new Map((reuniones ?? []).map((r) => [r.alumno_id, r]));
 

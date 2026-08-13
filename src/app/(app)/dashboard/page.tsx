@@ -108,17 +108,28 @@ export default async function DashboardPage() {
     pendientesQuery = pendientesQuery.eq("psicologo_id", usuario.id);
   }
 
-  const [{ data: estados }, { data: recientesData }, { data: pendientesData }, { count: countInc }, { count: countNuevas }] =
-    await Promise.all([
-      estadosQuery,
-      recientesQuery,
-      pendientesQuery,
-      supabase
-        .from("incidencias")
-        .select("id", { count: "exact", head: true })
-        .in("estado", ["nueva", "en_revision"]),
-      supabase.from("incidencias").select("id", { count: "exact", head: true }).eq("estado", "nueva"),
-    ]);
+  const [
+    { data: estados },
+    { data: recientesData },
+    { data: pendientesData },
+    { count: countInc },
+    { count: countNuevas },
+    { data: incidenciasPorAlumno },
+  ] = await Promise.all([
+    estadosQuery,
+    recientesQuery,
+    pendientesQuery,
+    supabase
+      .from("incidencias")
+      .select("id", { count: "exact", head: true })
+      .in("estado", ["nueva", "en_revision"]),
+    supabase.from("incidencias").select("id", { count: "exact", head: true }).eq("estado", "nueva"),
+    // Sin .in() por alumno: la policy RLS de incidencias ya limita las filas a
+    // los alumnos del grado del psicólogo (o a todas para jefatura), así que
+    // basta con contar en JS cuántas veces aparece cada alumno_id. No depende
+    // de las consultas de arriba, así que va en la misma tanda.
+    supabase.from("incidencias").select("alumno_id"),
+  ]);
 
   const estadosList = estados ?? [];
   const casosRecientes = recientesData ?? [];
@@ -132,29 +143,28 @@ export default async function DashboardPage() {
     cerrado: estadosList.filter((c) => c.estado === "cerrado").length,
   };
 
-  // Sin .in() por alumno: la policy RLS de incidencias ya limita las filas a
-  // los alumnos del grado del psicólogo (o a todas para jefatura), así que
-  // basta con contar en JS cuántas veces aparece cada alumno_id.
-  const { data: incidenciasPorAlumno } = await supabase.from("incidencias").select("alumno_id");
   const conteoIncidencias = new Map<string, number>();
   for (const i of incidenciasPorAlumno ?? []) {
     conteoIncidencias.set(i.alumno_id, (conteoIncidencias.get(i.alumno_id) ?? 0) + 1);
   }
   const top5AlumnoIds = [...conteoIncidencias.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const { data: alumnosTop5 } = top5AlumnoIds.length
-    ? await supabase
-        .from("alumnos")
-        .select("id, nombres, apellidos")
-        .in(
-          "id",
-          top5AlumnoIds.map(([id]) => id),
-        )
-    : { data: [] };
-
   const alumnoIds = [
     ...new Set([...casosRecientes, ...casosPendientes].map((c) => c.alumno_id).concat(top5AlumnoIds.map(([id]) => id))),
   ];
-  const matriculas = await getMatriculasPorAlumno(supabase, undefined, alumnoIds);
+
+  // Ninguna depende de la otra: van juntas.
+  const [{ data: alumnosTop5 }, matriculas] = await Promise.all([
+    top5AlumnoIds.length
+      ? supabase
+          .from("alumnos")
+          .select("id, nombres, apellidos")
+          .in(
+            "id",
+            top5AlumnoIds.map(([id]) => id),
+          )
+      : Promise.resolve({ data: [] }),
+    getMatriculasPorAlumno(supabase, undefined, alumnoIds),
+  ]);
 
   const topAlumnosIncidencias = top5AlumnoIds.map(([alumnoId, total]) => {
     const alumno = (alumnosTop5 ?? []).find((a) => a.id === alumnoId);
