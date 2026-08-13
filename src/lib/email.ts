@@ -2,7 +2,7 @@ import "server-only";
 import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://psicologia.myliteracyhub.com";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://psicologia.byron.edu.pe";
 const FROM = process.env.EMAIL_FROM ?? "Psicología Lord Byron <notificaciones@myliteracyhub.com>";
 const LIMITE_DIARIO = 100;
 

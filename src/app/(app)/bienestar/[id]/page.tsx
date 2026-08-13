@@ -34,7 +34,7 @@ export default async function ReunionBienestarDetallePage({ params }: { params: 
 
   const esperandoPadre = reunion.estado === "pendiente" && !reunion.observacion_padre;
   const esperandoCierre = reunion.estado === "pendiente" && !!reunion.observacion_padre;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://psicologia.myliteracyhub.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://psicologia.byron.edu.pe";
   const enlace = reunion.token ? `${appUrl}/bienestar-padre/${reunion.token}` : "";
 
   return (
