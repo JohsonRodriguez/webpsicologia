@@ -116,28 +116,27 @@ export async function enviarObservacionPadre(token: string, _prev: EstadoAccion,
   const hdrs = await headers();
   const admin = createAdminClient();
 
-  const { data: reunion } = await admin
-    .from("reuniones_bienestar")
-    .select("id")
-    .eq("token", token)
-    .is("observacion_padre", null)
-    .maybeSingle();
-
-  if (!reunion) return { error: "Este enlace ya no está disponible." };
-
-  const { error } = await admin
-    .from("reuniones_bienestar")
-    .update({ observacion_padre: observacionPadre, token: null })
-    .eq("id", reunion.id);
-  if (error) return { error: "No se pudo guardar tu respuesta. Intenta nuevamente." };
-
-  const { error: errorFirma } = await admin.from("firmas_bienestar").insert({
-    reunion_id: reunion.id,
-    firmante_nombre: firmaPadreNombre,
-    firma_data: firmaPadre,
-    ip: ipDelSolicitante(hdrs),
+  const { error } = await admin.rpc("registrar_observacion_padre_bienestar", {
+    p_token: token,
+    p_observacion_padre: observacionPadre,
+    p_firma_data: firmaPadre,
+    p_firmante_nombre: firmaPadreNombre,
+    p_ip: ipDelSolicitante(hdrs),
   });
-  if (errorFirma) return { error: "Tu respuesta se guardó, pero no se pudo registrar la firma." };
+
+  if (error?.message.includes("enlace_no_disponible")) {
+    return { error: "Este enlace ya no está disponible." };
+  }
+  if (error?.message.includes("observacion_invalida")) {
+    return { error: "La observación debe tener entre 1 y 4000 caracteres." };
+  }
+  if (error?.message.includes("firmante_invalido")) {
+    return { error: "El nombre del firmante es demasiado largo." };
+  }
+  if (error?.message.includes("firma_invalida")) {
+    return { error: "La firma no es válida o supera el tamaño permitido." };
+  }
+  if (error) return { error: "No se pudo guardar tu respuesta. Intenta nuevamente." };
 
   return { ok: true };
 }

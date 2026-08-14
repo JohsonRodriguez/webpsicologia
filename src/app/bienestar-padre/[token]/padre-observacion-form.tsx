@@ -44,12 +44,12 @@ export function PadreObservacionForm({ token }: { token: string }) {
 
       <div className="flex flex-col gap-1.5">
         <Label>Tu observación sobre el servicio del colegio</Label>
-        <Textarea name="observacion_padre" required className="min-h-28 w-full" />
+        <Textarea name="observacion_padre" required maxLength={4000} className="min-h-28 w-full" />
       </div>
 
       <div className="mx-auto flex w-full max-w-sm flex-col gap-2">
         <SignaturePad ref={pad} label="Tu firma" />
-        <Input name="firma_padre_nombre" required placeholder="Tu nombre completo" />
+        <Input name="firma_padre_nombre" required maxLength={160} placeholder="Tu nombre completo" />
       </div>
 
       {state.error && <p className="rounded-md bg-critical-soft px-3 py-2 text-sm text-critical">{state.error}</p>}

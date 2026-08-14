@@ -2,7 +2,11 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Evita que otro package-lock.json ubicado en un directorio padre haga
+  // que Turbopack infiera una raíz distinta a la de esta aplicación.
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
 // Sin SENTRY_AUTH_TOKEN (solo se configura en Vercel), el plugin construye
