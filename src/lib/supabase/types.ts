@@ -1068,6 +1068,16 @@ export type Database = {
       auth_grados: { Args: never; Returns: string[] }
       auth_rol: { Args: never; Returns: string }
       grado_de_alumno: { Args: { p_alumno_id: string }; Returns: string }
+      registrar_observacion_padre_bienestar: {
+        Args: {
+          p_firma_data: string
+          p_firmante_nombre: string
+          p_ip: string
+          p_observacion_padre: string
+          p_token: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
